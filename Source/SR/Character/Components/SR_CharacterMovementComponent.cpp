@@ -65,51 +65,9 @@ void USR_CharacterMovementComponent::PhysCustom(float deltaTime, int32 Iteration
 	FVector Delta = Velocity * deltaTime;
 	FHitResult Hit(1.f);
 	SafeMoveUpdatedComponent(Delta, UpdatedComponent->GetComponentRotation(), true, Hit);
-	
-	//On teste si on est rentré dans un mur suite au mouvement
-	if (Hit.IsValidBlockingHit())
+
+	if (FMath::IsNearlyZero(Hit.Normal.Z))
 	{
-		DrawDebugPoint(GetWorld(), Hit.ImpactPoint, 15.f, FColor::Green, false, 5.f);
-		if (Hit.Normal.Z)
-		{
-			SetMovementMode(MOVE_Walking, 0);
-			return;
-		}
-		UpdateWallRunDirection(Hit);
+		SetMovementMode(MOVE_Falling);
 	}
-	//Sinon on teste si on a un mur avec un angle rentrant
-	else if (DetectNextWall(Hit))
-	{
-		DrawDebugPoint(GetWorld(), Hit.ImpactPoint, 10.f, FColor::Red, false, 5.f);
-		UpdateWallRunDirection(Hit);
-		//Garde le vecteur de déplacement horizontal
-		Delta = FVector::VectorPlaneProject(Hit.Location - GetCharacterOwner()->GetActorLocation(), FVector::UpVector);
-		SafeMoveUpdatedComponent(Delta, UpdatedComponent->GetComponentRotation(), true, Hit);
-	}
-}
-
-void USR_CharacterMovementComponent::UpdateWallRunDirection(FHitResult& Hit)
-{
-	//On utilise la rotation entre le vecteur normal du mur précédent et le vecteur normal du hit (nouveau mur) pour calculer la nouvelle direction
-	FQuat Rotation = FQuat::FindBetweenNormals(WallNormal, Hit.Normal);
-	WallNormal = Hit.Normal;
-	WallRunDirection = Rotation.RotateVector(WallRunDirection);
-}
-
-bool USR_CharacterMovementComponent::DetectNextWall(FHitResult& Hit)
-{
-	UCapsuleComponent* Capsule = GetCharacterOwner()->GetCapsuleComponent();
-	FName CollisionProfile = Capsule->GetCollisionProfileName();
-	
-	//On fait un capsule collision avec les infos de la capsule du personnage.
-	//Puis on fait un sweep vers le mur
-	FVector Start = GetCharacterOwner()->GetActorLocation();
-	FVector End = Start - WallNormal * Capsule->GetScaledCapsuleRadius();
-	FCollisionQueryParams Params = FCollisionQueryParams::DefaultQueryParam;
-	Params.AddIgnoredActor(GetCharacterOwner());
-	DrawDebugLine(GetWorld(), Start, End, FColor::Blue, false, 5.f);
-	
-	GetWorld()->SweepSingleByProfile(Hit, Start, End, Capsule->GetComponentQuat(), CollisionProfile, Capsule->GetCollisionShape(), Params);
-
-	return Hit.bBlockingHit;
 }

@@ -31,10 +31,6 @@ public:
 
 	virtual void PhysCustom(float deltaTime, int32 Iterations) override;
 	
-	void UpdateWallRunDirection(FHitResult& Hit);
-	
-	bool DetectNextWall(FHitResult& Hit);
-
 	FVector WallRunDirection;
 	FVector WallNormal;
 
