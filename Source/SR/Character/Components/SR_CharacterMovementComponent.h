@@ -34,6 +34,17 @@ public:
 	void UpdateWallRunDirection(FHitResult& Hit);
 	
 	bool DetectNextWall(FHitResult& Hit);
+
+	// Dash in a direction in the world space where the character is facing or moving using the input value as a direction vector when he is on the ground
+	// or dash in the direction of the camera when he is in the air and using the input value as a direction vector
+	void Dash(FVector DashDirection);
+
+	// dash timer
+	FTimerHandle DashTimer;
+
+	// EndDash function
+	void EndDash();
+	
 	
 	FVector WallRunDirection;
 	FVector WallNormal;

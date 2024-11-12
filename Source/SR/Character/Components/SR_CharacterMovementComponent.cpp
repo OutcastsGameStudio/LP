@@ -25,6 +25,7 @@ void USR_CharacterMovementComponent::BeginPlay()
 	Super::BeginPlay();
 	
 	GetCharacterOwner()->GetCapsuleComponent()->OnComponentHit.AddDynamic(this, &USR_CharacterMovementComponent::OnHit);
+	
 }
 
 
@@ -113,3 +114,28 @@ bool USR_CharacterMovementComponent::DetectNextWall(FHitResult& Hit)
 
 	return Hit.bBlockingHit;
 }
+
+void USR_CharacterMovementComponent::Dash(FVector DashDirection)
+{
+	if (MovementMode == MOVE_Walking)
+	{
+		GravityScale = 0.f;
+		BrakingDecelerationFalling = 0.f;
+		Velocity = DashDirection.GetSafeNormal() * 10000.f;
+		GetWorld()->GetTimerManager().SetTimer(DashTimer, this, &USR_CharacterMovementComponent::EndDash, 0.2f, false);
+	}
+	else if (MovementMode == MOVE_Falling)
+	{
+		GravityScale = 0.f;
+		BrakingDecelerationFalling = 0.f;
+		Velocity = DashDirection.GetSafeNormal() * 2000.f;
+		GetWorld()->GetTimerManager().SetTimer(DashTimer, this, &USR_CharacterMovementComponent::EndDash, 0.2f, false);
+	}
+}
+
+void USR_CharacterMovementComponent::EndDash()
+{
+	GravityScale = 2.f;
+	BrakingDecelerationFalling = 1500.f;
+}
+

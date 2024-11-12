@@ -40,6 +40,10 @@ class SR_API ASR_Character : public ACharacter
 	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = Input, meta = (AllowPrivateAccess = "true"))
 	UInputAction* LookAction;
 
+	/** Dash Input Action */
+	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = Input, meta = (AllowPrivateAccess = "true"))
+	UInputAction* DashAction;
+
 public:
 	ASR_Character();
 	
@@ -53,6 +57,9 @@ protected:
 	
 	UFUNCTION()
 	void TryWallJump();
+
+	/** called for dashing input */
+	void Dash(const FInputActionValue& Value);
 	
 	// APawn interface
 	virtual void SetupPlayerInputComponent(class UInputComponent* PlayerInputComponent) override;

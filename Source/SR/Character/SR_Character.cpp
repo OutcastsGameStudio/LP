@@ -33,9 +33,9 @@ ASR_Character::ASR_Character()
 	// instead of recompiling to adjust them
 	GetCharacterMovement()->JumpZVelocity = 700.f;
 	GetCharacterMovement()->AirControl = 0.35f;
-	GetCharacterMovement()->MaxWalkSpeed = 500.f;
-	GetCharacterMovement()->MinAnalogWalkSpeed = 20.f;
-	GetCharacterMovement()->BrakingDecelerationWalking = 2000.f;
+	GetCharacterMovement()->MaxWalkSpeed = 1500.f;
+	GetCharacterMovement()->MinAnalogWalkSpeed = 100.f;
+	GetCharacterMovement()->BrakingDecelerationWalking = 1000.f;
 	GetCharacterMovement()->BrakingDecelerationFalling = 1500.0f;
 
 	// Create a follow camera
@@ -80,6 +80,9 @@ void ASR_Character::SetupPlayerInputComponent(UInputComponent* PlayerInputCompon
 
 		// Looking
 		EnhancedInputComponent->BindAction(LookAction, ETriggerEvent::Triggered, this, &ASR_Character::Look);
+
+		// Dashing
+		EnhancedInputComponent->BindAction(DashAction, ETriggerEvent::Started, this, &ASR_Character::Dash);
 	}
 	else
 	{
@@ -127,3 +130,35 @@ void ASR_Character::Look(const FInputActionValue& Value)
 		AddControllerPitchInput(LookAxisVector.Y);
 	}
 }
+
+void ASR_Character::Dash(const FInputActionValue& Value)
+{
+	
+	FVector DashDirection = FVector::ZeroVector;
+
+	/** Get the forward vector of the camera, the character velocity , the character forward vector and the character right vector */
+	FVector CameraForward = FollowCamera->GetForwardVector();
+	FVector CharacterVelocity = GetCharacterMovement()->Velocity;
+	FVector CharacterForward = GetActorForwardVector();
+	FVector CharacterRight = GetActorRightVector();
+
+	/** If the character is on the ground, the dash direction is using the character forward vector and the character right vector to create a direction vector using the input value */
+	if (GetCharacterMovement()->IsMovingOnGround())
+	{
+		DashDirection = CharacterForward * Value.Get<FVector2D>().X + CharacterRight * Value.Get<FVector2D>().Y;
+	}
+	/** If the character is in the air, the dash direction is using the direction of the camera to create a direction vector using the input value */
+	else
+	{
+		DashDirection = CameraForward * Value.Get<FVector2D>().X + CharacterRight * Value.Get<FVector2D>().Y;
+	}
+	
+	
+	
+	Cast<USR_CharacterMovementComponent>(GetCharacterMovement())->Dash(DashDirection);
+	
+}
+
+
+
+
