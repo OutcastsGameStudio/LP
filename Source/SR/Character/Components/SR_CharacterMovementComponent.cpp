@@ -32,20 +32,13 @@ void USR_CharacterMovementComponent::BeginPlay()
 void USR_CharacterMovementComponent::TickComponent(float DeltaTime, ELevelTick TickType, FActorComponentTickFunction* ThisTickFunction)
 {
 	Super::TickComponent(DeltaTime, TickType, ThisTickFunction);
-
-	// Draw Line Trace for Wallrun
-	FVector Start = GetCharacterOwner()->GetActorLocation();
-	FVector End = Start + GetCharacterOwner()->GetActorForwardVector() * 200.f;
-	End.Y = End.Y + 45.f;
-	DrawDebugLine(GetWorld(), Start, End, FColor::Red, false, 0.1f);
 }
 
 void USR_CharacterMovementComponent::OnHit(UPrimitiveComponent* HitComponent, AActor* OtherActor, UPrimitiveComponent* OtherComp, FVector NormalImpulse, const FHitResult& Hit)
 {
 	if (MovementMode == MOVE_Falling && Velocity.Z < 0.f && FMath::IsNearlyZero(Hit.Normal.Z))
 	{
-		UE_LOGFMT(LogTemp, Warning, "Start Wallrun detected");
-
+		GEngine->AddOnScreenDebugMessage(-1, 5.f, FColor::Blue, TEXT("Start wall run detected !"));
 		SetMovementMode(MOVE_Custom, 0);
 		WallNormal = Hit.Normal;
 		FVector WallDirection = FVector::CrossProduct(FVector::UpVector, Hit.Normal);
@@ -57,6 +50,7 @@ void USR_CharacterMovementComponent::WallJump()
 {
 	if (MovementMode == MOVE_Custom)
 	{
+		GEngine->AddOnScreenDebugMessage(-1, 5.f, FColor::Red, TEXT("Wall jump"));
 		Velocity = (WallRunDirection + WallNormal + FVector::UpVector).GetSafeNormal() * WallJumpSpeed;
 		SetMovementMode(MOVE_Falling);
 	}
@@ -74,16 +68,18 @@ void USR_CharacterMovementComponent::PhysCustom(float deltaTime, int32 Iteration
 	FHitResult Hit(1.f);
 	SafeMoveUpdatedComponent(Delta, UpdatedComponent->GetComponentRotation(), true, Hit);
 
-	if (Hit.IsValidBlockingHit())
+	if (Hit.IsValidBlockingHit() && Hit.Normal.Z > 0.f)
     {
-    	if (FMath::IsNearlyZero(Hit.Normal.Z))
+    	if (Hit.Normal.Z > 0.5f)
     	{
     		SetMovementMode(MOVE_Walking, 0);
+    		GEngine->AddOnScreenDebugMessage(-1, 5.f, FColor::Red, TEXT("End wall run detected !"));
     		return;
     	}
     }
-	else if (DetectNextWall(Hit))
+	else if (!DetectNextWall(Hit))
 	{
+		GEngine->AddOnScreenDebugMessage(-1, 5.f, FColor::Red, TEXT("Next wall detected !"));
 		SetMovementMode(MOVE_Falling);
 		SafeMoveUpdatedComponent(Delta, UpdatedComponent->GetComponentRotation(), true, Hit);
 	}
@@ -91,7 +87,6 @@ void USR_CharacterMovementComponent::PhysCustom(float deltaTime, int32 Iteration
 
 void USR_CharacterMovementComponent::UpdateWallRunDirection(FHitResult& Hit)
 {
-	//On utilise la rotation entre le vecteur normal du mur précédent et le vecteur normal du hit (nouveau mur) pour calculer la nouvelle direction
 	FQuat Rotation = FQuat::FindBetweenNormals(WallNormal, Hit.Normal);
 	WallNormal = Hit.Normal;
 	WallRunDirection = Rotation.RotateVector(WallRunDirection);
@@ -102,8 +97,6 @@ bool USR_CharacterMovementComponent::DetectNextWall(FHitResult& Hit)
 	UCapsuleComponent* Capsule = GetCharacterOwner()->GetCapsuleComponent();
 	FName CollisionProfile = Capsule->GetCollisionProfileName();
 	
-	//On fait un capsule collision avec les infos de la capsule du personnage.
-	//Puis on fait un sweep vers le mur
 	FVector Start = GetCharacterOwner()->GetActorLocation();
 	FVector End = Start - WallNormal * Capsule->GetScaledCapsuleRadius();
 	FCollisionQueryParams Params = FCollisionQueryParams::DefaultQueryParam;
