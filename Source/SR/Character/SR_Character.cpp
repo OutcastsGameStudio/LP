@@ -11,8 +11,7 @@
 #include "EnhancedInputComponent.h"
 #include "EnhancedInputSubsystems.h"
 #include "InputActionValue.h"
-
-#include "Components/AccelerationComponent.h"
+#include "Components/SR_AccelerationComponent.h"
 
 DEFINE_LOG_CATEGORY(LogTemplateCharacter);
 
@@ -46,7 +45,7 @@ ASR_Character::ASR_Character()
 	FollowCamera->SetupAttachment(GetMesh(), FName("head")); 
 	FollowCamera->bUsePawnControlRotation = false; // Camera does not rotate relative to arm
 
-	auto AccelerationComponent = CreateDefaultSubobject<UAccelerationComponent>(TEXT("AccelerationComponent"));
+	auto AccelerationComponent = CreateDefaultSubobject<USR_AccelerationComponent>(TEXT("AccelerationComponent"));
 
 	// Note: The skeletal mesh and anim blueprint references on the Mesh component (inherited from Character) 
 	// are set in the derived blueprint asset named ThirdPersonCharacter (to avoid direct content references in C++)
