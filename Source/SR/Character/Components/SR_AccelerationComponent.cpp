@@ -38,39 +38,22 @@ void USR_AccelerationComponent::TickComponent(float DeltaTime, ELevelTick TickTy
 float USR_AccelerationComponent::Accelerate(float Speed, float DeltaTime)
 {
 	// if the current speed is less than the max speed
-	if (CurrentSpeed < MaxSpeed)
+	if (Speed < MaxSpeed)
 	{
 		// increase the current speed by the acceleration value
-		CurrentSpeed += Acceleration * DeltaTime;
+		Speed += Acceleration * DeltaTime;
 		// if the current speed is greater than the max speed
-		if (CurrentSpeed > MaxSpeed)
+		if (Speed > MaxSpeed)
 		{
 			// set the current speed to the max speed
-			CurrentSpeed = MaxSpeed;
+			Speed = MaxSpeed;
 		}
 	}
 	// return the new speed
-	return CurrentSpeed;
+	return Speed;
 }
 
-// function to decelerate the character over time until it reaches 0
-float USR_AccelerationComponent::Decelerate(float Speed, float DeltaTime)
-{
-	// if the current speed is greater than 0
-	if (CurrentSpeed > 0)
-	{
-		// decrease the current speed by the deceleration value
-		CurrentSpeed -= Deceleration * DeltaTime;
-		// if the current speed is less than 0
-		if (CurrentSpeed < 0)
-		{
-			// set the current speed to 0
-			CurrentSpeed = 0;
-		}
-	}
-	// return the new speed
-	return CurrentSpeed;
-}
+
 
 // function to increase the max speed of the character
 void USR_AccelerationComponent::IncreaseMaxSpeed(float Value)
@@ -83,22 +66,9 @@ void USR_AccelerationComponent::IncreaseMaxSpeed(float Value)
 void USR_AccelerationComponent::ResetMaxSpeed()
 {
 	// set the max speed to the default value
-	MaxSpeed = 1000.f;
+	MaxSpeed = 2000.f;
 }
 
-// function to get the current speed of the character
-float USR_AccelerationComponent::GetCurrentSpeed()
-{
-	// return the current speed
-	return CurrentSpeed;
-}
-
-// function to set the current speed of the character
-void USR_AccelerationComponent::SetCurrentSpeed(float Value)
-{
-	// set the current speed to the value
-	CurrentSpeed = Value;
-}
 
 
 

@@ -20,15 +20,13 @@ protected:
 
 	// acceleration value
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Acceleration")
-	float Acceleration = 1000.f;
+	float Acceleration = 200.f;
 
-	// deceleration value
-	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Acceleration")
-	float Deceleration = 1000.f;
+	
 
 	// max speed value
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Acceleration")
-	float MaxSpeed = 1000.f;
+	float MaxSpeed = 2000.f;
 
 	// current speed value
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Acceleration")
@@ -43,9 +41,7 @@ public:
 	UFUNCTION(BlueprintCallable, Category = "Acceleration")
 	float Accelerate(float Speed, float DeltaTime); // function to accelerate the character over time	
 	
-	// function to decelerate the character over time
-	UFUNCTION(BlueprintCallable, Category = "Acceleration")
-	float Decelerate(float Speed, float DeltaTime); // function to decelerate the character over time
+	
 
 	// function to increase the max speed of the character
 	UFUNCTION(BlueprintCallable, Category = "Acceleration")
@@ -55,11 +51,5 @@ public:
 	UFUNCTION(BlueprintCallable, Category = "Acceleration")
 	void ResetMaxSpeed(); // function to reset the max speed of the character to the default value
 
-	// function to get the current speed of the character
-	UFUNCTION(BlueprintCallable, Category = "Acceleration")
-	float GetCurrentSpeed(); // function to get the current speed of the character
-
-	// function to set the current speed of the character
-	UFUNCTION(BlueprintCallable, Category = "Acceleration")
-	void SetCurrentSpeed(float Value); // function to set the current speed of the character
+	
 };
