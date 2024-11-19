@@ -14,16 +14,11 @@ USR_AccelerationComponent::USR_AccelerationComponent()
 	
 }
 
-
 // Called when the game starts
 void USR_AccelerationComponent::BeginPlay()
 {
 	Super::BeginPlay();
-
-	
-	
 }
-
 
 // Called every frame
 void USR_AccelerationComponent::TickComponent(float DeltaTime, ELevelTick TickType,
@@ -37,36 +32,28 @@ void USR_AccelerationComponent::TickComponent(float DeltaTime, ELevelTick TickTy
 // function to accelerate the character over time which will return the new speed until it reaches the max speed
 float USR_AccelerationComponent::Accelerate(float Speed, float DeltaTime)
 {
-	// if the current speed is less than the max speed
-	if (Speed < MaxSpeed)
+	if (Speed >= maxSpeed)
 	{
-		// increase the current speed by the acceleration value
-		Speed += Acceleration * DeltaTime;
-		// if the current speed is greater than the max speed
-		if (Speed > MaxSpeed)
-		{
-			// set the current speed to the max speed
-			Speed = MaxSpeed;
-		}
+		// set the current speed to the max speed
+		 return maxSpeed;
 	}
+	float newSpeed = Speed + acceleration * DeltaTime;
 	// return the new speed
-	return Speed;
+	return std::min(newSpeed, maxSpeed);
 }
-
-
 
 // function to increase the max speed of the character
 void USR_AccelerationComponent::IncreaseMaxSpeed(float Value)
 {
 	// increase the max speed by the value
-	MaxSpeed += Value;
+	maxSpeed += Value;
 }
 
 // function to reset the max speed of the character to the default value
 void USR_AccelerationComponent::ResetMaxSpeed()
 {
 	// set the max speed to the default value
-	MaxSpeed = 2000.f;
+	maxSpeed = 2000.f;
 }
 
 
