@@ -53,6 +53,10 @@ protected:
 	
 	UFUNCTION()
 	void TryWallJump();
+
+	// assign a acceleration component to the character
+	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Acceleration")
+	class USR_AccelerationComponent* AccelerationComponent;
 	
 	// APawn interface
 	virtual void SetupPlayerInputComponent(class UInputComponent* PlayerInputComponent) override;

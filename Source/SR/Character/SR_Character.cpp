@@ -11,6 +11,7 @@
 #include "EnhancedInputComponent.h"
 #include "EnhancedInputSubsystems.h"
 #include "InputActionValue.h"
+#include "Components/SR_AccelerationComponent.h"
 
 DEFINE_LOG_CATEGORY(LogTemplateCharacter);
 
@@ -33,7 +34,7 @@ ASR_Character::ASR_Character()
 	// instead of recompiling to adjust them
 	GetCharacterMovement()->JumpZVelocity = 700.f;
 	GetCharacterMovement()->AirControl = 0.35f;
-	GetCharacterMovement()->MaxWalkSpeed = 2000.f;
+	GetCharacterMovement()->MaxWalkSpeed = 500.f;
 	GetCharacterMovement()->MinAnalogWalkSpeed = 20.f;
 	GetCharacterMovement()->BrakingFrictionFactor = 200.f;
 	GetCharacterMovement()->BrakingDecelerationWalking = 5000.f;
@@ -43,6 +44,9 @@ ASR_Character::ASR_Character()
 	FollowCamera = CreateDefaultSubobject<UCameraComponent>(TEXT("FollowCamera")); 
 	FollowCamera->SetupAttachment(GetMesh(), FName("head")); 
 	FollowCamera->bUsePawnControlRotation = false; // Camera does not rotate relative to arm
+
+	// Set the acceleration component to the character
+	AccelerationComponent = CreateDefaultSubobject<USR_AccelerationComponent>(TEXT("AccelerationComponent"));
 
 	// Note: The skeletal mesh and anim blueprint references on the Mesh component (inherited from Character) 
 	// are set in the derived blueprint asset named ThirdPersonCharacter (to avoid direct content references in C++)
@@ -108,6 +112,14 @@ void ASR_Character::Move(const FInputActionValue& Value)
 		// add movement 
 		AddMovementInput(ForwardDirection, MovementVector.Y);
 		AddMovementInput(RightDirection, MovementVector.X);
+
+		// if the character is moving then accelerate the character and increase the max walk speed
+		if (MovementVector.Size() > 0)
+		{
+			GetCharacterMovement()->MaxWalkSpeed = AccelerationComponent->Accelerate(GetCharacterMovement()->MaxWalkSpeed, GetWorld()->GetDeltaSeconds());
+			UE_LOG(LogTemp, Warning, TEXT("Current Speed: %f"), GetCharacterMovement()->MaxWalkSpeed);
+		}
+		
 	}
 }
 
