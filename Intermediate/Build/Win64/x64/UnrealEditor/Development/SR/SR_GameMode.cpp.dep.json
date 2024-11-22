@@ -1,0 +1,19 @@
+{
+    "Version": "1.2",
+    "Data": {
+        "Source": "c:\\dev\\sr\\source\\sr\\gamemode\\sr_gamemode.cpp",
+        "ProvidedModule": "",
+        "PCH": "c:\\dev\\sr\\intermediate\\build\\win64\\x64\\sreditor\\development\\unrealed\\sharedpch.unrealed.project.valapi.cpp20.h.pch",
+        "Includes": [
+            "c:\\dev\\sr\\intermediate\\build\\win64\\x64\\unrealeditor\\development\\sr\\definitions.sr.h",
+            "c:\\dev\\sr\\source\\sr\\gamemode\\sr_gamemode.h",
+            "c:\\program files\\epic games\\ue_5.4\\engine\\source\\runtime\\engine\\classes\\gameframework\\gamemodebase.h",
+            "c:\\program files\\epic games\\ue_5.4\\engine\\source\\runtime\\engine\\classes\\engine\\serverstatreplicator.h",
+            "c:\\program files\\epic games\\ue_5.4\\engine\\intermediate\\build\\win64\\unrealeditor\\inc\\engine\\uht\\serverstatreplicator.generated.h",
+            "c:\\program files\\epic games\\ue_5.4\\engine\\intermediate\\build\\win64\\unrealeditor\\inc\\engine\\uht\\gamemodebase.generated.h",
+            "c:\\dev\\sr\\intermediate\\build\\win64\\unrealeditor\\inc\\sr\\uht\\sr_gamemode.generated.h"
+        ],
+        "ImportedModules": [],
+        "ImportedHeaderUnits": []
+    }
+}
