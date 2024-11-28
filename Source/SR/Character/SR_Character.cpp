@@ -11,7 +11,7 @@
 #include "EnhancedInputComponent.h"
 #include "EnhancedInputSubsystems.h"
 #include "InputActionValue.h"
-#include "Components/SR_AccelerationComponent.h"
+#include "Components/Acceleration/SR_AccelerationComponent.h"
 
 DEFINE_LOG_CATEGORY(LogTemplateCharacter);
 
