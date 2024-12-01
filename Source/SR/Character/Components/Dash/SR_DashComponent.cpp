@@ -36,11 +36,18 @@ void USR_DashComponent::TickComponent(float DeltaTime, ELevelTick TickType,
 
 
 void USR_DashComponent::Dash(FVector DashDirection)
-{
+{	
+	//set the movement mode to falling
+	CharacterMovement->SetMovementMode(EMovementMode::MOVE_Falling);
+	//set the gravity scale to 0
 	CharacterMovement->GravityScale = 0.f;
+	//set the braking deceleration falling to 0
 	CharacterMovement->BrakingDecelerationFalling = 0.f;
+	//set the velocity to the dash direction
 	CharacterMovement->Velocity = DashDirection.GetSafeNormal() * 10000.f;
+	//set a timer to end the dash
 	GetWorld()->GetTimerManager().SetTimer(DashTimer, this, &USR_DashComponent::EndDash, 0.2f, false);
+
 }
 
 void USR_DashComponent::EndDash()

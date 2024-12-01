@@ -11,8 +11,8 @@
 #include "EnhancedInputComponent.h"
 #include "EnhancedInputSubsystems.h"
 #include "InputActionValue.h"
-#include "Acceleration/SR_AccelerationComponent.h"
-#include "Dash/SR_DashComponent.h"
+#include "Components/Acceleration/SR_AccelerationComponent.h"
+#include "Components/Dash/SR_DashComponent.h"
 
 DEFINE_LOG_CATEGORY(LogTemplateCharacter);
 
@@ -248,11 +248,6 @@ void ASR_Character::Dash(const FInputActionValue& Value)
 	{
 		DashDirection = CharacterForward * Value.Get<FVector2D>().X + CharacterRight * Value.Get<FVector2D>().Y;
 	}
-	
-	
-	
-	
-	
-	
+
 	DashComponent->Dash(DashDirection);
 }
