@@ -47,7 +47,6 @@ void USR_DashComponent::Dash(FVector DashDirection)
 	CharacterMovement->Velocity = DashDirection.GetSafeNormal() * 10000.f;
 	//set a timer to end the dash
 	GetWorld()->GetTimerManager().SetTimer(DashTimer, this, &USR_DashComponent::EndDash, 0.2f, false);
-
 }
 
 void USR_DashComponent::EndDash()

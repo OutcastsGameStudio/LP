@@ -19,6 +19,9 @@ DEFINE_LOG_CATEGORY(LogTemplateCharacter);
 
 ASR_Character::ASR_Character()
 {
+	// Set this character to call Tick() every frame
+	PrimaryActorTick.bCanEverTick = true;
+	
 	// Set size for collision capsule
 	GetCapsuleComponent()->InitCapsuleSize(42.f, 96.0f);
 		
@@ -76,6 +79,34 @@ void ASR_Character::BeginPlay()
 		{
 			Subsystem->AddMappingContext(DefaultMappingContext, 0);
 		}
+	}
+}
+
+//called every frame
+void ASR_Character::Tick(float DeltaTime)
+{
+	Super::Tick(DeltaTime);
+
+	// if is dashing is true then dash
+	if (bIsDashing)
+	{
+		if (dashDuration <= 0)
+		{
+			bIsDashing = false;
+			startCooldown = true;
+		}
+		dashDuration -= DeltaTime;
+		DashComponent->Dash(DashDirection);		
+	}
+	else if (dashCooldown >= 0 && !bIsDashing && startCooldown)
+	{
+		dashCooldown -= DeltaTime;		
+	}
+	else if (dashCooldown <= 0 && startCooldown)
+	{
+		dashCooldown = 1.0f;
+		dashDuration = .3f;
+		startCooldown = false;
 	}
 }
 
@@ -235,19 +266,21 @@ void ASR_Character::ClimbUp()
 void ASR_Character::Dash(const FInputActionValue& Value)
 {
 	
-	FVector DashDirection = FVector::ZeroVector;
-	FVector CharacterForward = GetActorForwardVector();
-	FVector CharacterRight = GetActorRightVector();
-
-	//if the character is not moving then dash in the direction of the character forward vector
-	if (Value.Get<FVector2D>().Size() == 0)
+	if(!bIsDashing && dashCooldown == 1.0f)
 	{
-		DashDirection = CharacterForward;
-	}
-	else
-	{
-		DashDirection = CharacterForward * Value.Get<FVector2D>().X + CharacterRight * Value.Get<FVector2D>().Y;
-	}
+		//set is dashing to true
+		bIsDashing = true;
+		FVector CharacterForward = GetActorForwardVector();
+		FVector CharacterRight = GetActorRightVector();
 
-	DashComponent->Dash(DashDirection);
+		//if the character is not moving then dash in the direction of the character forward vector
+		if (Value.Get<FVector2D>().Size() == 0)
+		{
+			DashDirection = CharacterForward;
+		}
+		else
+		{
+			DashDirection = CharacterForward * Value.Get<FVector2D>().X + CharacterRight * Value.Get<FVector2D>().Y;
+		}		
+	}	
 }

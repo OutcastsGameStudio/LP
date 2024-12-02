@@ -100,8 +100,15 @@ protected:
 	// To add mapping context
 	virtual void BeginPlay();
 
+	// called every frame
+	virtual void Tick(float DeltaTime) override;
+
 public:
 	/** Returns FollowCamera subobject **/
 	FORCEINLINE class UCameraComponent* GetFollowCamera() const { return FollowCamera; }
-	
+	FVector DashDirection = FVector::ZeroVector;
+	bool bIsDashing = false;
+	float dashDuration = .3f;
+	float dashCooldown = 1.0f;
+	bool startCooldown = false;
 };
