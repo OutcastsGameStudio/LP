@@ -42,8 +42,27 @@ class SR_API ASR_Character : public ACharacter
 
 public:
 	ASR_Character();
+	void Tick(float DeltaTime);
+
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Ledge Grab")
+	float LedgeGrabReachDistance = 70.0f;
+
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Ledge Grab")
+	float LedgeGrabHeight = 150.0f;
+
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Ledge Grab")
+	float ClimbUpSpeed = 20.0f;
 	
 protected:
+
+	bool bIsHanging = false;
+	FVector LedgeLocation;
+
+	UFUNCTION(BlueprintCallable, Category = "Ledge Grab")
+	void CheckForLedgeGrab();
+
+	UFUNCTION(BlueprintCallable, Category = "Ledge Grab")
+	void ClimbUp();
 
 	/** Called for movement input */
 	void Move(const FInputActionValue& Value);

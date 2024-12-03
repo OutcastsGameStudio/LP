@@ -11,7 +11,7 @@
 #include "EnhancedInputComponent.h"
 #include "EnhancedInputSubsystems.h"
 #include "InputActionValue.h"
-#include "Components/SR_AccelerationComponent.h"
+#include "Acceleration/SR_AccelerationComponent.h"
 
 DEFINE_LOG_CATEGORY(LogTemplateCharacter);
 
@@ -50,6 +50,14 @@ ASR_Character::ASR_Character()
 
 	// Note: The skeletal mesh and anim blueprint references on the Mesh component (inherited from Character) 
 	// are set in the derived blueprint asset named ThirdPersonCharacter (to avoid direct content references in C++)
+}
+
+void ASR_Character::Tick(float DeltaTime)
+{
+	Super::Tick(DeltaTime);
+
+	CheckForLedgeGrab();
+	ClimbUp();
 }
 
 void ASR_Character::BeginPlay()
@@ -125,6 +133,7 @@ void ASR_Character::Move(const FInputActionValue& Value)
 
 void ASR_Character::TryWallJump()
 {
+	if(bIsHanging) return;
 	Cast<USR_CharacterMovementComponent>(GetCharacterMovement())->WallJump();
 }
 
@@ -138,5 +147,76 @@ void ASR_Character::Look(const FInputActionValue& Value)
 		// add yaw and pitch input to controller
 		AddControllerYawInput(LookAxisVector.X);
 		AddControllerPitchInput(LookAxisVector.Y);
+	}
+}
+
+
+void ASR_Character::CheckForLedgeGrab()
+{
+	if (bIsHanging || GetCharacterMovement()->IsMovingOnGround())
+		return;
+
+	FVector Start = GetActorLocation();
+	FVector Forward = GetActorForwardVector();
+    
+	FHitResult WallHit;
+	FCollisionQueryParams QueryParams;
+	QueryParams.AddIgnoredActor(this);
+
+	bool bHitWall = GetWorld()->LineTraceSingleByChannel(WallHit, 
+	   Start, 
+	   Start + Forward * LedgeGrabReachDistance,
+	   ECC_Visibility, 
+	   QueryParams);
+
+	if(bHitWall)
+	{
+		FVector EdgeCheckStart = WallHit.ImpactPoint 
+			+ FVector(0, 0, LedgeGrabHeight);
+
+		FVector EdgeCheckEnd = EdgeCheckStart 
+		   + Forward * 60.0f  // Distance vers l'avant
+		   - FVector(0, 0, 100.0f);
+
+		
+		FHitResult EdgeHit;
+		bool bFoundEdge = GetWorld()->LineTraceSingleByChannel(EdgeHit,
+			EdgeCheckStart,
+			EdgeCheckEnd,
+			ECC_Visibility,
+			QueryParams);
+
+		if (!bFoundEdge)
+		{
+			LedgeLocation = WallHit.ImpactPoint 
+				- Forward * 30.0f 
+				+ FVector(0, 0, GetCapsuleComponent()->GetScaledCapsuleHalfHeight());
+            
+			bIsHanging = true;
+			GetCharacterMovement()->SetMovementMode(MOVE_Flying);
+			GetCharacterMovement()->StopMovementImmediately();
+		}
+	}
+}
+
+void ASR_Character::ClimbUp()
+{
+	if (!bIsHanging)
+		return;
+
+	FVector TargetLocation = LedgeLocation;
+    
+	SetActorLocation(FMath::VInterpTo(
+		GetActorLocation(),
+		TargetLocation,
+		GetWorld()->GetDeltaSeconds(),
+		ClimbUpSpeed
+	));
+
+	// Une fois en haut, reprendre le mouvement normal
+	if (FVector::Distance(GetActorLocation(), TargetLocation) < 10.0f)
+	{
+		bIsHanging = false;
+		GetCharacterMovement()->SetMovementMode(MOVE_Walking);
 	}
 }
