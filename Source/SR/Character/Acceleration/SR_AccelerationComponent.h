@@ -46,6 +46,4 @@ public:
 	// function to reset the max speed of the character to the default value
 	UFUNCTION(BlueprintCallable, Category = "Acceleration")
 	void ResetMaxSpeed(); // function to reset the max speed of the character to the default value
-
-	
 };
