@@ -81,7 +81,24 @@ void USR_DashComponent::UpdateDash(float DeltaTime)
     // Calculate the alpha value
     float Alpha = FMath::Clamp(CurrentDashTime / DashDuration, 0.0f, 1.0f);
 
-    // Calculate the new location
+    
+    /**
+    *   Calculate the new location
+    *   
+    *   Speed
+    *   ^
+    *   |      /‾‾‾‾‾‾‾
+    *   |    /´
+    *   |  /
+    *   | /
+    *   |/
+    *   +--------------------> Time
+    *   This is a curve of acceleration/deceleration which will give a better feeling to the dash
+    *   exemple :
+    *   at 25% of the time (alpha = 0.25) : 1.0f - FMath::Pow(1.0f - 0.75, 3) = 0.421875
+    *   at 50% of the time (alpha = 0.50) : 1.0f - FMath::Pow(1.0f - 0.50, 3) = 0.875
+    *   at 75% of the time (alpha = 0.75) : 1.0f - FMath::Pow(1.0f - 0.25, 3) = 0.984375
+    */
     FVector NewLocation = DashStartLocation + (DashDirection * DashDistance * (1.0f - FMath::Pow(1.0f - Alpha, 3)));
     
     // Move the character
