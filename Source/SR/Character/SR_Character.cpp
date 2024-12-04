@@ -239,10 +239,6 @@ void ASR_Character::ClimbUp()
 }
 void ASR_Character::Dash(const FInputActionValue& Value)
 {
-	
-	
-		//set is dashing to true
-		bIsDashing = true;
 		FVector CharacterForward = GetActorForwardVector();
 		FVector CharacterRight = GetActorRightVector();
 

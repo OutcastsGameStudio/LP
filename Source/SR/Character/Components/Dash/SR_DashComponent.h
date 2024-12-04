@@ -14,35 +14,35 @@ class SR_API USR_DashComponent : public UActorComponent
 	GENERATED_BODY()
 
 public:    
-	// Constructeur
+	// Constructor
 	USR_DashComponent();
 
-	// Fonction principale de dash
+	// Dash Function
 	UFUNCTION(BlueprintCallable, Category = "Movement")
 	void Dash();
 
 protected:
-	// Appelée au début du jeu
+	// called when the game starts
 	virtual void BeginPlay() override;
 
 public:    
-	// Appelée à chaque frame
+	// Called every frame
 	virtual void TickComponent(float DeltaTime, ELevelTick TickType, 
 							   FActorComponentTickFunction* ThisTickFunction) override;
 
-	// Direction du dash
+	// Dash Direction
 	FVector DashDirection;
 
 protected:
-	// Composant de mouvement du personnage
+	// Component of the character movement
 	UPROPERTY()
 	UCharacterMovementComponent* CharacterMovement;
 
-	// Référence au personnage propriétaire
+	// Reference to the owner character
 	UPROPERTY()
 	class ACharacter* OwnerCharacter;
 
-	// Paramètres configurables du dash
+	// Properties of the dash
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Dash Settings")
 	float DashDistance;
 
@@ -58,22 +58,22 @@ protected:
 	
 
 private:
-	// Mettre à jour le dash
+	// Dash update
 	void UpdateDash(float DeltaTime);
 
-	// Terminer le dash
+	// End of the dash
 	void EndDash();
 
-	// Position de départ du dash
+	// Start location of the dash
 	FVector DashStartLocation;
 
-	// Temps de dash actuel
+	// Dash Current Time
 	float CurrentDashTime;
 
-	// Temps de cooldown actuel
+	// Dash Current Cooldown Time
 	float CurrentCooldownTime;
 
-	// Flags de contrôle
+	// Dash State
 	bool bIsDashing;
 	bool bCanDash;
 };

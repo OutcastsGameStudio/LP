@@ -8,19 +8,19 @@ USR_DashComponent::USR_DashComponent()
 {
     PrimaryComponentTick.bCanEverTick = true;
     
-    // Valeurs par défaut configurables
-    DashDistance = 1000.0f;     // Distance de dash en cm
-    DashSpeed = 3000.0f;         // Vitesse de dash rapide
-    DashDuration = 0.2f;         // Durée du dash
-    bCanDash = true;             // Dash disponible par défaut
-    DashCooldown = 1.0f;         // Temps de recharge entre deux dashs
+    // Default values configuration
+    DashDistance = 1000.0f;     // Dash distance
+    DashSpeed = 3000.0f;         // Dash speed
+    DashDuration = 0.2f;         // Dash duration
+    bCanDash = true;             // Dash availability
+    DashCooldown = 1.0f;         // Dash cooldown
 }
 
 void USR_DashComponent::BeginPlay()
 {
     Super::BeginPlay();
 
-    // Récupérer les composants nécessaires
+    // Get the character movement component and the owner character
     CharacterMovement = GetOwner()->FindComponentByClass<UCharacterMovementComponent>();
     OwnerCharacter = Cast<ACharacter>(GetOwner());
 
@@ -34,13 +34,13 @@ void USR_DashComponent::TickComponent(float DeltaTime, ELevelTick TickType, FAct
 {
     Super::TickComponent(DeltaTime, TickType, ThisTickFunction);
 
-    // Gérer le dash en cours
+    // dash update
     if (bIsDashing)
     {
         UpdateDash(DeltaTime);
     }
 
-    // Gérer le cooldown du dash
+    // cooldown update
     if (!bCanDash)
     {
         CurrentCooldownTime += DeltaTime;
@@ -54,27 +54,27 @@ void USR_DashComponent::TickComponent(float DeltaTime, ELevelTick TickType, FAct
 
 void USR_DashComponent::Dash()
 {   
-    // Vérifier si le dash est possible
+    // check if the dash is available
     if (!bCanDash || !CharacterMovement || !OwnerCharacter) return;
 
-    // Désactiver temporairement le dash
+    // Disable the dash
     bCanDash = false;
     bIsDashing = true;
 
-    // Normaliser la direction
+    // Normalize the dash direction
     DashDirection.Normalize();
 
-    // Stocker la position de départ
+    // Stock the start location of the dash
     DashStartLocation = OwnerCharacter->GetActorLocation();
 
-    // Réinitialiser le temps écoulé
+    // Reset the dash time
     CurrentDashTime = 0.0f;
 
-    // Désactiver la gravité pendant le dash
+    // Desactivate gravity
     CharacterMovement->GravityScale = 0.0f;
     CharacterMovement->BrakingDecelerationFalling = 0.0f;
 
-    // Optionnel : Ajouter un effet visuel/sonore ici
+    // Optional: Add a visual/sound effect at the start of the dash
     UE_LOG(LogTemp, Warning, TEXT("Dash Started!"));
 }
 
@@ -82,19 +82,19 @@ void USR_DashComponent::UpdateDash(float DeltaTime)
 {
     if (!bIsDashing || !OwnerCharacter) return;
 
-    // Incrémenter le temps de dash
+    // Increment the dash time
     CurrentDashTime += DeltaTime;
 
-    // Calculer la progression du dash
+    // Calculate the alpha value
     float Alpha = FMath::Clamp(CurrentDashTime / DashDuration, 0.0f, 1.0f);
 
-    // Calculer la nouvelle position
+    // Calculate the new location
     FVector NewLocation = DashStartLocation + (DashDirection * DashDistance * (1.0f - FMath::Pow(1.0f - Alpha, 3)));
     
-    // Déplacer le personnage
+    // Move the character
     OwnerCharacter->SetActorLocation(NewLocation, true);
 
-    // Vérifier si le dash est terminé
+    // check if the dash is finished
     if (Alpha >= 1.0f)
     {
         EndDash();
@@ -105,13 +105,13 @@ void USR_DashComponent::EndDash()
 {
     if (!CharacterMovement) return;
 
-    // Réactiver la gravité
+    // reset the character movement
     CharacterMovement->GravityScale = 1.0f;
     CharacterMovement->BrakingDecelerationFalling = 960.0f; // Valeur par défaut
 
-    // Réinitialiser les flags
+    // Reset the flags
     bIsDashing = false;
 
-    // Optionnel : Ajouter un effet visuel/sonore de fin de dash
+    // Optional: Add a visual/sound effect at the end of the dash
     UE_LOG(LogTemp, Warning, TEXT("Dash Ended!"));
 }
