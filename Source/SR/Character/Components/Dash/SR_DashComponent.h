@@ -44,16 +44,16 @@ protected:
 
 	// Properties of the dash
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Dash Settings")
-	float DashDistance;
+	float DashDistance = 1000.0f;
 
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Dash Settings")
-	float DashSpeed;
+	float DashSpeed = 3000.0f;
 
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Dash Settings")
-	float DashDuration;
+	float DashDuration = 0.2f;
 
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Dash Settings")
-	float DashCooldown;
+	float DashCooldown = 1.0f;
 
 	
 
@@ -74,6 +74,6 @@ private:
 	float CurrentCooldownTime;
 
 	// Dash State
-	bool bIsDashing;
-	bool bCanDash;
+	bool bIsDashing = false;
+	bool bCanDash = true;
 };

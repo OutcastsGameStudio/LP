@@ -7,13 +7,6 @@
 USR_DashComponent::USR_DashComponent()
 {
     PrimaryComponentTick.bCanEverTick = true;
-    
-    // Default values configuration
-    DashDistance = 1000.0f;     // Dash distance
-    DashSpeed = 3000.0f;         // Dash speed
-    DashDuration = 0.2f;         // Dash duration
-    bCanDash = true;             // Dash availability
-    DashCooldown = 1.0f;         // Dash cooldown
 }
 
 void USR_DashComponent::BeginPlay()
