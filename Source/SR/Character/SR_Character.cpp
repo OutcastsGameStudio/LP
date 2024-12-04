@@ -66,27 +66,7 @@ void ASR_Character::Tick(float DeltaTime)
 	CheckForLedgeGrab();
 	ClimbUp();
 
-	// if is dashing is true then dash
-	if (bIsDashing)
-	{
-		if (dashDuration <= 0)
-		{
-			bIsDashing = false;
-			startCooldown = true;
-		}
-		dashDuration -= DeltaTime;
-		DashComponent->Dash(DashDirection);		
-	}
-	else if (dashCooldown >= 0 && !bIsDashing && startCooldown)
-	{
-		dashCooldown -= DeltaTime;		
-	}
-	else if (dashCooldown <= 0 && startCooldown)
-	{
-		dashCooldown = 1.0f;
-		dashDuration = .3f;
-		startCooldown = false;
-	}
+	
 }
 
 void ASR_Character::BeginPlay()
@@ -260,8 +240,7 @@ void ASR_Character::ClimbUp()
 void ASR_Character::Dash(const FInputActionValue& Value)
 {
 	
-	if(!bIsDashing && dashCooldown == 1.0f)
-	{
+	
 		//set is dashing to true
 		bIsDashing = true;
 		FVector CharacterForward = GetActorForwardVector();
@@ -270,11 +249,11 @@ void ASR_Character::Dash(const FInputActionValue& Value)
 		//if the character is not moving then dash in the direction of the character forward vector
 		if (Value.Get<FVector2D>().Size() == 0)
 		{
-			DashDirection = CharacterForward;
+			DashComponent->DashDirection = CharacterForward;
 		}
 		else
 		{
-			DashDirection = CharacterForward * Value.Get<FVector2D>().X + CharacterRight * Value.Get<FVector2D>().Y;
+			DashComponent->DashDirection = CharacterForward * Value.Get<FVector2D>().X + CharacterRight * Value.Get<FVector2D>().Y;
 		}		
-	}	
+		DashComponent->Dash();	
 }

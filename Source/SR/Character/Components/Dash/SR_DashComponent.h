@@ -13,29 +13,67 @@ class SR_API USR_DashComponent : public UActorComponent
 {
 	GENERATED_BODY()
 
-public:
-	// Sets default values for this component's properties
+public:    
+	// Constructeur
 	USR_DashComponent();
 
+	// Fonction principale de dash
+	UFUNCTION(BlueprintCallable, Category = "Movement")
+	void Dash();
+
 protected:
-	// Called when the game starts
+	// Appelée au début du jeu
 	virtual void BeginPlay() override;
 
-public:
-	// Called every frame
-	virtual void TickComponent(float DeltaTime, ELevelTick TickType,
-	                           FActorComponentTickFunction* ThisTickFunction) override;
+public:    
+	// Appelée à chaque frame
+	virtual void TickComponent(float DeltaTime, ELevelTick TickType, 
+							   FActorComponentTickFunction* ThisTickFunction) override;
 
-	// Dash in a direction in the world space where the character is facing or moving using the input value as a direction vector when he is on the ground
-	// or dash in the direction of the camera when he is in the air and using the input value as a direction vector
-	void Dash(FVector DashDirection);
+	// Direction du dash
+	FVector DashDirection;
 
-	// dash timer
-	FTimerHandle DashTimer;
+protected:
+	// Composant de mouvement du personnage
+	UPROPERTY()
+	UCharacterMovementComponent* CharacterMovement;
 
-	// EndDash function
+	// Référence au personnage propriétaire
+	UPROPERTY()
+	class ACharacter* OwnerCharacter;
+
+	// Paramètres configurables du dash
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Dash Settings")
+	float DashDistance;
+
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Dash Settings")
+	float DashSpeed;
+
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Dash Settings")
+	float DashDuration;
+
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Dash Settings")
+	float DashCooldown;
+
+	
+
+private:
+	// Mettre à jour le dash
+	void UpdateDash(float DeltaTime);
+
+	// Terminer le dash
 	void EndDash();
 
-	//get the character movement component
-	UCharacterMovementComponent* CharacterMovement = nullptr;
+	// Position de départ du dash
+	FVector DashStartLocation;
+
+	// Temps de dash actuel
+	float CurrentDashTime;
+
+	// Temps de cooldown actuel
+	float CurrentCooldownTime;
+
+	// Flags de contrôle
+	bool bIsDashing;
+	bool bCanDash;
 };
