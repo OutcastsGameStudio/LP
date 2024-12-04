@@ -65,27 +65,6 @@ void ASR_Character::Tick(float DeltaTime)
 
 	CheckForLedgeGrab();
 	ClimbUp();
-}
-
-void ASR_Character::BeginPlay()
-{
-	// Call the base class  
-	Super::BeginPlay();
-
-	// Add Input Mapping Context
-	if (APlayerController* PlayerController = Cast<APlayerController>(Controller))
-	{
-		if (UEnhancedInputLocalPlayerSubsystem* Subsystem = ULocalPlayer::GetSubsystem<UEnhancedInputLocalPlayerSubsystem>(PlayerController->GetLocalPlayer()))
-		{
-			Subsystem->AddMappingContext(DefaultMappingContext, 0);
-		}
-	}
-}
-
-//called every frame
-void ASR_Character::Tick(float DeltaTime)
-{
-	Super::Tick(DeltaTime);
 
 	// if is dashing is true then dash
 	if (bIsDashing)
@@ -107,6 +86,21 @@ void ASR_Character::Tick(float DeltaTime)
 		dashCooldown = 1.0f;
 		dashDuration = .3f;
 		startCooldown = false;
+	}
+}
+
+void ASR_Character::BeginPlay()
+{
+	// Call the base class  
+	Super::BeginPlay();
+
+	// Add Input Mapping Context
+	if (APlayerController* PlayerController = Cast<APlayerController>(Controller))
+	{
+		if (UEnhancedInputLocalPlayerSubsystem* Subsystem = ULocalPlayer::GetSubsystem<UEnhancedInputLocalPlayerSubsystem>(PlayerController->GetLocalPlayer()))
+		{
+			Subsystem->AddMappingContext(DefaultMappingContext, 0);
+		}
 	}
 }
 

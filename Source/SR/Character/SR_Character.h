@@ -100,9 +100,6 @@ protected:
 	// To add mapping context
 	virtual void BeginPlay();
 
-	// called every frame
-	virtual void Tick(float DeltaTime) override;
-
 public:
 	/** Returns FollowCamera subobject **/
 	FORCEINLINE class UCameraComponent* GetFollowCamera() const { return FollowCamera; }
