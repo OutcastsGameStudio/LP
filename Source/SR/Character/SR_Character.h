@@ -3,6 +3,7 @@
 #pragma once
 
 #include "CoreMinimal.h"
+#include "Components/SR_CharacterMovementComponent.h"
 #include "GameFramework/Character.h"
 #include "Logging/LogMacros.h"
 #include "SR_Character.generated.h"
@@ -52,7 +53,12 @@ public:
 
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Ledge Grab")
 	float ClimbUpSpeed = 20.0f;
-	
+
+	/**
+	 * @description : Set the custom movement mode of the character
+	 * @param NewCustomMode 
+	 */
+	void SetCharacterMovementCustomMode(USR_CharacterMovementComponent::CustomMode NewCustomMode);
 protected:
 
 	bool bIsHanging = false;
@@ -71,7 +77,7 @@ protected:
 	void Look(const FInputActionValue& Value);
 	
 	UFUNCTION()
-	void TryWallJump();
+	void StopWallJump();
 
 	// assign a acceleration component to the character
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Acceleration")

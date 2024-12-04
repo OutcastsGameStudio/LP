@@ -38,71 +38,87 @@ void USR_CharacterMovementComponent::OnHit(UPrimitiveComponent* HitComponent, AA
 {
 	if (MovementMode == MOVE_Falling && Velocity.Z < 0.f && FMath::IsNearlyZero(Hit.Normal.Z))
 	{
-		GEngine->AddOnScreenDebugMessage(-1, 5.f, FColor::Blue, TEXT("Start wall run detected !"));
-		SetMovementMode(MOVE_Custom, 0);
-		WallNormal = Hit.Normal;
+		auto CharacterForwardVector = GetCharacterOwner()->GetActorForwardVector();
+		auto DotProduct = FVector::DotProduct(CharacterForwardVector, -Hit.Normal);
+		auto angle = FMath::RadiansToDegrees(FMath::Acos(DotProduct));
+		if(angle > MaxAngleWallRun) return;
+		SetMovementMode(MOVE_Custom, CUSTOM_WallRun);
+		m_WallNormal = Hit.Normal;
 		FVector WallDirection = FVector::CrossProduct(FVector::UpVector, Hit.Normal);
-		WallRunDirection = WallDirection * (GetCharacterOwner()->GetActorForwardVector().Dot(WallDirection) > 0.f ? 1.f : -1.f);
+		m_WallRunDirection = WallDirection * (GetCharacterOwner()->GetActorForwardVector().Dot(WallDirection) > 0.f ? 1.f : -1.f);
 	}
 }
 
-void USR_CharacterMovementComponent::WallJump()
+void USR_CharacterMovementComponent::PhysWallRun(float deltaTime, int32 Iterations)
 {
-	if (MovementMode == MOVE_Custom)
-	{
-		GEngine->AddOnScreenDebugMessage(-1, 5.f, FColor::Red, TEXT("Wall jump"));
-		Velocity = (WallRunDirection + WallNormal + FVector::UpVector).GetSafeNormal() * WallJumpSpeed;
-		SetMovementMode(MOVE_Falling);
-	}
-}
-
-
-void USR_CharacterMovementComponent::PhysCustom(float deltaTime, int32 Iterations)
-{
-	Super::PhysCustom(deltaTime, Iterations);
-
 	LastUpdateVelocity = Velocity;
-	Velocity = WallRunDirection * MaxWalkSpeed;
+	Velocity = m_WallRunDirection * MaxWalkSpeed;
 
 	FVector Delta = Velocity * deltaTime;
 	FHitResult Hit(1.f);
 	SafeMoveUpdatedComponent(Delta, UpdatedComponent->GetComponentRotation(), true, Hit);
 
 	if (Hit.IsValidBlockingHit() && Hit.Normal.Z > 0.f)
-    {
-    	if (Hit.Normal.Z > 0.5f)
-    	{
-    		SetMovementMode(MOVE_Walking, 0);
-    		GEngine->AddOnScreenDebugMessage(-1, 5.f, FColor::Red, TEXT("End wall run detected !"));
-    		return;
-    	}
-    }
+	{
+		if (Hit.Normal.Z > 0.5f)
+		{
+			SetMovementMode(MOVE_Walking, 0);
+			GEngine->AddOnScreenDebugMessage(-1, 5.f, FColor::Red, TEXT("End wall run detected !"));
+		}
+	}
 	else if (!DetectNextWall(Hit))
 	{
 		GEngine->AddOnScreenDebugMessage(-1, 5.f, FColor::Red, TEXT("Next wall detected !"));
 		SetMovementMode(MOVE_Falling);
 		SafeMoveUpdatedComponent(Delta, UpdatedComponent->GetComponentRotation(), true, Hit);
 	}
+	auto CharacterForwardVector = GetCharacterOwner()->GetActorForwardVector();
+	auto DotProduct = FVector::DotProduct(CharacterForwardVector, -Hit.Normal);
+	auto angle = FMath::RadiansToDegrees(FMath::Acos(DotProduct));
+	if(angle > MaxAngleWallRun) SetMovementMode(MOVE_Falling);
+}
+
+void USR_CharacterMovementComponent::StopWallJump()
+{
+	if (MovementMode != MOVE_Custom) return
+	GEngine->AddOnScreenDebugMessage(-1, 5.f, FColor::Red, TEXT("Wall jump"));
+	Velocity = (m_WallRunDirection + m_WallNormal + FVector::UpVector).GetSafeNormal() * WallJumpSpeed;
+	SetMovementMode(MOVE_Falling);
+}
+
+
+void USR_CharacterMovementComponent::PhysCustom(float deltaTime, int32 Iterations)
+{
+	Super::PhysCustom(deltaTime, Iterations);
+	switch(CustomMovementMode)
+	{
+	case CUSTOM_WallRun:
+		PhysWallRun(deltaTime, Iterations);
+		break;
+	case CUSTOM_DASH:
+		break;
+	case CUSTOM_None:
+		break;
+	default:
+		break;
+	}
 }
 
 void USR_CharacterMovementComponent::UpdateWallRunDirection(FHitResult& Hit)
 {
-	FQuat Rotation = FQuat::FindBetweenNormals(WallNormal, Hit.Normal);
-	WallNormal = Hit.Normal;
-	WallRunDirection = Rotation.RotateVector(WallRunDirection);
+	FQuat Rotation = FQuat::FindBetweenNormals(m_WallNormal, Hit.Normal);
+	m_WallNormal = Hit.Normal;
+	m_WallRunDirection = Rotation.RotateVector(m_WallRunDirection);
 }
 
 bool USR_CharacterMovementComponent::DetectNextWall(FHitResult& Hit)
 {
 	UCapsuleComponent* Capsule = GetCharacterOwner()->GetCapsuleComponent();
 	FName CollisionProfile = Capsule->GetCollisionProfileName();
-	
 	FVector Start = GetCharacterOwner()->GetActorLocation();
-	FVector End = Start - WallNormal * Capsule->GetScaledCapsuleRadius();
+	FVector End = Start - m_WallNormal * Capsule->GetScaledCapsuleRadius();
 	FCollisionQueryParams Params = FCollisionQueryParams::DefaultQueryParam;
 	Params.AddIgnoredActor(GetCharacterOwner());
-	
 	GetWorld()->SweepSingleByProfile(Hit, Start, End, Capsule->GetComponentQuat(), CollisionProfile, Capsule->GetCollisionShape(), Params);
-
 	return Hit.bBlockingHit;
 }

@@ -85,7 +85,7 @@ void ASR_Character::SetupPlayerInputComponent(UInputComponent* PlayerInputCompon
 	{
 		// Jumping
 		EnhancedInputComponent->BindAction(JumpAction, ETriggerEvent::Started, this, &ASR_Character::Jump);
-		EnhancedInputComponent->BindAction(JumpAction, ETriggerEvent::Started, this, &ASR_Character::TryWallJump);
+		EnhancedInputComponent->BindAction(JumpAction, ETriggerEvent::Started, this, &ASR_Character::StopWallJump);
 		EnhancedInputComponent->BindAction(JumpAction, ETriggerEvent::Completed, this, &ASR_Character::StopJumping);
 
 		// Moving
@@ -131,10 +131,10 @@ void ASR_Character::Move(const FInputActionValue& Value)
 	}
 }
 
-void ASR_Character::TryWallJump()
+void ASR_Character::StopWallJump()    
 {
 	if(bIsHanging) return;
-	Cast<USR_CharacterMovementComponent>(GetCharacterMovement())->WallJump();
+	Cast<USR_CharacterMovementComponent>(GetCharacterMovement())->StopWallJump();
 }
 
 void ASR_Character::Look(const FInputActionValue& Value)
@@ -150,6 +150,11 @@ void ASR_Character::Look(const FInputActionValue& Value)
 	}
 }
 
+
+void ASR_Character::SetCharacterMovementCustomMode(USR_CharacterMovementComponent::CustomMode NewCustomMode)
+{
+	GetCharacterMovement()->SetMovementMode(MOVE_Custom, NewCustomMode);
+}
 
 void ASR_Character::CheckForLedgeGrab()
 {
