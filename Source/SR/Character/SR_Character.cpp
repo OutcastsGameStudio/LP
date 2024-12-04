@@ -11,13 +11,17 @@
 #include "EnhancedInputComponent.h"
 #include "EnhancedInputSubsystems.h"
 #include "InputActionValue.h"
-#include "Acceleration/SR_AccelerationComponent.h"
+#include "Components/Acceleration/SR_AccelerationComponent.h"
+#include "Components/Dash/SR_DashComponent.h"
 
 DEFINE_LOG_CATEGORY(LogTemplateCharacter);
 
 
 ASR_Character::ASR_Character()
 {
+	// Set this character to call Tick() every frame
+	PrimaryActorTick.bCanEverTick = true;
+	
 	// Set size for collision capsule
 	GetCapsuleComponent()->InitCapsuleSize(42.f, 96.0f);
 		
@@ -48,6 +52,9 @@ ASR_Character::ASR_Character()
 	// Set the acceleration component to the character
 	AccelerationComponent = CreateDefaultSubobject<USR_AccelerationComponent>(TEXT("AccelerationComponent"));
 
+	// Set the dash component to the character
+	DashComponent = CreateDefaultSubobject<USR_DashComponent>(TEXT("DashComponent"));
+
 	// Note: The skeletal mesh and anim blueprint references on the Mesh component (inherited from Character) 
 	// are set in the derived blueprint asset named ThirdPersonCharacter (to avoid direct content references in C++)
 }
@@ -58,6 +65,8 @@ void ASR_Character::Tick(float DeltaTime)
 
 	CheckForLedgeGrab();
 	ClimbUp();
+
+	
 }
 
 void ASR_Character::BeginPlay()
@@ -93,6 +102,9 @@ void ASR_Character::SetupPlayerInputComponent(UInputComponent* PlayerInputCompon
 
 		// Looking
 		EnhancedInputComponent->BindAction(LookAction, ETriggerEvent::Triggered, this, &ASR_Character::Look);
+
+		// Dashing
+		EnhancedInputComponent->BindAction(DashAction, ETriggerEvent::Triggered, this, &ASR_Character::Dash);
 	}
 	else
 	{
@@ -224,4 +236,20 @@ void ASR_Character::ClimbUp()
 		bIsHanging = false;
 		GetCharacterMovement()->SetMovementMode(MOVE_Walking);
 	}
+}
+void ASR_Character::Dash(const FInputActionValue& Value)
+{
+		FVector CharacterForward = GetActorForwardVector();
+		FVector CharacterRight = GetActorRightVector();
+
+		//if the character is not moving then dash in the direction of the character forward vector
+		if (Value.Get<FVector2D>().Size() == 0)
+		{
+			DashComponent->DashDirection = CharacterForward;
+		}
+		else
+		{
+			DashComponent->DashDirection = CharacterForward * Value.Get<FVector2D>().X + CharacterRight * Value.Get<FVector2D>().Y;
+		}		
+		DashComponent->Dash();	
 }

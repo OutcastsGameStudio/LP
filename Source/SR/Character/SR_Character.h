@@ -41,6 +41,10 @@ class SR_API ASR_Character : public ACharacter
 	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = Input, meta = (AllowPrivateAccess = "true"))
 	UInputAction* LookAction;
 
+	/** Dash Input Action */
+	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = Input, meta = (AllowPrivateAccess = "true"))
+	UInputAction* DashAction;
+
 public:
 	ASR_Character();
 	void Tick(float DeltaTime);
@@ -79,9 +83,16 @@ protected:
 	UFUNCTION()
 	void StopWallJump();
 
+	//function to dash
+	void Dash(const FInputActionValue& Value);
+
 	// assign a acceleration component to the character
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Acceleration")
 	class USR_AccelerationComponent* AccelerationComponent;
+
+	//assign a dash component to the character
+	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Dash")
+	class USR_DashComponent* DashComponent;
 	
 	// APawn interface
 	virtual void SetupPlayerInputComponent(class UInputComponent* PlayerInputComponent) override;
@@ -92,4 +103,5 @@ protected:
 public:
 	/** Returns FollowCamera subobject **/
 	FORCEINLINE class UCameraComponent* GetFollowCamera() const { return FollowCamera; }
+	
 };
