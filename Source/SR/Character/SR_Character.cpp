@@ -12,6 +12,7 @@
 #include "EnhancedInputSubsystems.h"
 #include "InputActionValue.h"
 #include "Components/Acceleration/SR_AccelerationComponent.h"
+#include "Components/Slide/SR_SlideComponent.h"
 
 DEFINE_LOG_CATEGORY(LogTemplateCharacter);
 
@@ -47,6 +48,7 @@ ASR_Character::ASR_Character()
 
 	// Set the acceleration component to the character
 	AccelerationComponent = CreateDefaultSubobject<USR_AccelerationComponent>(TEXT("AccelerationComponent"));
+	SlideComponent = CreateDefaultSubobject<USR_SlideComponent>(TEXT("SlideComponent"));
 
 	// Note: The skeletal mesh and anim blueprint references on the Mesh component (inherited from Character) 
 	// are set in the derived blueprint asset named ThirdPersonCharacter (to avoid direct content references in C++)
@@ -85,6 +87,10 @@ void ASR_Character::SetupPlayerInputComponent(UInputComponent* PlayerInputCompon
 
 		// Looking
 		EnhancedInputComponent->BindAction(LookAction, ETriggerEvent::Triggered, this, &ASR_Character::Look);
+
+		// Slide
+		EnhancedInputComponent->BindAction(SlideAction, ETriggerEvent::Started, this, &ASR_Character::Slide);
+		EnhancedInputComponent->BindAction(SlideAction, ETriggerEvent::Completed, this, &ASR_Character::StopSlide);
 	}
 	else
 	{
@@ -138,5 +144,26 @@ void ASR_Character::Look(const FInputActionValue& Value)
 		// add yaw and pitch input to controller
 		AddControllerYawInput(LookAxisVector.X);
 		AddControllerPitchInput(LookAxisVector.Y);
+	}
+}
+
+void ASR_Character::Slide()
+{
+	SlideComponent->CapsuleComponent = GetCapsuleComponent();
+	SlideComponent->fInitialCapsuleHalfHeight = GetCapsuleComponent()->GetScaledCapsuleHalfHeight();
+	SlideComponent->MeshComponent = GetMesh();
+	SlideComponent->CharacterMovement = GetCharacterMovement();
+	SlideComponent->StartSlide();
+}
+
+void ASR_Character::StopSlide()
+{
+	if (SlideComponent->bIsSliding == true)
+	{
+		SlideComponent->bIsSliding = false;
+		SlideComponent->StopSlide();
+	} else if (GetCharacterMovement()->IsCrouching())
+	{
+		UnCrouch();
 	}
 }
