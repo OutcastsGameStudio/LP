@@ -40,7 +40,11 @@ public:
 	UCharacterMovementComponent* CharacterMovement;
 
 	float fInitialCapsuleHalfHeight;
+
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Movement", meta = (ExposeOnSpawn="true"))
 	bool bIsSliding = false;
+
+	
 	float fCapsuleHalfHeightSliding = 40.0f;
 	float fBrakingDecelerationWalking;
 	float fMeshLocationZ;
