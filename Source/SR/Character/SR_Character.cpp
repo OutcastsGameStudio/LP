@@ -13,6 +13,7 @@
 #include "InputActionValue.h"
 #include "Components/Acceleration/SR_AccelerationComponent.h"
 #include "Components/Dash/SR_DashComponent.h"
+#include "Components/Slide/SR_SlideComponent.h"
 
 DEFINE_LOG_CATEGORY(LogTemplateCharacter);
 
@@ -51,6 +52,8 @@ ASR_Character::ASR_Character()
 
 	// Set the acceleration component to the character
 	AccelerationComponent = CreateDefaultSubobject<USR_AccelerationComponent>(TEXT("AccelerationComponent"));
+
+	SlideComponent = CreateDefaultSubobject<USR_SlideComponent>(TEXT("SlideComponent"));
 
 	// Set the dash component to the character
 	DashComponent = CreateDefaultSubobject<USR_DashComponent>(TEXT("DashComponent"));
@@ -105,6 +108,10 @@ void ASR_Character::SetupPlayerInputComponent(UInputComponent* PlayerInputCompon
 
 		// Dashing
 		EnhancedInputComponent->BindAction(DashAction, ETriggerEvent::Triggered, this, &ASR_Character::Dash);
+
+		// Slide
+		EnhancedInputComponent->BindAction(SlideAction, ETriggerEvent::Started, this, &ASR_Character::Slide);
+		EnhancedInputComponent->BindAction(SlideAction, ETriggerEvent::Completed, this, &ASR_Character::StopSlide);
 	}
 	else
 	{
@@ -252,4 +259,25 @@ void ASR_Character::Dash(const FInputActionValue& Value)
 			DashComponent->DashDirection = CharacterForward * Value.Get<FVector2D>().X + CharacterRight * Value.Get<FVector2D>().Y;
 		}		
 		DashComponent->Dash();	
+}
+
+void ASR_Character::Slide()
+{
+	SlideComponent->CapsuleComponent = GetCapsuleComponent();
+	SlideComponent->fInitialCapsuleHalfHeight = GetCapsuleComponent()->GetScaledCapsuleHalfHeight();
+	SlideComponent->MeshComponent = GetMesh();
+	SlideComponent->CharacterMovement = GetCharacterMovement();
+	SlideComponent->StartSlide();
+}
+
+void ASR_Character::StopSlide()
+{
+	if (SlideComponent->bIsSliding == true)
+	{
+		SlideComponent->bIsSliding = false;
+		SlideComponent->StopSlide();
+	} else if (GetCharacterMovement()->IsCrouching())
+	{
+		UnCrouch();
+	}
 }
