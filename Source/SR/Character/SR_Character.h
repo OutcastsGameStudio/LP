@@ -96,7 +96,7 @@ protected:
 	//function to dash
 	void Dash(const FInputActionValue& Value);
 
-	// assign a acceleration component to the character
+	// assign acceleration component to the character
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Acceleration")
 	class USR_AccelerationComponent* AccelerationComponent;
 

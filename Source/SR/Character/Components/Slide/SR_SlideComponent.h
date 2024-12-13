@@ -18,49 +18,75 @@ public:
 	// Sets default values for this component's properties
 	USR_SlideComponent();
 
-	UFUNCTION(BlueprintCallable, Category = "Movement")
+	/**
+	 * @description : Call when player slide input is pressed
+	 * @name : StartSlide
+	 * @param 
+	 */
 	void StartSlide();
 
+	/**
+	 * @description : Call when player slide input is release
+	 * @name : StopSlide
+	 * @param 
+	 */
 	void StopSlide();
 
-	UFUNCTION()
-	void ProcessSlide(float DeltaTime);
-
-protected:
-	// Called when the game starts
-	virtual void BeginPlay() override;
-
-public:
 	// Called every frame
 	virtual void TickComponent(float DeltaTime, ELevelTick TickType,
 							   FActorComponentTickFunction* ThisTickFunction) override;
+
+	bool bIsSliding = false;
 
 	UCapsuleComponent* CapsuleComponent;
 	UMeshComponent* MeshComponent;
 	UCharacterMovementComponent* CharacterMovement;
 
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Slide Movement")
+	float fCapsuleHalfHeightSliding = 40.0f;
+
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Slide Movement")
+	float fMeshLocationZ;
+	
 	float fInitialCapsuleHalfHeight;
 
-	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Movement", meta = (ExposeOnSpawn="true"))
-	bool bIsSliding = false;
-
-
-	float fCapsuleHalfHeightSliding = 40.0f;
-	float fBrakingDecelerationWalking;
-	float fMeshLocationZ;
-
 protected:
-	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Movement")
-	float SlideDistance = 1000.0f;
+	// Called when the game starts
+	virtual void BeginPlay() override;
 
-	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Movement")
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Slide Movement")
+	float SlideDistance = 800.0f;
+
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Slide Movement")
 	float SlideDuration = 0.5f;
 
-	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Movement")
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Slide Movement")
 	float SlideSpeed = 1800.0f;
 
+private:
 	FVector SlideStartLocation;
 	FVector SlideDirection;
 	float CurrentSlideDistance = 0.0f;
+
+	bool CanInitiateSlide() const;
+	void InitializeSlideState();
+	void UpdateSlideDirection();
+	bool PerformGroundCheck(FHitResult& OutHitResult) const;
+	void AdjustCharacterCollision();
+	void HandleCrouchFallback();
+
+	/**
+	 * @description : Set the differents param of the slide movement
+	 * @name : ProcessSlide
+	 * @param DeltaTime
+	 */
+	void ProcessSlide(float DeltaTime);
+	
+	float CalculateCurrentSlideSpeed() const;
+	float CalculateSpeedMultiplierFromSlope(const FHitResult& GroundHit) const;
+	bool UpdateSlidePosition(float DeltaTime);
+	bool CheckCollisionAtNewPosition(const FVector& NewLocation) const;
+	void UpdateSlideDistance(float FrameDistance);
+	bool ShouldStopSlide() const;
 
 };

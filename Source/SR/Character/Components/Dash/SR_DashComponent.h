@@ -17,7 +17,11 @@ public:
 	// Constructor
 	USR_DashComponent();
 
-	// Dash Function
+	/**
+	 * @description : Call when player dash input is triggered
+	 * @name : Dash
+	 * @param 
+	 */
 	UFUNCTION(BlueprintCallable, Category = "Movement")
 	void Dash();
 
@@ -54,8 +58,6 @@ protected:
 
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Dash Settings")
 	float DashCooldown = 1.0f;
-
-	
 
 private:
 	// Dash update
