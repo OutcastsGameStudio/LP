@@ -78,7 +78,7 @@ void USR_DashComponent::UpdateDash(float DeltaTime)
     // Increment the dash time
     CurrentDashTime += DeltaTime;
 
-    // Calculate the alpha value
+    // Calculate the alpha value 
     float Alpha = FMath::Clamp(CurrentDashTime / DashDuration, 0.0f, 1.0f);
 
     

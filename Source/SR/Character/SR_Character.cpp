@@ -264,7 +264,6 @@ void ASR_Character::Dash(const FInputActionValue& Value)
 void ASR_Character::Slide()
 {
 	SlideComponent->CapsuleComponent = GetCapsuleComponent();
-	SlideComponent->fInitialCapsuleHalfHeight = GetCapsuleComponent()->GetScaledCapsuleHalfHeight();
 	SlideComponent->MeshComponent = GetMesh();
 	SlideComponent->CharacterMovement = GetCharacterMovement();
 	SlideComponent->StartSlide();
@@ -276,8 +275,5 @@ void ASR_Character::StopSlide()
 	{
 		SlideComponent->bIsSliding = false;
 		SlideComponent->StopSlide();
-	} else if (GetCharacterMovement()->IsCrouching())
-	{
-		UnCrouch();
 	}
 }
