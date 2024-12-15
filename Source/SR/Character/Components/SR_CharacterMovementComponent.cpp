@@ -63,12 +63,10 @@ void USR_CharacterMovementComponent::PhysWallRun(float deltaTime, int32 Iteratio
 		if (Hit.Normal.Z > 0.5f)
 		{
 			SetMovementMode(MOVE_Walking, 0);
-			GEngine->AddOnScreenDebugMessage(-1, 5.f, FColor::Red, TEXT("End wall run detected !"));
 		}
 	}
 	else if (!DetectNextWall(Hit))
 	{
-		GEngine->AddOnScreenDebugMessage(-1, 5.f, FColor::Red, TEXT("Next wall detected !"));
 		SetMovementMode(MOVE_Falling);
 		SafeMoveUpdatedComponent(Delta, UpdatedComponent->GetComponentRotation(), true, Hit);
 	}
@@ -80,8 +78,7 @@ void USR_CharacterMovementComponent::PhysWallRun(float deltaTime, int32 Iteratio
 
 void USR_CharacterMovementComponent::StopWallJump()
 {
-	if (MovementMode != MOVE_Custom) return
-	GEngine->AddOnScreenDebugMessage(-1, 5.f, FColor::Red, TEXT("Wall jump"));
+	if (MovementMode != MOVE_Custom) return;
 	Velocity = (m_WallRunDirection + m_WallNormal + FVector::UpVector).GetSafeNormal() * WallJumpSpeed;
 	SetMovementMode(MOVE_Falling);
 }
