@@ -48,7 +48,7 @@ public:
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Slide Movement")
 	float fMeshLocationZ;
 	
-	float fInitialCapsuleHalfHeight;
+	float fInitialCapsuleHalfHeight = 96.0f;
 
 protected:
 	// Called when the game starts
