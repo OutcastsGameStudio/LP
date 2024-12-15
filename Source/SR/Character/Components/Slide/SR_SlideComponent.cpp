@@ -196,7 +196,6 @@ bool USR_SlideComponent::CheckCollisionAtNewPosition(const FVector& NewLocation)
     );
 }
 
-
 void USR_SlideComponent::StopSlide()
 {
 	bIsSliding = false;

@@ -41,7 +41,7 @@ void USR_CharacterMovementComponent::OnHit(UPrimitiveComponent* HitComponent, AA
 		auto CharacterForwardVector = GetCharacterOwner()->GetActorForwardVector();
 		auto DotProduct = FVector::DotProduct(CharacterForwardVector, -Hit.Normal);
 		auto angle = FMath::RadiansToDegrees(FMath::Acos(DotProduct));
-		if(angle > MaxAngleWallRun) return;
+		if(angle > MaxAngleWallRun || angle <= 15 ) return;
 		SetMovementMode(MOVE_Custom, CUSTOM_WallRun);
 		m_WallNormal = Hit.Normal;
 		FVector WallDirection = FVector::CrossProduct(FVector::UpVector, Hit.Normal);
@@ -63,25 +63,22 @@ void USR_CharacterMovementComponent::PhysWallRun(float deltaTime, int32 Iteratio
 		if (Hit.Normal.Z > 0.5f)
 		{
 			SetMovementMode(MOVE_Walking, 0);
-			GEngine->AddOnScreenDebugMessage(-1, 5.f, FColor::Red, TEXT("End wall run detected !"));
 		}
 	}
 	else if (!DetectNextWall(Hit))
 	{
-		GEngine->AddOnScreenDebugMessage(-1, 5.f, FColor::Red, TEXT("Next wall detected !"));
 		SetMovementMode(MOVE_Falling);
 		SafeMoveUpdatedComponent(Delta, UpdatedComponent->GetComponentRotation(), true, Hit);
 	}
 	auto CharacterForwardVector = GetCharacterOwner()->GetActorForwardVector();
 	auto DotProduct = FVector::DotProduct(CharacterForwardVector, -Hit.Normal);
 	auto angle = FMath::RadiansToDegrees(FMath::Acos(DotProduct));
-	if(angle > MaxAngleWallRun) SetMovementMode(MOVE_Falling);
+	if(angle > MaxAngleBeforeStop) SetMovementMode(MOVE_Falling);
 }
 
 void USR_CharacterMovementComponent::StopWallJump()
 {
-	if (MovementMode != MOVE_Custom) return
-	GEngine->AddOnScreenDebugMessage(-1, 5.f, FColor::Red, TEXT("Wall jump"));
+	if (MovementMode != MOVE_Custom) return;
 	Velocity = (m_WallRunDirection + m_WallNormal + FVector::UpVector).GetSafeNormal() * WallJumpSpeed;
 	SetMovementMode(MOVE_Falling);
 }
