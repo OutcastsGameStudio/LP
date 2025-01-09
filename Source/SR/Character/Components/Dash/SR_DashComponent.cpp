@@ -63,6 +63,8 @@ void USR_DashComponent::Dash()
     // Reset the dash time
     CurrentDashTime = 0.0f;
 
+    CurveValue = 0.0f;
+    
     // Desactivate gravity
     CharacterMovement->GravityScale = 0.0f;
     CharacterMovement->BrakingDecelerationFalling = 0.0f;
@@ -78,9 +80,11 @@ void USR_DashComponent::UpdateDash(float DeltaTime)
     // Increment the dash time
     CurrentDashTime += DeltaTime;
 
-    // Calculate the alpha value 
-    float Alpha = FMath::Clamp(CurrentDashTime / DashDuration, 0.0f, 1.0f);
+    // Calculate the time progress (between 0 and 1)
+    float TimeProgress = FMath::Clamp(CurrentDashTime / DashDuration, 0.0f, 1.0f);
 
+    // Get the Y value from the curve based on time progress
+    CurveValue = DashCurve ? DashCurve->GetFloatValue(TimeProgress) : TimeProgress;
     
     /**
     *   Calculate the new location
@@ -99,13 +103,13 @@ void USR_DashComponent::UpdateDash(float DeltaTime)
     *   at 50% of the time (alpha = 0.50) : 1.0f - FMath::Pow(1.0f - 0.50, 3) = 0.875
     *   at 75% of the time (alpha = 0.75) : 1.0f - FMath::Pow(1.0f - 0.25, 3) = 0.984375
     */
-    FVector NewLocation = DashStartLocation + (DashDirection * DashDistance * (1.0f - FMath::Pow(1.0f - Alpha, 3)));
+    FVector NewLocation = DashStartLocation + (DashDirection * DashDistance * CurveValue);
     
     // Move the character
     OwnerCharacter->SetActorLocation(NewLocation, true);
 
     // check if the dash is finished
-    if (Alpha >= 1.0f)
+    if (CurveValue >= 1.0f)
     {
         EndDash();
     }
