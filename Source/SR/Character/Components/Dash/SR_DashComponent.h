@@ -37,9 +37,7 @@ public:
 	// Dash Direction
 	FVector DashDirection;
 	
-	//set dash curve float value
-	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Dash Settings")
-	float CurveValue = 0.0f;
+	
 
 protected:
 	// Component of the character movement
@@ -66,6 +64,10 @@ protected:
 	// UCurveFloat to get the y value of the curve
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Dash Settings")
 	UCurveFloat* DashCurve;
+
+	//set dash curve float value
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Dash Settings")
+	float CurveValue = 0.0f;
 
 private:
 	// Dash update
