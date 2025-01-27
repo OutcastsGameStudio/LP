@@ -123,6 +123,8 @@ void USR_DashComponent::EndDash()
     CharacterMovement->GravityScale = 1.0f;
     CharacterMovement->BrakingDecelerationFalling = 960.0f; // Valeur par défaut
 
+    CharacterMovement->SetMovementMode(MOVE_Walking);
+    
     // Reset the flags
     bIsDashing = false;
 
