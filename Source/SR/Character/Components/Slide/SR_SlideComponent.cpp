@@ -199,6 +199,34 @@ bool USR_SlideComponent::CheckCollisionAtNewPosition(const FVector& NewLocation)
 void USR_SlideComponent::StopSlide()
 {
 	bIsSliding = false;
-	CapsuleComponent->SetCapsuleHalfHeight(fInitialCapsuleHalfHeight);
-	MeshComponent->SetRelativeLocation(FVector(0.0f, 0.0f, -90));
+
+	// Check if there's enough space above the player to stand up
+	FVector Start = GetOwner()->GetActorLocation();
+	FVector End = Start + FVector(0.0f, 0.0f, fInitialCapsuleHalfHeight * 2.0f);
+    
+	FCollisionQueryParams QueryParams;
+	QueryParams.AddIgnoredActor(GetOwner());
+    
+	FHitResult HitResult;
+	bool bHitObstacle = GetWorld()->LineTraceSingleByChannel(
+		HitResult,
+		Start,
+		End,
+		ECC_Visibility,
+		QueryParams
+	);
+
+	if (bHitObstacle)
+	{
+		// If there's an obstacle, keep the player crouched
+		CapsuleComponent->SetCapsuleHalfHeight(fCapsuleHalfHeightSliding);
+		MeshComponent->SetRelativeLocation(FVector(0.0f, 0.0f, -45.0f));
+        
+		// Force the character to stay in crouch state
+		if (CharacterMovement)
+		{
+			CharacterMovement->bWantsToCrouch = true;
+			CharacterMovement->Crouch();
+		}
+	}
 }

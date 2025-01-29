@@ -62,7 +62,6 @@ public:
 	}
 private:
 	CustomMode m_CustomMovementMode;
-private:
     UFUNCTION()
     void OnHit(UPrimitiveComponent* HitComponent, AActor* OtherActor, UPrimitiveComponent* OtherComp, FVector NormalImpulse, const FHitResult& Hit);
     virtual void PhysCustom(float deltaTime, int32 Iterations) override;
