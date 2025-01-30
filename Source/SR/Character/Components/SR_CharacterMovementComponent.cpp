@@ -3,19 +3,14 @@
 
 #include "SR_CharacterMovementComponent.h"
 
-#include "CollisionDebugDrawingPublic.h"
-#include "KismetTraceUtils.h"
 #include "Components/CapsuleComponent.h"
 #include "GameFramework/Character.h"
-#include "Logging/StructuredLog.h" 
 
 
 // Sets default values for this component's properties
 USR_CharacterMovementComponent::USR_CharacterMovementComponent()
 {
 	PrimaryComponentTick.bCanEverTick = true;
-
-	// ...
 }
 
 
@@ -32,6 +27,24 @@ void USR_CharacterMovementComponent::BeginPlay()
 void USR_CharacterMovementComponent::TickComponent(float DeltaTime, ELevelTick TickType, FActorComponentTickFunction* ThisTickFunction)
 {
 	Super::TickComponent(DeltaTime, TickType, ThisTickFunction);
+	FCollisionQueryParams Params = FCollisionQueryParams::DefaultQueryParam;
+	FHitResult Hit(1.f);
+	GetWorld()->LineTraceSingleByChannel(Hit, GetCharacterOwner()->GetActorLocation(), GetCharacterOwner()->GetActorForwardVector(), ECollisionChannel::ECC_Visibility, Params);
+	FVector ForwardVector = GetCharacterOwner()->GetActorForwardVector();
+
+	FRotator Rotator1(0.f, -45.f, 0.f);
+	FRotator Rotator2(0.f, 45.f, 0.f);
+
+	FQuat Quat1(Rotator1);
+	FQuat Quat2(Rotator2);
+
+	FVector LeftVector = Quat1.RotateVector(ForwardVector);
+	FVector RightVector = Quat2.RotateVector(ForwardVector);
+	// DrawDebugLine(GetWorld(), GetCharacterOwner()->GetActorLocation(), GetCharacterOwner()->GetActorLocation() + GetCharacterOwner()->GetActorForwardVector() * 1000, FColor::Red, false, 0.1f, 0, 1.f);
+
+	DrawDebugLine(GetWorld(), GetCharacterOwner()->GetActorLocation(), RightVector * 1000, FColor::Red, false, 0.1f, 0, 1.f);
+	// DrawDebugLine(GetWorld(), GetCharacterOwner()->GetActorLocation(), LeftVector, FColor::Red, false, 0.1f, 0, 1.f);
+
 }
 
 void USR_CharacterMovementComponent::OnHit(UPrimitiveComponent* HitComponent, AActor* OtherActor, UPrimitiveComponent* OtherComp, FVector NormalImpulse, const FHitResult& Hit)
@@ -51,8 +64,15 @@ void USR_CharacterMovementComponent::OnHit(UPrimitiveComponent* HitComponent, AA
 
 void USR_CharacterMovementComponent::PhysWallRun(float deltaTime, int32 Iterations)
 {
-	LastUpdateVelocity = Velocity;
+	WallRunFallingSpeed += WallRunFallingAcceleration * deltaTime;
 	Velocity = m_WallRunDirection * MaxWalkSpeed;
+
+	Velocity.Z = Velocity.Z - WallRunFallingSpeed;
+	if(GEngine)
+	{
+		GEngine->AddOnScreenDebugMessage(-1, 0.1f, FColor::Red, FString::Printf(TEXT("Velocity : %s"), *Velocity.ToString()));
+	}
+
 
 	FVector Delta = Velocity * deltaTime;
 	FHitResult Hit(1.f);
@@ -101,13 +121,6 @@ void USR_CharacterMovementComponent::PhysCustom(float deltaTime, int32 Iteration
 	}
 }
 
-void USR_CharacterMovementComponent::UpdateWallRunDirection(FHitResult& Hit)
-{
-	FQuat Rotation = FQuat::FindBetweenNormals(m_WallNormal, Hit.Normal);
-	m_WallNormal = Hit.Normal;
-	m_WallRunDirection = Rotation.RotateVector(m_WallRunDirection);
-}
-
 bool USR_CharacterMovementComponent::DetectNextWall(FHitResult& Hit)
 {
 	UCapsuleComponent* Capsule = GetCharacterOwner()->GetCapsuleComponent();
@@ -117,5 +130,8 @@ bool USR_CharacterMovementComponent::DetectNextWall(FHitResult& Hit)
 	FCollisionQueryParams Params = FCollisionQueryParams::DefaultQueryParam;
 	Params.AddIgnoredActor(GetCharacterOwner());
 	GetWorld()->SweepSingleByProfile(Hit, Start, End, Capsule->GetComponentQuat(), CollisionProfile, Capsule->GetCollisionShape(), Params);
+	FVector Test = Start - m_WallNormal * Capsule->GetScaledCapsuleRadius();
+	Test = Capsule->GetComponentQuat().RotateVector(Test);
+	DrawDebugLine(GetWorld(), Start, Test, FColor::Green, false, 0.1f, 0, 1.f);
 	return Hit.bBlockingHit;
 }

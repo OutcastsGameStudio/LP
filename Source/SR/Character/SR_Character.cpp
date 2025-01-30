@@ -192,35 +192,35 @@ void ASR_Character::CheckForLedgeGrab()
 	   Start + Forward * LedgeGrabReachDistance,
 	   ECC_Visibility, 
 	   QueryParams);
-
-	if(bHitWall)
-	{
-		FVector EdgeCheckStart = WallHit.ImpactPoint 
-			+ FVector(0, 0, LedgeGrabHeight);
-
-		FVector EdgeCheckEnd = EdgeCheckStart 
-		   + Forward * 60.0f  // Distance vers l'avant
-		   - FVector(0, 0, 100.0f);
-
-		
-		FHitResult EdgeHit;
-		bool bFoundEdge = GetWorld()->LineTraceSingleByChannel(EdgeHit,
-			EdgeCheckStart,
-			EdgeCheckEnd,
-			ECC_Visibility,
-			QueryParams);
-
-		if (!bFoundEdge)
-		{
-			LedgeLocation = WallHit.ImpactPoint 
-				- Forward * 30.0f 
-				+ FVector(0, 0, GetCapsuleComponent()->GetScaledCapsuleHalfHeight());
-            
-			bIsHanging = true;
-			GetCharacterMovement()->SetMovementMode(MOVE_Flying);
-			GetCharacterMovement()->StopMovementImmediately();
-		}
-	}
+	//
+	// if(bHitWall)
+	// {
+	// 	FVector EdgeCheckStart = WallHit.ImpactPoint 
+	// 		+ FVector(0, 0, LedgeGrabHeight);
+	//
+	// 	FVector EdgeCheckEnd = EdgeCheckStart 
+	// 	   + Forward * 60.0f  // Distance vers l'avant
+	// 	   - FVector(0, 0, 100.0f);
+	//
+	// 	
+	// 	FHitResult EdgeHit;
+	// 	bool bFoundEdge = GetWorld()->LineTraceSingleByChannel(EdgeHit,
+	// 		EdgeCheckStart,
+	// 		EdgeCheckEnd,
+	// 		ECC_Visibility,
+	// 		QueryParams);
+	//
+	// 	if (!bFoundEdge)
+	// 	{
+	// 		LedgeLocation = WallHit.ImpactPoint 
+	// 			- Forward * 30.0f 
+	// 			+ FVector(0, 0, GetCapsuleComponent()->GetScaledCapsuleHalfHeight());
+ //            
+	// 		bIsHanging = true;
+	// 		GetCharacterMovement()->SetMovementMode(MOVE_Flying);
+	// 		GetCharacterMovement()->StopMovementImmediately();
+	// 	}
+	// }
 }
 
 void ASR_Character::ClimbUp()
