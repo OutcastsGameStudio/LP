@@ -18,20 +18,20 @@ protected:
 
 public:
 	virtual void TickComponent(float DeltaTime, ELevelTick TickType,
-							 FActorComponentTickFunction* ThisTickFunction) override;
+		   FActorComponentTickFunction* ThisTickFunction) override;
 
-	// Propriétés exposées à l'éditeur
+	// Properties exposed to the editor
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Energy System")
 	int32 MaxEnergySlots = 5;
 
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Energy System")
 	float DetectionRadius = 200.0f;
 
-	// Variables pour le système d'énergie
+	// Variables for the energy system
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Energy System")
 	int32 CurrentEnergySlots = 0;
 
-	// Fonctions pour la gestion de l'énergie
+	// Functions for energy management
 	UFUNCTION(BlueprintCallable, Category = "Energy System")
 	bool UseEnergySlot();
 
@@ -39,15 +39,27 @@ public:
 	void AddEnergySlot();
 
 	UFUNCTION(BlueprintCallable, Category = "Energy System")
-	float GetEnergyPercentage() const;
+	int32 GetEnergySlotRemaining() const;
 
-	// Fonction pour détecter les objets interactifs
+	// Function to check if energy is empty
+	UFUNCTION(BlueprintCallable, Category = "Energy System")
+	bool IsEnergyEmpty() const;
+
+	// Function to check if energy is full
+	UFUNCTION(BlueprintCallable, Category = "Energy System")
+	bool IsEnergyFull() const;
+
+	// Function to detect interactive objects
 	void DetectInteractableObjects();
 
+	// Function to check if an object is interactive
+	UFUNCTION(BlueprintCallable, Category = "Energy System")
+	bool IsInteractable(AActor* OtherActor) const;
+
 private:
-	// Référence au propriétaire du composant
+	// Reference to the component owner
 	AActor* OwningActor;
 
-	// Fonction pour vérifier si un objet est dans le rayon de détection
+	// Function to check if an object is within the detection radius
 	bool IsInRange(AActor* OtherActor) const;
 };

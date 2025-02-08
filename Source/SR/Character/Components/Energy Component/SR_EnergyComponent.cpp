@@ -20,7 +20,7 @@ void USR_EnergyComponent::TickComponent(float DeltaTime, ELevelTick TickType, FA
 {
     Super::TickComponent(DeltaTime, TickType, ThisTickFunction);
 
-    // Détecter les objets interactifs à chaque frame
+    // Detect interactive objects every frame
     DetectInteractableObjects();
 }
 
@@ -42,9 +42,19 @@ void USR_EnergyComponent::AddEnergySlot()
     }
 }
 
-float USR_EnergyComponent::GetEnergyPercentage() const
+int32 USR_EnergyComponent::GetEnergySlotRemaining() const
 {
-    return static_cast<float>(CurrentEnergySlots) / static_cast<float>(MaxEnergySlots);
+    return MaxEnergySlots - CurrentEnergySlots;
+}
+
+bool USR_EnergyComponent::IsEnergyEmpty() const
+{
+    return CurrentEnergySlots == 0;
+}
+
+bool USR_EnergyComponent::IsEnergyFull() const
+{
+    return CurrentEnergySlots == MaxEnergySlots;
 }
 
 void USR_EnergyComponent::DetectInteractableObjects()
@@ -52,14 +62,14 @@ void USR_EnergyComponent::DetectInteractableObjects()
     if (!OwningActor || !OwningActor->GetWorld())
         return;
 
-    // Paramètres pour la sphere trace
+    // Parameters for the sphere trace
     FVector Start = OwningActor->GetActorLocation();
     TArray<FHitResult> HitResults;
     FCollisionShape Sphere = FCollisionShape::MakeSphere(DetectionRadius);
     FCollisionQueryParams QueryParams;
     QueryParams.AddIgnoredActor(OwningActor);
 
-    // Effectuer la sphere trace
+    // Perform the sphere trace
     bool bHit = GetWorld()->SweepMultiByChannel(
         HitResults,
         Start,
@@ -70,33 +80,38 @@ void USR_EnergyComponent::DetectInteractableObjects()
         QueryParams
     );
 
-    // Debug dessin de la sphère de détection
+    // Debug draw of the detection sphere
     #if WITH_EDITOR
         DrawDebugSphere(GetWorld(), Start, DetectionRadius, 12, FColor::Green, false, -1.0f, 0, 1.0f);
     #endif
 
-    // Traiter les résultats
+    // Process the results
     if (bHit)
     {
         for (const FHitResult& Hit : HitResults)
         {
             if (AActor* HitActor = Hit.GetActor())
             {
-                // Vérifier si c'est un pickup d'énergie 
+                // Check if it's an energy pickup
                 if (HitActor->ActorHasTag(FName("EnergyPickup")))
                 {
                     AddEnergySlot();
-                    HitActor->Destroy(); // Détruire le pickup après l'avoir ramassé
+                    HitActor->Destroy(); // Destroy the pickup after collecting it
                 }
-                // Vérifier si c'est un objet interactable
+                // Check if it's an interactable object
                 else if (HitActor->ActorHasTag(FName("Interactable")))
                 {
-                    // L'objet est dans la portée et peut être activé
-                    // La logique d'interaction spécifique peut être implémentée ici ou via Blueprint
+                    // The object is within range and can be activated
+                    // Specific interaction logic can be implemented here or via Blueprint
                 }
             }
         }
     }
+}
+
+bool USR_EnergyComponent::IsInteractable(AActor* OtherActor) const
+{
+    return IsInRange(OtherActor);
 }
 
 bool USR_EnergyComponent::IsInRange(AActor* OtherActor) const
