@@ -13,7 +13,6 @@
 #include "InputActionValue.h"
 #include "Components/Acceleration/SR_AccelerationComponent.h"
 #include "Components/Dash/SR_DashComponent.h"
-#include "Components/Energy Component/SR_EnergyComponent.h"
 #include "Components/Slide/SR_SlideComponent.h"
 
 DEFINE_LOG_CATEGORY(LogTemplateCharacter);
@@ -58,9 +57,6 @@ ASR_Character::ASR_Character()
 
 	// Set the dash component to the character
 	DashComponent = CreateDefaultSubobject<USR_DashComponent>(TEXT("DashComponent"));
-
-	// set the energy component to the character
-	EnergyComponent = CreateDefaultSubobject<USR_EnergyComponent>(TEXT("EnergyComponent"));
 
 	// Note: The skeletal mesh and anim blueprint references on the Mesh component (inherited from Character) 
 	// are set in the derived blueprint asset named ThirdPersonCharacter (to avoid direct content references in C++)
