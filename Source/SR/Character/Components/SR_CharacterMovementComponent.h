@@ -66,6 +66,12 @@ public:
 	}
 private:
 	CustomMode m_CustomMovementMode;
+
+private:
+	bool CanWallRun();
+	//** Debug *//
+private:
+	void DebugLineTrace(FHitResult hitResult, bool hit, FColor color,FVector vectorStart, FVector vectorEnd);
 private:
     UFUNCTION()
     void OnHit(UPrimitiveComponent* HitComponent, AActor* OtherActor, UPrimitiveComponent* OtherComp, FVector NormalImpulse, const FHitResult& Hit);
