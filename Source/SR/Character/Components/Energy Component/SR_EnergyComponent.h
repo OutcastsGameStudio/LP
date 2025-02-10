@@ -2,7 +2,6 @@
 
 #include "CoreMinimal.h"
 #include "Components/ActorComponent.h"
-#include "Components/SphereComponent.h"
 #include "SR_EnergyComponent.generated.h"
 
 UCLASS(ClassGroup=(Custom), meta=(BlueprintSpawnableComponent))
@@ -17,49 +16,27 @@ protected:
 	virtual void BeginPlay() override;
 
 public:
-	virtual void TickComponent(float DeltaTime, ELevelTick TickType,
-		   FActorComponentTickFunction* ThisTickFunction) override;
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Energy")
+	float MaxEnergySlots = 5;
 
-	// Properties exposed to the editor
-	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Energy System")
-	int32 MaxEnergySlots = 5;
+	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Energy")
+	float CurrentEnergySlots = 0;
 
-	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Energy System")
-	float DetectionRadius = 200.0f;
-
-	// Variables for the energy system
-	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Energy System")
-	int32 CurrentEnergySlots = 0;
-
-	// Functions for energy management
-	UFUNCTION(BlueprintCallable, Category = "Energy System")
+	UFUNCTION(BlueprintCallable, Category = "Energy")
 	bool UseEnergySlot();
 
-	UFUNCTION(BlueprintCallable, Category = "Energy System")
+	UFUNCTION(BlueprintCallable, Category = "Energy")
 	void AddEnergySlot();
 
-	UFUNCTION(BlueprintCallable, Category = "Energy System")
-	int32 GetEnergySlotRemaining() const;
+	UFUNCTION(BlueprintCallable, Category = "Energy")
+	float GetEnergySlotRemaining() const;
 
-	// Function to check if energy is empty
-	UFUNCTION(BlueprintCallable, Category = "Energy System")
-	bool IsEnergyEmpty() const;
+	UFUNCTION(BlueprintPure, Category = "Energy")
+	bool IsEnergyEmpty() const { return CurrentEnergySlots == 0; }
 
-	// Function to check if energy is full
-	UFUNCTION(BlueprintCallable, Category = "Energy System")
-	bool IsEnergyFull() const;
-
-	// Function to detect interactive objects
-	void DetectInteractableObjects();
-
-	// Function to check if an object is interactive
-	UFUNCTION(BlueprintCallable, Category = "Energy System")
-	bool IsInteractable(AActor* OtherActor) const;
+	UFUNCTION(BlueprintPure, Category = "Energy")
+	bool IsEnergyFull() const { return CurrentEnergySlots == MaxEnergySlots; }
 
 private:
-	// Reference to the component owner
-	AActor* OwningActor;
-
-	// Function to check if an object is within the detection radius
-	bool IsInRange(AActor* OtherActor) const;
+	class ACharacter* OwningCharacter;
 };
