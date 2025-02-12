@@ -118,6 +118,10 @@ protected:
 
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Acceleration")
 	class USR_SlideComponent* SlideComponent;
+
+	// assign a energy component to the character
+	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Energy")
+	class USR_EnergyComponent* EnergyComponent;
 	
 	virtual void SetupPlayerInputComponent(class UInputComponent* PlayerInputComponent) override;
 	

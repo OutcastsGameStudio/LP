@@ -13,6 +13,7 @@
 #include "InputActionValue.h"
 #include "Components/Acceleration/SR_AccelerationComponent.h"
 #include "Components/Dash/SR_DashComponent.h"
+#include "Components/Energy Component/SR_EnergyComponent.h"
 #include "Components/Slide/SR_SlideComponent.h"
 
 DEFINE_LOG_CATEGORY(LogTemplateCharacter);
@@ -57,6 +58,9 @@ ASR_Character::ASR_Character()
 
 	// Set the dash component to the character
 	DashComponent = CreateDefaultSubobject<USR_DashComponent>(TEXT("DashComponent"));
+
+	// set the energy component to the character
+	EnergyComponent = CreateDefaultSubobject<USR_EnergyComponent>(TEXT("EnergyComponent"));
 
 	// Note: The skeletal mesh and anim blueprint references on the Mesh component (inherited from Character) 
 	// are set in the derived blueprint asset named ThirdPersonCharacter (to avoid direct content references in C++)
@@ -195,35 +199,35 @@ void ASR_Character::CheckForLedgeGrab()
 	   Start + Forward * LedgeGrabReachDistance,
 	   ECC_Visibility, 
 	   QueryParams);
-
-	if(bHitWall)
-	{
-		FVector EdgeCheckStart = WallHit.ImpactPoint 
-			+ FVector(0, 0, LedgeGrabHeight);
-
-		FVector EdgeCheckEnd = EdgeCheckStart 
-		   + Forward * 60.0f  // Distance vers l'avant
-		   - FVector(0, 0, 100.0f);
-
-		
-		FHitResult EdgeHit;
-		bool bFoundEdge = GetWorld()->LineTraceSingleByChannel(EdgeHit,
-			EdgeCheckStart,
-			EdgeCheckEnd,
-			ECC_Visibility,
-			QueryParams);
-
-		if (!bFoundEdge)
-		{
-			LedgeLocation = WallHit.ImpactPoint 
-				- Forward * 30.0f 
-				+ FVector(0, 0, GetCapsuleComponent()->GetScaledCapsuleHalfHeight());
-            
-			bIsHanging = true;
-			GetCharacterMovement()->SetMovementMode(MOVE_Flying);
-			GetCharacterMovement()->StopMovementImmediately();
-		}
-	}
+	//
+	// if(bHitWall)
+	// {
+	// 	FVector EdgeCheckStart = WallHit.ImpactPoint 
+	// 		+ FVector(0, 0, LedgeGrabHeight);
+	//
+	// 	FVector EdgeCheckEnd = EdgeCheckStart 
+	// 	   + Forward * 60.0f  // Distance vers l'avant
+	// 	   - FVector(0, 0, 100.0f);
+	//
+	// 	
+	// 	FHitResult EdgeHit;
+	// 	bool bFoundEdge = GetWorld()->LineTraceSingleByChannel(EdgeHit,
+	// 		EdgeCheckStart,
+	// 		EdgeCheckEnd,
+	// 		ECC_Visibility,
+	// 		QueryParams);
+	//
+	// 	if (!bFoundEdge)
+	// 	{
+	// 		LedgeLocation = WallHit.ImpactPoint 
+	// 			- Forward * 30.0f 
+	// 			+ FVector(0, 0, GetCapsuleComponent()->GetScaledCapsuleHalfHeight());
+ //            
+	// 		bIsHanging = true;
+	// 		GetCharacterMovement()->SetMovementMode(MOVE_Flying);
+	// 		GetCharacterMovement()->StopMovementImmediately();
+	// 	}
+	// }
 }
 
 void ASR_Character::ClimbUp()
