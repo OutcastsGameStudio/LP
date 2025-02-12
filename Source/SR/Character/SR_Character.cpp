@@ -68,8 +68,6 @@ void ASR_Character::Tick(float DeltaTime)
 
 	CheckForLedgeGrab();
 	ClimbUp();
-
-	
 }
 
 void ASR_Character::BeginPlay()
@@ -85,6 +83,8 @@ void ASR_Character::BeginPlay()
 			Subsystem->AddMappingContext(DefaultMappingContext, 0);
 		}
 	}
+
+	GEngine->AddOnScreenDebugMessage(-1, 5.f, FColor::Blue, TEXT("CapsuleHalfHeight: ") + FString::FromInt(GetCapsuleComponent()->GetScaledCapsuleHalfHeight()));
 }
 
 //////////////////////////////////////////////////////////////////////////
@@ -99,6 +99,9 @@ void ASR_Character::SetupPlayerInputComponent(UInputComponent* PlayerInputCompon
 		EnhancedInputComponent->BindAction(JumpAction, ETriggerEvent::Started, this, &ASR_Character::Jump);
 		EnhancedInputComponent->BindAction(JumpAction, ETriggerEvent::Started, this, &ASR_Character::StopWallJump);
 		EnhancedInputComponent->BindAction(JumpAction, ETriggerEvent::Completed, this, &ASR_Character::StopJumping);
+
+		// Crouch
+		EnhancedInputComponent->BindAction(CrouchAction, ETriggerEvent::Triggered, this, &ASR_Character::StartCrouch);
 
 		// Moving
 		EnhancedInputComponent->BindAction(MoveAction, ETriggerEvent::Triggered, this, &ASR_Character::Move);
@@ -150,7 +153,7 @@ void ASR_Character::Move(const FInputActionValue& Value)
 	}
 }
 
-void ASR_Character::StopWallJump()    
+void ASR_Character::StopWallJump()
 {
 	if(bIsHanging) return;
 	Cast<USR_CharacterMovementComponent>(GetCharacterMovement())->StopWallJump();
@@ -271,9 +274,16 @@ void ASR_Character::Slide()
 
 void ASR_Character::StopSlide()
 {
-	if (SlideComponent->bIsSliding == true)
-	{
-		SlideComponent->bIsSliding = false;
-		SlideComponent->StopSlide();
-	}
+	SlideComponent->StopSlide();
+}
+
+void ASR_Character::StartCrouch()
+{
+	const bool bIsCurrentlyCrouching = isCrouching || SlideComponent->bIsCrouching;
+	const bool bNewCrouchState = !bIsCurrentlyCrouching;
+    
+	isCrouching = bNewCrouchState;
+	SlideComponent->bIsCrouching = bNewCrouchState;
+    
+	bNewCrouchState ? Crouch() : UnCrouch();
 }

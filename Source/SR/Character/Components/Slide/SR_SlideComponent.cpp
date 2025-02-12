@@ -3,15 +3,14 @@
 
 #include "SR_SlideComponent.h"
 
-
 // Sets default values for this component's properties
 USR_SlideComponent::USR_SlideComponent()
 {
-	// Set this component to be initialized when the game starts, and to be ticked every frame.  You can turn these features
-	// off to improve performance if you don't need them.
 	PrimaryComponentTick.bCanEverTick = true;
 
-	// ...
+	CapsuleComponent = nullptr;
+	MeshComponent = nullptr;
+	CharacterMovement = nullptr;
 }
 
 
@@ -19,7 +18,6 @@ USR_SlideComponent::USR_SlideComponent()
 void USR_SlideComponent::BeginPlay()
 {
 	Super::BeginPlay();
-
 }
 
 
@@ -58,7 +56,7 @@ void USR_SlideComponent::InitializeSlideState()
 	bIsSliding = true;
 	SlideStartLocation = GetOwner()->GetActorLocation();
 	SlideDirection = GetOwner()->GetActorForwardVector();
-	SlideSpeed = CharacterMovement->Velocity.Size();
+	FSlideSpeed = CharacterMovement->Velocity.Size();
 	CurrentSlideDistance = 0.0f;
 }
 
@@ -67,8 +65,8 @@ void USR_SlideComponent::UpdateSlideDirection()
 	FHitResult HitResult;
 	if (PerformGroundCheck(HitResult))
 	{
-		FVector PlayerForward = GetOwner()->GetActorForwardVector();
-		SlideDirection = FVector::VectorPlaneProject(PlayerForward, HitResult.Normal).GetSafeNormal();
+		FVector const FPlayerForward = GetOwner()->GetActorForwardVector();
+		SlideDirection = FVector::VectorPlaneProject(FPlayerForward, HitResult.Normal).GetSafeNormal();
 	}
 	else
 	{
@@ -91,8 +89,9 @@ void USR_SlideComponent::AdjustCharacterCollision()
 {
 	if (CapsuleComponent && MeshComponent)
 	{
-		CapsuleComponent->SetCapsuleHalfHeight(fCapsuleHalfHeightSliding);
+		CapsuleComponent->SetCapsuleHalfHeight(FCapsuleHalfHeightSliding);
 		MeshComponent->SetRelativeLocation(FVector(0.0f, 0.0f, -45.0f));
+		GEngine->AddOnScreenDebugMessage(-1, 5.f, FColor::Blue, TEXT("CapsuleHalfHeight: ") + FString::FromInt(CapsuleComponent->GetScaledCapsuleHalfHeight()));
 	}
 }
 
@@ -101,22 +100,24 @@ void USR_SlideComponent::HandleCrouchFallback()
 	if (CharacterMovement->GetLastUpdateVelocity() == FVector::ZeroVector && 
 		!CharacterMovement->IsFalling())
 	{
+		bIsCrouching = true;
 		CharacterMovement->Crouch();
+		GEngine->AddOnScreenDebugMessage(-1, 5.f, FColor::Blue, TEXT("CapsuleHalfHeight: ") + FString::FromInt(CapsuleComponent->GetScaledCapsuleHalfHeight()));
 	}
 }
 
 void USR_SlideComponent::ProcessSlide(float DeltaTime)
 {
-    if (!bIsSliding)
+    if (!bIsSliding && !bIsCrouching)
     {
         return;
     }
 
-    float FrameDistance = SlideSpeed * DeltaTime;
+    float const FrameDistance = FSlideSpeed * DeltaTime;
     
     UpdateSlideDistance(FrameDistance);
     
-    if (ShouldStopSlide())
+    if (CurrentSlideDistance >= FSlideDistance)
     {
         StopSlide();
         return;
@@ -133,10 +134,10 @@ float USR_SlideComponent::CalculateCurrentSlideSpeed() const
     FHitResult GroundHit;
     if (!PerformGroundCheck(GroundHit))
     {
-        return SlideSpeed;
+        return FSlideSpeed;
     }
 
-    return SlideSpeed * CalculateSpeedMultiplierFromSlope(GroundHit);
+    return FSlideSpeed * CalculateSpeedMultiplierFromSlope(GroundHit);
 }
 
 float USR_SlideComponent::CalculateSpeedMultiplierFromSlope(const FHitResult& GroundHit) const
@@ -162,16 +163,14 @@ void USR_SlideComponent::UpdateSlideDistance(float FrameDistance)
     CurrentSlideDistance += FrameDistance;
 }
 
-bool USR_SlideComponent::ShouldStopSlide() const
-{
-    return CurrentSlideDistance >= SlideDistance;
-}
-
 bool USR_SlideComponent::UpdateSlidePosition(float DeltaTime)
 {
     FVector NewLocation = GetOwner()->GetActorLocation() + 
-                         (SlideDirection * SlideSpeed * DeltaTime);
-    
+                         (SlideDirection * FSlideSpeed * DeltaTime);
+	
+	/**
+	 * If new location is not colliding with anything, move the character to the new location
+	 */
     if (!CheckCollisionAtNewPosition(NewLocation))
     {
         GetOwner()->SetActorLocation(NewLocation);
@@ -198,17 +197,21 @@ bool USR_SlideComponent::CheckCollisionAtNewPosition(const FVector& NewLocation)
 
 void USR_SlideComponent::StopSlide()
 {
+	if (!CharacterMovement || !CapsuleComponent)
+	{
+		return;
+	}
+
 	bIsSliding = false;
 
-	// Check if there's enough space above the player to stand up
-	FVector Start = GetOwner()->GetActorLocation();
-	FVector End = Start + FVector(0.0f, 0.0f, fInitialCapsuleHalfHeight * 2.0f);
-    
 	FCollisionQueryParams QueryParams;
 	QueryParams.AddIgnoredActor(GetOwner());
     
+	FVector Start = GetOwner()->GetActorLocation();
+	FVector End = Start + FVector(0, 0, FInitialCapsuleHalfHeight * 2.0f);
+    
 	FHitResult HitResult;
-	bool bHitObstacle = GetWorld()->LineTraceSingleByChannel(
+	bool bHitCeiling = GetWorld()->LineTraceSingleByChannel(
 		HitResult,
 		Start,
 		End,
@@ -216,17 +219,25 @@ void USR_SlideComponent::StopSlide()
 		QueryParams
 	);
 
-	if (bHitObstacle)
+	if (bHitCeiling)
 	{
-		// If there's an obstacle, keep the player crouched
-		CapsuleComponent->SetCapsuleHalfHeight(fCapsuleHalfHeightSliding);
-		MeshComponent->SetRelativeLocation(FVector(0.0f, 0.0f, -45.0f));
+		bIsCrouching = true;
+		CharacterMovement->bWantsToCrouch = true;
+		CharacterMovement->Crouch();
+	}
+	else
+	{
+		bIsCrouching = false;
+		CharacterMovement->bWantsToCrouch = false;
         
-		// Force the character to stay in crouch state
-		if (CharacterMovement)
+		if (CapsuleComponent->GetUnscaledCapsuleHalfHeight() < FInitialCapsuleHalfHeight)
 		{
-			CharacterMovement->bWantsToCrouch = true;
-			CharacterMovement->Crouch();
+			CharacterMovement->UnCrouch();
 		}
+	}
+    
+	if (MeshComponent)
+	{
+		MeshComponent->SetRelativeLocation(FVector(0.0f, 0.0f, -90.0f));
 	}
 }
