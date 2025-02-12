@@ -31,62 +31,118 @@ public:
 	 * @param 
 	 */
 	void StopSlide();
-
-	// Called every frame
+	
 	virtual void TickComponent(float DeltaTime, ELevelTick TickType,
 							   FActorComponentTickFunction* ThisTickFunction) override;
 
 	bool bIsSliding = false;
+	bool bIsCrouching = false;
 
+	// TODO : Cast to USR_CharacterMovementComponent for garbage collection
 	UCapsuleComponent* CapsuleComponent;
 	UMeshComponent* MeshComponent;
 	UCharacterMovementComponent* CharacterMovement;
-
-	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Slide Movement")
-	float fCapsuleHalfHeightSliding = 40.0f;
-
-	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Slide Movement")
-	float fMeshLocationZ;
-	
-	float fInitialCapsuleHalfHeight = 96.0f;
 
 protected:
 	// Called when the game starts
 	virtual void BeginPlay() override;
 
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Slide Movement")
-	float SlideDistance = 800.0f;
+	float FSlideDistance = 800.0f;
 
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Slide Movement")
-	float SlideDuration = 0.5f;
+	float FSlideDuration = 0.5f;
 
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Slide Movement")
-	float SlideSpeed = 1800.0f;
+	float FSlideSpeed = 1800.0f;
+
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Slide Movement")
+	float FCapsuleHalfHeightSliding = 40.0f;
+
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Slide Movement")
+	float FMeshLocationZ = -90.0f;
 
 private:
-	FVector SlideStartLocation;
-	FVector SlideDirection;
-	float CurrentSlideDistance = 0.0f;
-
+	/**
+	 * @description : Check if different conditions are met to start the slide
+	 * @name : CanInitiateSlide
+	 */
 	bool CanInitiateSlide() const;
-	void InitializeSlideState();
-	void UpdateSlideDirection();
-	bool PerformGroundCheck(FHitResult& OutHitResult) const;
-	void AdjustCharacterCollision();
-	void HandleCrouchFallback();
 
 	/**
 	 * @description : Set the differents param of the slide movement
+	 * @name : InitializeSlideState
+	 */
+	void InitializeSlideState();
+
+	/**
+	 * @description : Check if the character is on the ground
+	 * @name : UpdateSlideDirection
+	 */
+	void UpdateSlideDirection();
+
+	/**
+	 * @description : Check if the character is on the ground
+	 * @name : PerformGroundCheck
+	 * @parame : OutHitResult
+	 */
+	bool PerformGroundCheck(FHitResult& OutHitResult) const;
+
+	/**
+	 * @description : Adjust Parameters of the character collision (Mesh and Capsule)
+	 * @name : AdjustCharacterCollision
+	 */
+	void AdjustCharacterCollision();
+
+	/**
+	 * @description : When stop the slide and velocity is null, crouch the character
+	 * @name : HandleCrouchFallback
+	 */
+	void HandleCrouchFallback();
+
+	/**
+	 * @description : Physics custom for slide movement
 	 * @name : ProcessSlide
 	 * @param DeltaTime
 	 */
 	void ProcessSlide(float DeltaTime);
-	
-	float CalculateCurrentSlideSpeed() const;
-	float CalculateSpeedMultiplierFromSlope(const FHitResult& GroundHit) const;
-	bool UpdateSlidePosition(float DeltaTime);
-	bool CheckCollisionAtNewPosition(const FVector& NewLocation) const;
-	void UpdateSlideDistance(float FrameDistance);
-	bool ShouldStopSlide() const;
 
+	/**
+	 * @description : Calculate the current speed of the slide
+	 * @name : CalculateCurrentSlideSpeed
+	 */
+	float CalculateCurrentSlideSpeed() const;
+
+	/**
+	 * @description : Calculate the speed multiplier from the slope
+	 * @name : CalculateSpeedMultiplierFromSlope
+	 * @param GroundHit
+	 */
+	float CalculateSpeedMultiplierFromSlope(const FHitResult& GroundHit) const;
+
+	/**
+	 * @description : Update the slide position
+	 * @name : UpdateSlidePosition
+	 * @param DeltaTime
+	 */
+	bool UpdateSlidePosition(float DeltaTime);
+
+	/**
+	 * @description : Check if the new location is not colliding with anything
+	 * @name : CheckCollisionAtNewPosition
+	 * @param NewLocation
+	 */
+	bool CheckCollisionAtNewPosition(const FVector& NewLocation) const;
+
+	/**
+	 * @description : Update the slide distance
+	 * @name : UpdateSlideDistance
+	 * @param FrameDistance
+	 */
+	void UpdateSlideDistance(float FrameDistance);
+
+	FVector SlideStartLocation;
+	FVector SlideDirection;
+	float FInitialCapsuleHalfHeight = 96.0f;
+	float CurrentSlideDistance = 0.0f;
 };

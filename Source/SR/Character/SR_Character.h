@@ -45,13 +45,24 @@ class SR_API ASR_Character : public ACharacter
 	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = Input, meta = (AllowPrivateAccess = "true"))
 	UInputAction* DashAction;
 
+	/** Crouch Input Action */
+	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = Input, meta = (AllowPrivateAccess = "true"))
+	UInputAction* CrouchAction;
+
 	/** Silde Input Action */
 	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = Input, meta = (AllowPrivateAccess = "true"))
 	UInputAction* SlideAction;
 
+	/** Crouch Input Action */
+	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = Input, meta = (AllowPrivateAccess = "true"))
+	UInputAction* ChrouchAction;
+
 public:
 	ASR_Character();
+	
 	void Tick(float DeltaTime);
+
+	bool isCrouching = false;
 
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Ledge Grab")
 	float LedgeGrabReachDistance = 70.0f;
@@ -83,6 +94,10 @@ protected:
 
 	/** Called for looking input */
 	void Look(const FInputActionValue& Value);
+
+	void StartCrouch();
+
+	void EndCrouch();
 	
 	UFUNCTION()
 	void StopWallJump();
@@ -93,18 +108,14 @@ protected:
 	UFUNCTION()
 	void StopSlide();
 
-	//function to dash
 	void Dash(const FInputActionValue& Value);
 
-	// assign acceleration component to the character
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Acceleration")
 	class USR_AccelerationComponent* AccelerationComponent;
 
-	//assign a dash component to the character
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Dash")
 	class USR_DashComponent* DashComponent;
 
-	// assign a slide component to the character
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Acceleration")
 	class USR_SlideComponent* SlideComponent;
 
@@ -112,10 +123,8 @@ protected:
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Energy")
 	class USR_EnergyComponent* EnergyComponent;
 	
-	// APawn interface
 	virtual void SetupPlayerInputComponent(class UInputComponent* PlayerInputComponent) override;
 	
-	// To add mapping context
 	virtual void BeginPlay();
 
 public:
