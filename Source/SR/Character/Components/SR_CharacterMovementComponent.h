@@ -33,6 +33,11 @@ public:
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "WallRun",
 	meta = (ToolTip = "Durée maximale du wall run en secondes. Au-delà, le personnage tombe"))
 	float MaxAngleBeforeStop = 120.f;
+
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "WallRun", meta = (ToolTip = "Acceleration du personnage lorsqu'il tombe du wall run"))
+	float WallRunFallingAcceleration = 5.f;
+
+
 	/**
 	* @description: Stop the wall jump when the character is already wall running 
 	*/
@@ -40,11 +45,10 @@ public:
 	void PhysWallRun(float deltaTime, int32 Iterations);
 	void StopWallJump();
 private:
-	void UpdateWallRunDirection(FHitResult& Hit);
-    
 	bool DetectNextWall(FHitResult& Hit);
 	FVector m_WallRunDirection;
 	FVector m_WallNormal;
+	float WallRunFallingSpeed = 0.f;
 /**
  *
  */
@@ -62,6 +66,12 @@ public:
 	}
 private:
 	CustomMode m_CustomMovementMode;
+
+private:
+	bool CanWallRun();
+	//** Debug *//
+private:
+	void DebugLineTrace(FHitResult hitResult, bool hit, FColor color,FVector vectorStart, FVector vectorEnd);
 private:
     UFUNCTION()
     void OnHit(UPrimitiveComponent* HitComponent, AActor* OtherActor, UPrimitiveComponent* OtherComp, FVector NormalImpulse, const FHitResult& Hit);
