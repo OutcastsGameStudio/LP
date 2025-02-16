@@ -78,6 +78,8 @@ public:
 	 * @param NewCustomMode 
 	 */
 	void SetCharacterMovementCustomMode(USR_CharacterMovementComponent::CustomMode NewCustomMode);
+
+	bool IsHanging() const { return bIsHanging; }
 protected:
 
 	bool bIsHanging = false;

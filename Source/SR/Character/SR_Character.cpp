@@ -184,7 +184,8 @@ void ASR_Character::SetCharacterMovementCustomMode(USR_CharacterMovementComponen
 
 void ASR_Character::CheckForLedgeGrab()
 {
-	if (bIsHanging || GetCharacterMovement()->IsMovingOnGround())
+	USR_CharacterMovementComponent* CharacterMovementComponent = Cast<USR_CharacterMovementComponent>(GetCharacterMovement());
+	if (bIsHanging || GetCharacterMovement()->IsMovingOnGround() || CharacterMovementComponent->IsWallRunning())
 		return;
 
 	FVector Start = GetActorLocation();
@@ -199,35 +200,44 @@ void ASR_Character::CheckForLedgeGrab()
 	   Start + Forward * LedgeGrabReachDistance,
 	   ECC_Visibility, 
 	   QueryParams);
-	//
-	// if(bHitWall)
-	// {
-	// 	FVector EdgeCheckStart = WallHit.ImpactPoint 
-	// 		+ FVector(0, 0, LedgeGrabHeight);
-	//
-	// 	FVector EdgeCheckEnd = EdgeCheckStart 
-	// 	   + Forward * 60.0f  // Distance vers l'avant
-	// 	   - FVector(0, 0, 100.0f);
-	//
-	// 	
-	// 	FHitResult EdgeHit;
-	// 	bool bFoundEdge = GetWorld()->LineTraceSingleByChannel(EdgeHit,
-	// 		EdgeCheckStart,
-	// 		EdgeCheckEnd,
-	// 		ECC_Visibility,
-	// 		QueryParams);
-	//
-	// 	if (!bFoundEdge)
-	// 	{
-	// 		LedgeLocation = WallHit.ImpactPoint 
-	// 			- Forward * 30.0f 
-	// 			+ FVector(0, 0, GetCapsuleComponent()->GetScaledCapsuleHalfHeight());
- //            
-	// 		bIsHanging = true;
-	// 		GetCharacterMovement()->SetMovementMode(MOVE_Flying);
-	// 		GetCharacterMovement()->StopMovementImmediately();
-	// 	}
-	// }
+	
+	if(bHitWall)
+	{
+		FVector EdgeCheckStart = WallHit.ImpactPoint 
+			+ FVector(0, 0, LedgeGrabHeight);
+	
+		FVector VerticalFrontEnd = EdgeCheckStart 
+		   + Forward * 60.0f ;
+
+		FVector EdgeCheckEnd = VerticalFrontEnd  // Distance vers l'avant
+	   - FVector(0, 0, 100.0f);
+	
+		
+		FHitResult EdgeHit; // if we hit a face of the wall
+		bool bFoundEdge = GetWorld()->LineTraceSingleByChannel(EdgeHit,
+			EdgeCheckStart,
+			EdgeCheckEnd,
+			ECC_Visibility,
+			QueryParams);
+
+		FHitResult VerticalHit; // if we hit a vertical wall
+		bool bFoundVerticalWall = GetWorld()->LineTraceSingleByChannel(VerticalHit,
+			EdgeCheckStart,
+			VerticalFrontEnd,
+			ECC_Visibility,
+			QueryParams);
+
+		if (bFoundEdge && !bFoundVerticalWall) // we hit a face of the wall but not a vertical wall
+		{
+			LedgeLocation = WallHit.ImpactPoint 
+				- Forward * 30.0f 
+				+ FVector(0, 0, GetCapsuleComponent()->GetScaledCapsuleHalfHeight());
+            
+			bIsHanging = true;
+			GetCharacterMovement()->SetMovementMode(MOVE_Flying);
+			GetCharacterMovement()->StopMovementImmediately();
+		}
+	}
 }
 
 void ASR_Character::ClimbUp()
