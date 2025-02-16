@@ -74,7 +74,6 @@ private:
 	CustomMode m_CustomMovementMode;
 
 private:
-	bool CanWallRun();
 	//** Debug *//
 private:
 	void DebugLineTrace(FHitResult hitResult, bool hit, FColor color,FVector vectorStart, FVector vectorEnd);
