@@ -3,7 +3,6 @@
 
 #include "SR_CharacterMovementComponent.h"
 
-#include "AITestsCommon.h"
 #include "Components/CapsuleComponent.h"
 #include "GameFramework/Character.h"
 
