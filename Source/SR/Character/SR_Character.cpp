@@ -11,7 +11,6 @@
 #include "EnhancedInputComponent.h"
 #include "EnhancedInputSubsystems.h"
 #include "InputActionValue.h"
-#include "Components/Acceleration/SR_AccelerationComponent.h"
 #include "Components/Dash/SR_DashComponent.h"
 #include "Components/Energy Component/SR_EnergyComponent.h"
 #include "Components/Slide/SR_SlideComponent.h"
@@ -141,13 +140,6 @@ void ASR_Character::Move(const FInputActionValue& Value)
 		// add movement 
 		AddMovementInput(ForwardDirection, MovementVector.Y);
 		AddMovementInput(RightDirection, MovementVector.X);
-
-		// if the character is moving then accelerate the character and increase the max walk speed
-		if (MovementVector.Size() > 0)
-		{
-			GetCharacterMovement()->MaxWalkSpeed = AccelerationComponent->Accelerate(GetCharacterMovement()->MaxWalkSpeed, GetWorld()->GetDeltaSeconds());
-			UE_LOG(LogTemp, Warning, TEXT("Current Speed: %f"), GetCharacterMovement()->MaxWalkSpeed);
-		}
 		
 	}
 }

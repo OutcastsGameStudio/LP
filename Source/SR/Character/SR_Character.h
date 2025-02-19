@@ -53,10 +53,6 @@ class SR_API ASR_Character : public ACharacter
 	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = Input, meta = (AllowPrivateAccess = "true"))
 	UInputAction* SlideAction;
 
-	/** Crouch Input Action */
-	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = Input, meta = (AllowPrivateAccess = "true"))
-	UInputAction* ChrouchAction;
-
 public:
 	ASR_Character();
 	
@@ -99,8 +95,6 @@ protected:
 
 	void StartCrouch();
 
-	void EndCrouch();
-	
 	UFUNCTION()
 	void StopWallJump();
 
@@ -111,9 +105,6 @@ protected:
 	void StopSlide();
 
 	void Dash(const FInputActionValue& Value);
-
-	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Acceleration")
-	class USR_AccelerationComponent* AccelerationComponent;
 
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Dash")
 	class USR_DashComponent* DashComponent;
