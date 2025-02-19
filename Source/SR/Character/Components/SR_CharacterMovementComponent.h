@@ -44,8 +44,14 @@ public:
 
 	void PhysWallRun(float deltaTime, int32 Iterations);
 	void StopWallJump();
+	bool IsWallRunning()
+	{
+		return m_bIsWallRunning;
+	}
 private:
 	bool DetectNextWall(FHitResult& Hit);
+	bool CanWallRun();
+	bool m_bIsWallRunning = false;
 	FVector m_WallRunDirection;
 	FVector m_WallNormal;
 	float WallRunFallingSpeed = 0.f;
@@ -68,7 +74,6 @@ private:
 	CustomMode m_CustomMovementMode;
 
 private:
-	bool CanWallRun();
 	//** Debug *//
 private:
 	void DebugLineTrace(FHitResult hitResult, bool hit, FColor color,FVector vectorStart, FVector vectorEnd);

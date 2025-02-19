@@ -5,6 +5,7 @@
 
 #include "Components/CapsuleComponent.h"
 #include "GameFramework/Character.h"
+#include "SR/Character/SR_Character.h"
 
 
 // Sets default values for this component's properties
@@ -34,6 +35,9 @@ void USR_CharacterMovementComponent::OnHit(UPrimitiveComponent* HitComponent, AA
 {
 	if (MovementMode == MOVE_Falling && Velocity.Z < 0.f && FMath::IsNearlyZero(Hit.Normal.Z) && CanWallRun())
 	{
+		ASR_Character* Character = Cast<ASR_Character>(GetCharacterOwner());
+		if(Character == nullptr || Character->IsHanging()) return;
+		m_bIsWallRunning = true;
 		auto CharacterForwardVector = GetCharacterOwner()->GetActorForwardVector();
 		auto DotProduct = FVector::DotProduct(CharacterForwardVector, -Hit.Normal);
 		auto angle = FMath::RadiansToDegrees(FMath::Acos(DotProduct));
@@ -51,12 +55,6 @@ void USR_CharacterMovementComponent::PhysWallRun(float deltaTime, int32 Iteratio
 	Velocity = m_WallRunDirection * MaxWalkSpeed;
 
 	Velocity.Z = Velocity.Z - WallRunFallingSpeed;
-	if(GEngine)
-	{
-		GEngine->AddOnScreenDebugMessage(-1, 0.1f, FColor::Red, FString::Printf(TEXT("Velocity : %s"), *Velocity.ToString()));
-	}
-
-
 	FVector Delta = Velocity * deltaTime;
 	FHitResult Hit(1.f);
 	SafeMoveUpdatedComponent(Delta, UpdatedComponent->GetComponentRotation(), true, Hit);
@@ -76,13 +74,18 @@ void USR_CharacterMovementComponent::PhysWallRun(float deltaTime, int32 Iteratio
 	auto CharacterForwardVector = GetCharacterOwner()->GetActorForwardVector();
 	auto DotProduct = FVector::DotProduct(CharacterForwardVector, -Hit.Normal);
 	auto angle = FMath::RadiansToDegrees(FMath::Acos(DotProduct));
-	if(angle > MaxAngleBeforeStop) SetMovementMode(MOVE_Falling);
+	if(angle > MaxAngleBeforeStop)
+	{
+		m_bIsWallRunning = false;
+		SetMovementMode(MOVE_Falling);
+	};
 }
 
 void USR_CharacterMovementComponent::StopWallJump()
 {
 	if (MovementMode != MOVE_Custom) return;
 	Velocity = (m_WallRunDirection + m_WallNormal + FVector::UpVector).GetSafeNormal() * WallJumpSpeed;
+	m_bIsWallRunning = false;
 	SetMovementMode(MOVE_Falling);
 }
 
