@@ -48,11 +48,8 @@ ASR_Character::ASR_Character()
 
 	// Create a follow camera
 	FollowCamera = CreateDefaultSubobject<UCameraComponent>(TEXT("FollowCamera")); 
-	FollowCamera->SetupAttachment(GetMesh(), FName("head")); 
+	FollowCamera->SetupAttachment(GetMesh());
 	FollowCamera->bUsePawnControlRotation = false; // Camera does not rotate relative to arm
-
-	// Set the acceleration component to the character
-	AccelerationComponent = CreateDefaultSubobject<USR_AccelerationComponent>(TEXT("AccelerationComponent"));
 
 	SlideComponent = CreateDefaultSubobject<USR_SlideComponent>(TEXT("SlideComponent"));
 
@@ -87,8 +84,6 @@ void ASR_Character::BeginPlay()
 			Subsystem->AddMappingContext(DefaultMappingContext, 0);
 		}
 	}
-
-	GEngine->AddOnScreenDebugMessage(-1, 5.f, FColor::Blue, TEXT("CapsuleHalfHeight: ") + FString::FromInt(GetCapsuleComponent()->GetScaledCapsuleHalfHeight()));
 }
 
 //////////////////////////////////////////////////////////////////////////
