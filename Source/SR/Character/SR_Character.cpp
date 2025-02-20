@@ -112,7 +112,7 @@ void ASR_Character::SetupPlayerInputComponent(UInputComponent* PlayerInputCompon
 		EnhancedInputComponent->BindAction(JumpAction, ETriggerEvent::Completed, this, &ASR_Character::StopJumping);
 
 		// Crouch
-		EnhancedInputComponent->BindAction(CrouchAction, ETriggerEvent::Triggered, this, &ASR_Character::StartCrouch);
+		EnhancedInputComponent->BindAction(ChrouchAction, ETriggerEvent::Triggered, this, &ASR_Character::StartCrouch);
 
 		// Moving
 		EnhancedInputComponent->BindAction(MoveAction, ETriggerEvent::Triggered, this, &ASR_Character::Move);
