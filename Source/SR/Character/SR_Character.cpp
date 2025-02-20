@@ -46,8 +46,8 @@ ASR_Character::ASR_Character()
 	GetCharacterMovement()->BrakingDecelerationFalling = 1500.0f;
 
 	// Create a follow camera
-	FollowCamera = CreateDefaultSubobject<UCameraComponent>(TEXT("FollowCamera")); 
-	FollowCamera->SetupAttachment(GetMesh());
+	FollowCamera = CreateDefaultSubobject<UCameraComponent>(TEXT("FollowCamera"));
+	FollowCamera->SetupAttachment(GetMesh(), FName("Camera"));
 	FollowCamera->bUsePawnControlRotation = false; // Camera does not rotate relative to arm
 
 	SlideComponent = CreateDefaultSubobject<USR_SlideComponent>(TEXT("SlideComponent"));
