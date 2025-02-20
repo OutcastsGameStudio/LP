@@ -6,6 +6,7 @@
 #include "Components/SR_CharacterMovementComponent.h"
 #include "GameFramework/Character.h"
 #include "Logging/LogMacros.h"
+#include "Components/Debug/SR_DebugComponent.h"
 #include "SR_Character.generated.h"
 
 class USpringArmComponent;
@@ -45,29 +46,38 @@ class SR_API ASR_Character : public ACharacter
 	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = Input, meta = (AllowPrivateAccess = "true"))
 	UInputAction* DashAction;
 
-	/** Crouch Input Action */
-	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = Input, meta = (AllowPrivateAccess = "true"))
-	UInputAction* CrouchAction;
-
 	/** Silde Input Action */
 	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = Input, meta = (AllowPrivateAccess = "true"))
 	UInputAction* SlideAction;
+
+	/** Crouch Input Action */
+	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = Input, meta = (AllowPrivateAccess = "true"))
+	UInputAction* ChrouchAction;
+
+
+private:
+	float LedgeGrabReachDistance = 70.0f;
+	float LedgeGrabHeight = 150.0f;
+	float ClimbUpSpeed = 20.0f;
+	bool isCrouching = false;
+
 
 public:
 	ASR_Character();
 	
 	void Tick(float DeltaTime);
 
-	bool isCrouching = false;
+	void SetCharacterLedgeGrabReachDistance(float NewReachDistance) { LedgeGrabReachDistance = NewReachDistance; }
 
-	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Ledge Grab")
-	float LedgeGrabReachDistance = 70.0f;
+	float GetCharacterLedgeGrabReachDistance() const { return LedgeGrabReachDistance; }
 
-	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Ledge Grab")
-	float LedgeGrabHeight = 150.0f;
+	void SetLedgeGrabHeight(float NewLedgeGrabHeight);
 
-	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Ledge Grab")
-	float ClimbUpSpeed = 20.0f;
+	float GetLedgeGrabHeight() const;
+
+	void SetClimbUpSpeed(float NewClimbUpSpeed) { ClimbUpSpeed = NewClimbUpSpeed; }
+
+	float GetClimbUpSpeed() const { return ClimbUpSpeed; }
 
 	/**
 	 * @description : Set the custom movement mode of the character
@@ -76,6 +86,8 @@ public:
 	void SetCharacterMovementCustomMode(USR_CharacterMovementComponent::CustomMode NewCustomMode);
 
 	bool IsHanging() const { return bIsHanging; }
+
+	USR_DebugComponent* GetDebugComponent() const { return DebugComponent; }
 protected:
 
 	bool bIsHanging = false;
@@ -115,6 +127,9 @@ protected:
 	// assign a energy component to the character
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Energy")
 	class USR_EnergyComponent* EnergyComponent;
+
+	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Debug")
+	class USR_DebugComponent* DebugComponent;
 	
 	virtual void SetupPlayerInputComponent(class UInputComponent* PlayerInputComponent) override;
 	

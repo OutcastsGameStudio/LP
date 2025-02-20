@@ -23,19 +23,37 @@ public:
 /**
  * @description: Wall Run Props
  */
-public: 
-	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "WallRun")
+private:
+	// UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "WallRun")
 	float WallJumpSpeed = 1000.f;
 
-	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "WallRun", meta = (ToolTip = "Angle maximum a partir duquel on peut faire un wall run"))
+	// UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "WallRun", meta = (ToolTip = "Angle maximum a partir duquel on peut faire un wall run"))
 	float MaxAngleWallRun = 60.f;
 
-	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "WallRun",
-	meta = (ToolTip = "Durée maximale du wall run en secondes. Au-delà, le personnage tombe"))
+	// UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "WallRun",
+	// meta = (ToolTip = "Durée maximale du wall run en secondes. Au-delà, le personnage tombe"))
 	float MaxAngleBeforeStop = 120.f;
 
-	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "WallRun", meta = (ToolTip = "Acceleration du personnage lorsqu'il tombe du wall run"))
+	// UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "WallRun", meta = (ToolTip = "Acceleration du personnage lorsqu'il tombe du wall run"))
 	float WallRunFallingAcceleration = 5.f;
+
+
+public:
+	float GetWallJumpSpeed();
+
+	void SetWallJumpSpeed(float NewWallJumpSpeed);
+
+	float GetMaxAngleWallRun();
+
+	void SetMaxAngleWallRun(float NewMaxAngleWallRun);
+
+	float GetMaxAngleBeforeStop();
+
+	void SetMaxAngleBeforeStop(float NewMaxAngleBeforeStop);
+
+	float GetWallRunFallingAcceleration();
+
+	void SetWallRunFallingAcceleration(float NewWallRunFallingAcceleration);
 
 
 	/**

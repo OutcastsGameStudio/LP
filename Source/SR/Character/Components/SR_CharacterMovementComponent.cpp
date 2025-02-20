@@ -31,6 +31,46 @@ void USR_CharacterMovementComponent::TickComponent(float DeltaTime, ELevelTick T
 	CanWallRun();
 }
 
+float USR_CharacterMovementComponent::GetWallJumpSpeed() 
+{
+	return WallJumpSpeed;
+}
+
+void USR_CharacterMovementComponent::SetWallJumpSpeed(float NewWallJumpSpeed)
+{
+	WallJumpSpeed = NewWallJumpSpeed;
+}
+
+float USR_CharacterMovementComponent::GetMaxAngleWallRun() 
+{
+	return MaxAngleWallRun;
+}
+
+void USR_CharacterMovementComponent::SetMaxAngleWallRun(float NewMaxAngleWallRun)
+{
+	MaxAngleWallRun = NewMaxAngleWallRun;
+}
+
+float USR_CharacterMovementComponent::GetMaxAngleBeforeStop() 
+{
+	return MaxAngleBeforeStop;
+}
+
+void USR_CharacterMovementComponent::SetMaxAngleBeforeStop(float NewMaxAngleBeforeStop)
+{
+	MaxAngleBeforeStop = NewMaxAngleBeforeStop;
+}
+
+float USR_CharacterMovementComponent::GetWallRunFallingAcceleration() 
+{
+	return WallRunFallingAcceleration;
+}
+
+void USR_CharacterMovementComponent::SetWallRunFallingAcceleration(float NewWallRunFallingAcceleration)
+{
+	WallRunFallingAcceleration = NewWallRunFallingAcceleration;
+}
+
 void USR_CharacterMovementComponent::OnHit(UPrimitiveComponent* HitComponent, AActor* OtherActor, UPrimitiveComponent* OtherComp, FVector NormalImpulse, const FHitResult& Hit)
 {
 	if (MovementMode == MOVE_Falling && Velocity.Z < 0.f && FMath::IsNearlyZero(Hit.Normal.Z) && CanWallRun())
