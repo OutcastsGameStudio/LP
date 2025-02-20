@@ -58,6 +58,9 @@ ASR_Character::ASR_Character()
 	// set the energy component to the character
 	EnergyComponent = CreateDefaultSubobject<USR_EnergyComponent>(TEXT("EnergyComponent"));
 
+
+	// set the debug component
+	DebugComponent = CreateDefaultSubobject<USR_DebugComponent>(TEXT("DebugComponent"));
 	// Note: The skeletal mesh and anim blueprint references on the Mesh component (inherited from Character) 
 	// are set in the derived blueprint asset named ThirdPersonCharacter (to avoid direct content references in C++)
 }
@@ -68,6 +71,16 @@ void ASR_Character::Tick(float DeltaTime)
 
 	CheckForLedgeGrab();
 	ClimbUp();
+}
+
+void ASR_Character::SetLedgeGrabHeight(float NewLedgeGrabHeight)
+{
+	LedgeGrabHeight = NewLedgeGrabHeight;
+}
+
+float ASR_Character::GetLedgeGrabHeight() const
+{
+	return LedgeGrabHeight;
 }
 
 void ASR_Character::BeginPlay()
@@ -194,35 +207,31 @@ void ASR_Character::CheckForLedgeGrab()
 			+ FVector(0, 0, LedgeGrabHeight);
 	
 		FVector VerticalFrontEnd = EdgeCheckStart 
-		   + Forward * 60.0f ;
+		   + Forward * 10.0f ;
 
-		FVector EdgeCheckEnd = VerticalFrontEnd  // Distance vers l'avant
-	   - FVector(0, 0, 100.0f);
-	
-		
+		FVector EdgeCheckEnd = VerticalFrontEnd  // Distance vers le bas
+			- FVector(0, 0, LedgeGrabHeight);
+
 		FHitResult EdgeHit; // if we hit a face of the wall
 		bool bFoundEdge = GetWorld()->LineTraceSingleByChannel(EdgeHit,
-			EdgeCheckStart,
+			VerticalFrontEnd,
 			EdgeCheckEnd,
 			ECC_Visibility,
 			QueryParams);
 
-		FHitResult VerticalHit; // if we hit a vertical wall
-		bool bFoundVerticalWall = GetWorld()->LineTraceSingleByChannel(VerticalHit,
-			EdgeCheckStart,
-			VerticalFrontEnd,
-			ECC_Visibility,
-			QueryParams);
-
-		if (bFoundEdge && !bFoundVerticalWall) // we hit a face of the wall but not a vertical wall
+		if (bFoundEdge) // we hit a face of the wall but not a vertical wall
 		{
-			LedgeLocation = WallHit.ImpactPoint 
-				- Forward * 30.0f 
-				+ FVector(0, 0, GetCapsuleComponent()->GetScaledCapsuleHalfHeight());
-            
-			bIsHanging = true;
-			GetCharacterMovement()->SetMovementMode(MOVE_Flying);
-			GetCharacterMovement()->StopMovementImmediately();
+			auto distanceZFromPlayer = FMath::Abs(EdgeHit.ImpactPoint.Z - GetActorLocation().Z);
+			if(distanceZFromPlayer < LedgeGrabHeight)
+			{
+				LedgeLocation = WallHit.ImpactPoint 
+					- Forward * 30.0f 
+					+ FVector(0, 0, GetCapsuleComponent()->GetScaledCapsuleHalfHeight());
+	            
+				bIsHanging = true;
+				GetCharacterMovement()->SetMovementMode(MOVE_Flying);
+				GetCharacterMovement()->StopMovementImmediately();
+			}
 		}
 	}
 }
