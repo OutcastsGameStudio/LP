@@ -11,7 +11,6 @@
 #include "EnhancedInputComponent.h"
 #include "EnhancedInputSubsystems.h"
 #include "InputActionValue.h"
-#include "Components/Acceleration/SR_AccelerationComponent.h"
 #include "Components/Dash/SR_DashComponent.h"
 #include "Components/Energy Component/SR_EnergyComponent.h"
 #include "Components/Slide/SR_SlideComponent.h"
@@ -47,12 +46,9 @@ ASR_Character::ASR_Character()
 	GetCharacterMovement()->BrakingDecelerationFalling = 1500.0f;
 
 	// Create a follow camera
-	FollowCamera = CreateDefaultSubobject<UCameraComponent>(TEXT("FollowCamera")); 
-	FollowCamera->SetupAttachment(GetMesh(), FName("head")); 
+	FollowCamera = CreateDefaultSubobject<UCameraComponent>(TEXT("FollowCamera"));
+	FollowCamera->SetupAttachment(GetMesh(), FName("Camera"));
 	FollowCamera->bUsePawnControlRotation = false; // Camera does not rotate relative to arm
-
-	// Set the acceleration component to the character
-	AccelerationComponent = CreateDefaultSubobject<USR_AccelerationComponent>(TEXT("AccelerationComponent"));
 
 	SlideComponent = CreateDefaultSubobject<USR_SlideComponent>(TEXT("SlideComponent"));
 
@@ -87,8 +83,6 @@ void ASR_Character::BeginPlay()
 			Subsystem->AddMappingContext(DefaultMappingContext, 0);
 		}
 	}
-
-	GEngine->AddOnScreenDebugMessage(-1, 5.f, FColor::Blue, TEXT("CapsuleHalfHeight: ") + FString::FromInt(GetCapsuleComponent()->GetScaledCapsuleHalfHeight()));
 }
 
 //////////////////////////////////////////////////////////////////////////
@@ -146,13 +140,6 @@ void ASR_Character::Move(const FInputActionValue& Value)
 		// add movement 
 		AddMovementInput(ForwardDirection, MovementVector.Y);
 		AddMovementInput(RightDirection, MovementVector.X);
-
-		// if the character is moving then accelerate the character and increase the max walk speed
-		if (MovementVector.Size() > 0)
-		{
-			GetCharacterMovement()->MaxWalkSpeed = AccelerationComponent->Accelerate(GetCharacterMovement()->MaxWalkSpeed, GetWorld()->GetDeltaSeconds());
-			UE_LOG(LogTemp, Warning, TEXT("Current Speed: %f"), GetCharacterMovement()->MaxWalkSpeed);
-		}
 		
 	}
 }

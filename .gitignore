@@ -2,6 +2,8 @@
 .vs/
 .idea/
 
+*.pdb
+
 # Compiled Object files
 *.slo
 *.lo
