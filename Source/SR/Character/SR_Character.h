@@ -7,6 +7,7 @@
 #include "GameFramework/Character.h"
 #include "Logging/LogMacros.h"
 #include "Components/Debug/SR_DebugComponent.h"
+#include "Components/Interaction/SR_InteractionComponent.h"
 #include "SR_Character.generated.h"
 
 class USpringArmComponent;
@@ -131,8 +132,13 @@ protected:
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Energy")
 	class USR_EnergyComponent* EnergyComponent;
 
+	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Interaction")
+	class USR_InteractionComponent* InteractionComponent;
+	
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Debug")
 	class USR_DebugComponent* DebugComponent;
+
+	
 	
 	virtual void SetupPlayerInputComponent(class UInputComponent* PlayerInputComponent) override;
 	
