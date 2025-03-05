@@ -64,6 +64,9 @@ private:
 
 public:
 	ASR_Character();
+
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Camera")
+	bool bRotateCharacterWithCamera = true;
 	
 	void Tick(float DeltaTime);
 

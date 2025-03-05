@@ -69,6 +69,19 @@ void ASR_Character::Tick(float DeltaTime)
 {
 	Super::Tick(DeltaTime);
 
+	if (bRotateCharacterWithCamera && Controller)
+	{
+		// Obtenir la rotation du contrôleur (caméra)
+		FRotator ControlRotation = Controller->GetControlRotation();
+        
+		// Nous voulons seulement la rotation Yaw (horizontale)
+		ControlRotation.Pitch = 0.0f;
+		ControlRotation.Roll = 0.0f;
+        
+		// Faire tourner le personnage pour qu'il s'aligne avec la caméra
+		SetActorRotation(ControlRotation);
+	}
+
 	CheckForLedgeGrab();
 	ClimbUp();
 }
