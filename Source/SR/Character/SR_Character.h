@@ -55,6 +55,9 @@ class SR_API ASR_Character : public ACharacter
 
 public:
 	ASR_Character();
+
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Camera")
+	bool bRotateCharacterWithCamera = true;
 	
 	void Tick(float DeltaTime);
 
