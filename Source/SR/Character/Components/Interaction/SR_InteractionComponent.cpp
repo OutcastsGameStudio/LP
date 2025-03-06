@@ -9,7 +9,6 @@ USR_InteractionComponent::USR_InteractionComponent()
 {
     PrimaryComponentTick.bCanEverTick = true;
     DetectedActor = nullptr;
-    PreviousDetectedActor = nullptr;
 }
 
 void USR_InteractionComponent::BeginPlay()
@@ -109,22 +108,7 @@ void USR_InteractionComponent::FindInteractibleActorInView()
         }
     }
 
-    // Mettre à jour la visibilité
-    if (ClosestToCenterActor != PreviousDetectedActor)
-    {
-        if (IsValid(PreviousDetectedActor) && PreviousDetectedActor->Implements<USR_InteractibleInterface>())
-        {
-            ISR_InteractibleInterface::Execute_SetIsSeen(PreviousDetectedActor, false);
-        }
-
-        if (IsValid(ClosestToCenterActor) && ClosestToCenterActor->Implements<USR_InteractibleInterface>())
-        {
-            ISR_InteractibleInterface::Execute_SetIsSeen(ClosestToCenterActor, true);
-        }
-
-        PreviousDetectedActor = ClosestToCenterActor;
-    }
-
+    // Simplement mettre à jour l'acteur détecté sans modifier son état
     DetectedActor = ClosestToCenterActor;
 
     // Debug

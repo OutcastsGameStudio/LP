@@ -4,21 +4,7 @@
 #include "Components/ActorComponent.h"
 #include "SR_InteractionComponent.generated.h"
 
-UINTERFACE(Blueprintable)
-class USR_InteractibleInterface : public UInterface
-{
-	GENERATED_BODY()
-};
 
-class ISR_InteractibleInterface
-{
-	GENERATED_BODY()
-
-public:
-	UFUNCTION(BlueprintNativeEvent, BlueprintCallable, Category = "Interaction")
-	void SetIsSeen(bool bNewIsSeen);
-	virtual void SetIsSeen_Implementation(bool bNewIsSeen) {}
-};
 
 UCLASS(ClassGroup=(Custom), meta=(BlueprintSpawnableComponent))
 class SR_API USR_InteractionComponent : public UActorComponent
@@ -49,10 +35,6 @@ private:
 	UPROPERTY()
 	AActor* DetectedActor;
 
-	UPROPERTY()
-	AActor* PreviousDetectedActor;
-
 	void FindInteractibleActorInView();
-	void UpdateActorVisibility(AActor* NewDetectedActor);
 	bool IsActorInViewAndRange(const AActor* Actor, const FVector& CameraLocation, const FVector& CameraForward, float& OutDistanceFromCenter);
 };
