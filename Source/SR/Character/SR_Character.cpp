@@ -58,7 +58,8 @@ ASR_Character::ASR_Character()
 	// set the energy component to the character
 	EnergyComponent = CreateDefaultSubobject<USR_EnergyComponent>(TEXT("EnergyComponent"));
 
-
+	InteractionComponent = CreateDefaultSubobject<USR_InteractionComponent>(TEXT("InteractionComponent"));
+	
 	// set the debug component
 	DebugComponent = CreateDefaultSubobject<USR_DebugComponent>(TEXT("DebugComponent"));
 	// Note: The skeletal mesh and anim blueprint references on the Mesh component (inherited from Character) 
