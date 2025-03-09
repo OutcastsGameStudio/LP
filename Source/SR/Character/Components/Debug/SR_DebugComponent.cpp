@@ -225,6 +225,16 @@ void USR_DebugComponent::UpdateTable(FName RowName, float NewValue)
 	}
 }
 
+bool USR_DebugComponent::GetIsCharacterWallRunning()
+{
+	return CharacterMovementComponent->IsWallRunning();
+}
+
+bool USR_DebugComponent::GetIsCharacterClimbing()
+{
+	return CharacterOwner->IsHanging();
+}
+
 void USR_DebugComponent::LoadDataTable()
 {
 	if(DebugDataTable->GetRowNames().Num() == 0)

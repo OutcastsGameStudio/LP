@@ -218,13 +218,13 @@ void ASR_Character::CheckForLedgeGrab()
 	if(bHitWall)
 	{
 		FVector EdgeCheckStart = WallHit.ImpactPoint 
-			+ FVector(0, 0, LedgeGrabHeight);
+			+ FVector(0, 0, LedgeGrabHeight * 3);  // multiply LedgedGrabHeight by 3 to get greater lattitude for the ledge grab
 	
 		FVector VerticalFrontEnd = EdgeCheckStart 
 		   + Forward * 10.0f ;
 
 		FVector EdgeCheckEnd = VerticalFrontEnd  // Distance vers le bas
-			- FVector(0, 0, LedgeGrabHeight);
+			- FVector(0, 0, LedgeGrabHeight * 3);
 
 		FHitResult EdgeHit; // if we hit a face of the wall
 		bool bFoundEdge = GetWorld()->LineTraceSingleByChannel(EdgeHit,
@@ -233,9 +233,9 @@ void ASR_Character::CheckForLedgeGrab()
 			ECC_Visibility,
 			QueryParams);
 
-		if (bFoundEdge) // we hit a face of the wall but not a vertical wall
+		if (bFoundEdge) // we hit a wall
 		{
-			auto distanceZFromPlayer = FMath::Abs(EdgeHit.ImpactPoint.Z - GetActorLocation().Z);
+			auto distanceZFromPlayer = FMath::Abs(EdgeHit.ImpactPoint.Z - GetActorLocation().Z); 
 			if(distanceZFromPlayer < LedgeGrabHeight)
 			{
 				LedgeLocation = WallHit.ImpactPoint 

@@ -80,6 +80,17 @@ public:
 	void SetValuesFromDataTable();
 
 	void UpdateTable(FName RowName, float NewValue);
+
+
+
+
+// Show variables
+	UFUNCTION(BlueprintCallable, Category = "Is Wall RUn")
+	bool GetIsCharacterWallRunning();
+
+
+	UFUNCTION(BlueprintCallable, Category = "Is Wall Hanging")
+	bool GetIsCharacterClimbing();
 public:
 	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly)
 	UDataTable* DebugDataTable;

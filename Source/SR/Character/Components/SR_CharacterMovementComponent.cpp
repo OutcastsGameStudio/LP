@@ -73,7 +73,7 @@ void USR_CharacterMovementComponent::SetWallRunFallingAcceleration(float NewWall
 
 void USR_CharacterMovementComponent::OnHit(UPrimitiveComponent* HitComponent, AActor* OtherActor, UPrimitiveComponent* OtherComp, FVector NormalImpulse, const FHitResult& Hit)
 {
-	if (MovementMode == MOVE_Falling && Velocity.Z < 0.f && FMath::IsNearlyZero(Hit.Normal.Z) && CanWallRun())
+ 	if (MovementMode == MOVE_Falling && Velocity.Z < 0.f && FMath::Abs(Hit.Normal.Z) < MAX_Z_THRE_HOLD && CanWallRun())
 	{
 		ASR_Character* Character = Cast<ASR_Character>(GetCharacterOwner());
 		if(Character == nullptr || Character->IsHanging()) return;
@@ -108,6 +108,7 @@ void USR_CharacterMovementComponent::PhysWallRun(float deltaTime, int32 Iteratio
 	}
 	else if (!DetectNextWall(Hit))
 	{
+		m_bIsWallRunning = false;
 		SetMovementMode(MOVE_Falling);
 		SafeMoveUpdatedComponent(Delta, UpdatedComponent->GetComponentRotation(), true, Hit);
 	}
@@ -144,6 +145,15 @@ void USR_CharacterMovementComponent::PhysCustom(float deltaTime, int32 Iteration
 		break;
 	default:
 		break;
+	}
+}
+
+void USR_CharacterMovementComponent::PhysFalling(float deltaTime, int32 Iterations)
+{
+	Super::PhysFalling(deltaTime, Iterations);
+	if(m_bIsWallRunning) // trick to handle cases where wall run do not reset for some reasons
+	{
+		m_bIsWallRunning = false;
 	}
 }
 

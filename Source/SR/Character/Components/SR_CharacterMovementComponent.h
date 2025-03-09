@@ -66,6 +66,9 @@ public:
 	{
 		return m_bIsWallRunning;
 	}
+
+
+	void PhysFalling(float deltaTime, int32 Iterations) override;
 private:
 	bool DetectNextWall(FHitResult& Hit);
 	bool CanWallRun();
@@ -73,6 +76,9 @@ private:
 	FVector m_WallRunDirection;
 	FVector m_WallNormal;
 	float WallRunFallingSpeed = 0.f;
+
+
+	float MAX_Z_THRE_HOLD = 0.01;
 /**
  *
  */
