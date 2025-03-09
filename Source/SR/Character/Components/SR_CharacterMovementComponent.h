@@ -79,6 +79,8 @@ private:
 
 
 	float MAX_Z_THRE_HOLD = 0.01;
+	float MAX_VELOCITY_Z_THRE_HOLD = 50.f; // little fix for now to avoid wall only when chartcer is falling, maybe use angle between camera lookAt and wall normal
+	
 /**
  *
  */

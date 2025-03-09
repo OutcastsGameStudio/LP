@@ -73,7 +73,7 @@ void USR_CharacterMovementComponent::SetWallRunFallingAcceleration(float NewWall
 
 void USR_CharacterMovementComponent::OnHit(UPrimitiveComponent* HitComponent, AActor* OtherActor, UPrimitiveComponent* OtherComp, FVector NormalImpulse, const FHitResult& Hit)
 {
- 	if (MovementMode == MOVE_Falling && Velocity.Z < 0.f && FMath::Abs(Hit.Normal.Z) < MAX_Z_THRE_HOLD && CanWallRun())
+ 	if (MovementMode == MOVE_Falling && Velocity.Z < MAX_VELOCITY_Z_THRE_HOLD && FMath::Abs(Hit.Normal.Z) < MAX_Z_THRE_HOLD && CanWallRun())
 	{
 		ASR_Character* Character = Cast<ASR_Character>(GetCharacterOwner());
 		if(Character == nullptr || Character->IsHanging()) return;
