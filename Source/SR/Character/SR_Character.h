@@ -83,6 +83,9 @@ public:
 
 	float GetClimbUpSpeed() const { return ClimbUpSpeed; }
 
+	
+	virtual void Jump() override;
+
 	/**
 	 * @description : Set the custom movement mode of the character
 	 * @param NewCustomMode 

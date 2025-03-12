@@ -191,6 +191,15 @@ void ASR_Character::Look(const FInputActionValue& Value)
 }
 
 
+void ASR_Character::Jump()
+{
+	Super::Jump();
+	if(bIsHanging)
+	{
+		bIsHanging = false;
+	}
+}
+
 void ASR_Character::SetCharacterMovementCustomMode(USR_CharacterMovementComponent::CustomMode NewCustomMode)
 {
 	GetCharacterMovement()->SetMovementMode(MOVE_Custom, NewCustomMode);
