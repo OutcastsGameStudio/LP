@@ -50,7 +50,7 @@ protected:
 
 	// Properties of the dash
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Dash Settings")
-	float DashDistance = 1000.0f;
+	float DashDistance = 500.0f;
 
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Dash Settings")
 	float DashSpeed = 3000.0f;
