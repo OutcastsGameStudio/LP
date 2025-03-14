@@ -251,7 +251,7 @@ bool USR_CharacterMovementComponent::CanWallRun()
 	return !(bHit && bHit1);
 }
 
-void USR_CharacterMovementComponent::DebugLineTrace(FHitResult hitResult, bool hit,FColor color, FVector vectorStart, FVector vectorEnd )
+/*void USR_CharacterMovementComponent::DebugLineTrace(FHitResult hitResult, bool hit,FColor color, FVector vectorStart, FVector vectorEnd )
 {
 	DrawDebugLine(
 		GetWorld(),
@@ -275,4 +275,4 @@ void USR_CharacterMovementComponent::DebugLineTrace(FHitResult hitResult, bool h
 			5.0f                    // Duration
 		);
 	}
-}
+}*/
