@@ -78,15 +78,39 @@ void USR_CharacterMovementComponent::OnHit(UPrimitiveComponent* HitComponent, AA
 	{
 		ASR_Character* Character = Cast<ASR_Character>(GetCharacterOwner());
 		if(Character == nullptr || Character->IsHanging()) return;
+		
 		m_bIsWallRunning = true;
+		
+		// Obtient les vecteurs du personnage
 		auto CharacterForwardVector = GetCharacterOwner()->GetActorForwardVector();
-		auto DotProduct = FVector::DotProduct(CharacterForwardVector, -Hit.Normal);
-		auto angle = FMath::RadiansToDegrees(FMath::Acos(DotProduct));
-		if(angle > MaxAngleWallRun || angle <= 15 ) return;
-		SetMovementMode(MOVE_Custom, CUSTOM_WallRun);
-		m_WallNormal = Hit.Normal;
-		FVector WallDirection = FVector::CrossProduct(FVector::UpVector, Hit.Normal);
-		m_WallRunDirection = WallDirection * (GetCharacterOwner()->GetActorForwardVector().Dot(WallDirection) > 0.f ? 1.f : -1.f);
+		auto CharacterRightVector = GetCharacterOwner()->GetActorRightVector();
+		
+		// Calcule les produits scalaires pour détecter l'angle avec le mur
+		float ForwardDotProduct = FVector::DotProduct(CharacterForwardVector, -Hit.Normal);
+		float SideDotProduct = FVector::DotProduct(CharacterRightVector, -Hit.Normal);
+		
+		// Angle entre la direction avant du personnage et la normale du mur
+		float forwardAngle = FMath::RadiansToDegrees(FMath::Acos(ForwardDotProduct));
+		
+		// Angle pour la direction latérale
+		float sideAngle = FMath::RadiansToDegrees(FMath::Acos(SideDotProduct));
+		
+		// On accepte le wallrun si l'angle avant est dans une plage acceptable
+		// OU si l'angle latéral est suffisamment petit (indiquant un impact latéral)
+		bool canWallRunForward = (forwardAngle <= MaxAngleWallRun && forwardAngle >= 15);
+		bool canWallRunSide = (FMath::Abs(sideAngle) <= 30 || FMath::Abs(sideAngle) >= 150);
+		
+		if(canWallRunForward || canWallRunSide)
+		{
+			SetMovementMode(MOVE_Custom, CUSTOM_WallRun);
+			m_WallNormal = Hit.Normal;
+			FVector WallDirection = FVector::CrossProduct(FVector::UpVector, Hit.Normal);
+			m_WallRunDirection = WallDirection * (GetCharacterOwner()->GetActorForwardVector().Dot(WallDirection) > 0.f ? 1.f : -1.f);
+		}
+		else
+		{
+			m_bIsWallRunning = false;
+		}
 	}
 }
 
