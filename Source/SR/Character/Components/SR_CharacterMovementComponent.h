@@ -28,11 +28,11 @@ public:
 	float WallJumpSpeed = 1000.f;
 
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "WallRun", meta = (ToolTip = "Angle maximum a partir duquel on peut faire un wall run"))
-	float MaxAngleWallRun = 60.f;
+	float MaxAngleWallRun = 120.f;
 
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "WallRun",
 	meta = (ToolTip = "Durée maximale du wall run en secondes. Au-delà, le personnage tombe"))
-	float MaxAngleBeforeStop = 120.f;
+	float MaxAngleBeforeStop = 150.f;
 
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "WallRun", meta = (ToolTip = "Acceleration du personnage lorsqu'il tombe du wall run"))
 	float WallRunFallingAcceleration = 5.f;
