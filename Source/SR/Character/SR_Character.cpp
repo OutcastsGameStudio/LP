@@ -22,6 +22,10 @@ ASR_Character::ASR_Character()
 {
 	// Set this character to call Tick() every frame
 	PrimaryActorTick.bCanEverTick = true;
+
+	GetCharacterMovement()->bOrientRotationToMovement = true;
+	GetCharacterMovement()->RotationRate = FRotator(0.0f, 540.0f, 0.0f);
+	GetCharacterMovement()->MaxWalkSpeed = MaxWalkSpeed;
 	
 	// Set size for collision capsule
 	GetCapsuleComponent()->InitCapsuleSize(42.f, 96.0f);
@@ -34,9 +38,7 @@ ASR_Character::ASR_Character()
 	// Configure character movement
 	GetCharacterMovement()->bOrientRotationToMovement = true; // Character moves in the direction of input...	
 	GetCharacterMovement()->RotationRate = FRotator(0.0f, 500.0f, 0.0f); // ...at this rotation rate
-
-	// Note: For faster iteration times these variables, and many more, can be tweaked in the Character Blueprint
-	// instead of recompiling to adjust them
+	
 	GetCharacterMovement()->JumpZVelocity = 700.f;
 	GetCharacterMovement()->AirControl = 0.35f;
 	GetCharacterMovement()->MaxWalkSpeed = 500.f;
@@ -66,6 +68,23 @@ ASR_Character::ASR_Character()
 	// are set in the derived blueprint asset named ThirdPersonCharacter (to avoid direct content references in C++)
 }
 
+void ASR_Character::BeginPlay()
+{
+	// Call the base class  
+	Super::BeginPlay();
+
+	// Add Input Mapping Context
+	if (APlayerController* PlayerController = Cast<APlayerController>(Controller))
+	{
+		if (UEnhancedInputLocalPlayerSubsystem* Subsystem = ULocalPlayer::GetSubsystem<UEnhancedInputLocalPlayerSubsystem>(PlayerController->GetLocalPlayer()))
+		{
+			Subsystem->AddMappingContext(DefaultMappingContext, 0);
+		}
+	}
+
+	SetMaxWalkSpeed(MaxWalkSpeed);
+}
+
 void ASR_Character::Tick(float DeltaTime)
 {
 	Super::Tick(DeltaTime);
@@ -85,7 +104,15 @@ void ASR_Character::Tick(float DeltaTime)
 
 	CheckForLedgeGrab();
 	ClimbUp();
+
+	if (AxisValue > 0.0f)
+	{
+		// Ajout du mouvement selon l'orientation actuelle
+		FVector Direction = GetForwardVector();
+		AddMovementInput(Direction, AxisValue);
+	}
 }
+
 
 void ASR_Character::SetLedgeGrabHeight(float NewLedgeGrabHeight)
 {

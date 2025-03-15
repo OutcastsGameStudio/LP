@@ -55,6 +55,15 @@ class SR_API ASR_Character : public ACharacter
 	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = Input, meta = (AllowPrivateAccess = "true"))
 	UInputAction* ChrouchAction;
 
+	UPROPERTY(EditAnywhere, Category = "Movement")
+	float MaxWalkSpeed = 600.0f;
+
+	UPROPERTY(EditAnywhere, Category = "Movement|Input")
+	float AxisValue = 0.0f;
+    
+	UPROPERTY(EditAnywhere, Category = "Movement")
+	float NewTime = 0.0f;
+
 
 private:
 	float LedgeGrabReachDistance = 70.0f;
@@ -111,6 +120,18 @@ protected:
 
 	/** Called for looking input */
 	void Look(const FInputActionValue& Value);
+
+	void InputAxisCharacterThrottling(float Value);
+
+	FRotator GetControlRotation() const;
+	FVector GetForwardVector() const;
+	void BreakRotator(const FRotator& Rotator, float& X, float& Y, float& Z);
+	FRotator MakeRotator(float X, float Y, float Z);
+	void SetMaxWalkSpeed(float Speed);
+
+	float RotX = 0.0f;
+	float RotY = 0.0f;
+	float RotZ = 0.0f;
 
 	void StartCrouch();
 
