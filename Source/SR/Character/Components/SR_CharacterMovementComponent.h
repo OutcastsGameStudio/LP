@@ -55,7 +55,10 @@ public:
 
 	void SetWallRunFallingAcceleration(float NewWallRunFallingAcceleration);
 
-
+	void SetIsMovingForward(bool isMovingForward)
+	{
+		m_IsMovingForward = isMovingForward;
+	}
 	/**
 	* @description: Stop the wall jump when the character is already wall running 
 	*/
@@ -77,7 +80,6 @@ private:
 	FVector m_WallNormal;
 	float WallRunFallingSpeed = 0.f;
 
-
 	float MAX_Z_THRE_HOLD = 0.01;
 	float MAX_VELOCITY_Z_THRE_HOLD = 50.f; // little fix for now to avoid wall only when chartcer is falling, maybe use angle between camera lookAt and wall normal
 	
@@ -98,10 +100,10 @@ public:
 	}
 private:
 	CustomMode m_CustomMovementMode;
+	bool m_IsMovingForward;
 
 private:
 	//** Debug *//
-private:
 	void DebugLineTrace(FHitResult hitResult, bool hit, FColor color,FVector vectorStart, FVector vectorEnd);
 private:
     UFUNCTION()

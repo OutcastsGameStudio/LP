@@ -39,6 +39,10 @@ class SR_API ASR_Character : public ACharacter
 	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = Input, meta = (AllowPrivateAccess = "true"))
 	UInputAction* MoveAction;
 
+	/** ForwardAction Input Action */
+	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = Input, meta = (AllowPrivateAccess = "true"))
+	UInputAction* ForwardAction;
+
 	/** Look Input Action */
 	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = Input, meta = (AllowPrivateAccess = "true"))
 	UInputAction* LookAction;
@@ -86,6 +90,10 @@ public:
 	
 	virtual void Jump() override;
 
+	void MoveForward();
+
+
+	void StopMoveForward();
 	/**
 	 * @description : Set the custom movement mode of the character
 	 * @param NewCustomMode 
@@ -150,5 +158,7 @@ protected:
 public:
 	/** Returns FollowCamera subobject **/
 	FORCEINLINE class UCameraComponent* GetFollowCamera() const { return FollowCamera; }
-	
+
+	UPROPERTY(VisibleInstanceOnly, BlueprintReadOnly, Category = "Acceleration")
+	USR_CharacterMovementComponent* m_CharacterMovementComponent;
 };
