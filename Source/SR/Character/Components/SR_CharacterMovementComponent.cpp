@@ -74,7 +74,7 @@ void USR_CharacterMovementComponent::SetWallRunFallingAcceleration(float NewWall
 
 void USR_CharacterMovementComponent::OnHit(UPrimitiveComponent* HitComponent, AActor* OtherActor, UPrimitiveComponent* OtherComp, FVector NormalImpulse, const FHitResult& Hit)
 {
- 	if (MovementMode == MOVE_Falling && Velocity.Z < MAX_VELOCITY_Z_THRE_HOLD && FMath::Abs(Hit.Normal.Z) < MAX_Z_THRE_HOLD && CanWallRun())
+ 	if (m_IsMovingForward && FMath::Abs(Hit.Normal.Z) < MAX_Z_THRE_HOLD && CanWallRun())
 	{
 		ASR_Character* Character = Cast<ASR_Character>(GetCharacterOwner());
 		if(Character == nullptr || Character->IsHanging()) return;
@@ -82,7 +82,7 @@ void USR_CharacterMovementComponent::OnHit(UPrimitiveComponent* HitComponent, AA
 		auto CharacterForwardVector = GetCharacterOwner()->GetActorForwardVector();
 		auto DotProduct = FVector::DotProduct(CharacterForwardVector, -Hit.Normal);
 		auto angle = FMath::RadiansToDegrees(FMath::Acos(DotProduct));
-		if(angle > MaxAngleWallRun || angle <= 15 ) return;
+		if(angle <= 15 ) return;
 		SetMovementMode(MOVE_Custom, CUSTOM_WallRun);
 		m_WallNormal = Hit.Normal;
 		FVector WallDirection = FVector::CrossProduct(FVector::UpVector, Hit.Normal);

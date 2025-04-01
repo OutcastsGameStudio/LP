@@ -110,6 +110,7 @@ void ASR_Character::BeginPlay()
 			Subsystem->AddMappingContext(DefaultMappingContext, 0);
 		}
 	}
+	m_CharacterMovementComponent = Cast<USR_CharacterMovementComponent>(GetCharacterMovement());
 }
 
 //////////////////////////////////////////////////////////////////////////
@@ -130,6 +131,9 @@ void ASR_Character::SetupPlayerInputComponent(UInputComponent* PlayerInputCompon
 
 		// Moving
 		EnhancedInputComponent->BindAction(MoveAction, ETriggerEvent::Triggered, this, &ASR_Character::Move);
+
+		EnhancedInputComponent->BindAction(ForwardAction, ETriggerEvent::Started, this, &ASR_Character::MoveForward);
+		EnhancedInputComponent->BindAction(ForwardAction, ETriggerEvent::Completed, this, &ASR_Character::StopMoveForward);
 
 		// Looking
 		EnhancedInputComponent->BindAction(LookAction, ETriggerEvent::Triggered, this, &ASR_Character::Look);
@@ -167,14 +171,13 @@ void ASR_Character::Move(const FInputActionValue& Value)
 		// add movement 
 		AddMovementInput(ForwardDirection, MovementVector.Y);
 		AddMovementInput(RightDirection, MovementVector.X);
-		
 	}
 }
 
 void ASR_Character::StopWallJump()
 {
 	if(bIsHanging) return;
-	Cast<USR_CharacterMovementComponent>(GetCharacterMovement())->StopWallJump();
+	m_CharacterMovementComponent->StopWallJump();
 }
 
 void ASR_Character::Look(const FInputActionValue& Value)
@@ -193,11 +196,28 @@ void ASR_Character::Look(const FInputActionValue& Value)
 
 void ASR_Character::Jump()
 {
-	Super::Jump();
 	if(bIsHanging)
 	{
 		bIsHanging = false;
+		// On vérifie si on est pas sur le sol après avoir terminé le climb
+		if(!GetCharacterMovement()->IsMovingOnGround())
+		{
+			// Si on n'est pas sur le sol, on passe en mode falling
+			GetCharacterMovement()->SetMovementMode(MOVE_Falling);
+		}
+		return;
 	}
+	Super::Jump();
+}
+
+void ASR_Character::MoveForward()
+{
+	m_CharacterMovementComponent->SetIsMovingForward(true);
+}
+
+void ASR_Character::StopMoveForward()
+{
+	m_CharacterMovementComponent->SetIsMovingForward(false);
 }
 
 void ASR_Character::SetCharacterMovementCustomMode(USR_CharacterMovementComponent::CustomMode NewCustomMode)
@@ -277,7 +297,17 @@ void ASR_Character::ClimbUp()
 	if (FVector::Distance(GetActorLocation(), TargetLocation) < 10.0f)
 	{
 		bIsHanging = false;
-		GetCharacterMovement()->SetMovementMode(MOVE_Walking);
+		// Vérifier si le personnage est sur le sol après avoir terminé le climb
+		if(GetCharacterMovement()->IsMovingOnGround())
+		{
+			// S'il est sur le sol, passer en mode walking
+			GetCharacterMovement()->SetMovementMode(MOVE_Walking);
+		}
+		else
+		{
+			// Sinon, il doit tomber
+			GetCharacterMovement()->SetMovementMode(MOVE_Falling);
+		}
 	}
 }
 void ASR_Character::Dash(const FInputActionValue& Value)
