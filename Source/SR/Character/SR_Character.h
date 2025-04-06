@@ -4,6 +4,7 @@
 
 #include "CoreMinimal.h"
 #include "Components/SR_CharacterMovementComponent.h"
+#include "Components/ContextState/SR_ContextStateComponent.h"
 #include "GameFramework/Character.h"
 #include "Logging/LogMacros.h"
 #include "Components/Debug/SR_DebugComponent.h"
@@ -17,6 +18,9 @@ class UInputAction;
 struct FInputActionValue;
 
 DECLARE_LOG_CATEGORY_EXTERN(LogTemplateCharacter, Log, All);
+
+DECLARE_DYNAMIC_MULTICAST_DELEGATE(FOnDashInputPressed);
+DECLARE_DYNAMIC_MULTICAST_DELEGATE(FOnDashInputReleased);
 
 UCLASS()
 class SR_API ASR_Character : public ACharacter
@@ -58,6 +62,17 @@ class SR_API ASR_Character : public ACharacter
 	/** Crouch Input Action */
 	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = Input, meta = (AllowPrivateAccess = "true"))
 	UInputAction* ChrouchAction;
+
+
+
+public:
+
+	// Event dispatchers pour les inputs
+	UPROPERTY(BlueprintAssignable, Category = "Input")
+	FOnDashInputPressed OnDashInputPressed;
+    
+	UPROPERTY(BlueprintAssignable, Category = "Input")
+	FOnDashInputReleased OnDashInputReleased;
 
 
 private:
@@ -131,8 +146,6 @@ protected:
 	UFUNCTION()
 	void StopSlide();
 
-	void Dash(const FInputActionValue& Value);
-
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Dash")
 	class USR_DashComponent* DashComponent;
 
@@ -150,7 +163,6 @@ protected:
 	class USR_DebugComponent* DebugComponent;
 
 	
-	
 	virtual void SetupPlayerInputComponent(class UInputComponent* PlayerInputComponent) override;
 	
 	virtual void BeginPlay();
@@ -161,4 +173,19 @@ public:
 
 	UPROPERTY(VisibleInstanceOnly, BlueprintReadOnly, Category = "Acceleration")
 	USR_CharacterMovementComponent* m_CharacterMovementComponent;
+
+private:
+	UPROPERTY()
+	USR_ContextStateComponent* ContextStateComponent;
+
+	UPROPERTY()
+	USR_MotionController* MotionController;
+
+	void OnDashPressed(const FInputActionValue& Value);
+
+	void OnDashReleased(const FInputActionValue& Value);
+
+public:
+
+	ISR_State* GetState(MotionState StateName) const;
 };

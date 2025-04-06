@@ -5,11 +5,15 @@
 #include "CoreMinimal.h"
 #include "Components/ActorComponent.h"
 #include "GameFramework/CharacterMovementComponent.h"
+#include "SR/Character/SR_Character.h"
+#include "SR/Character/Components/ContextState/SR_State.h"
 #include "SR_DashComponent.generated.h"
 
 
 UCLASS(ClassGroup=(Custom), meta=(BlueprintSpawnableComponent))
-class SR_API USR_DashComponent : public UActorComponent
+
+
+class SR_API USR_DashComponent : public UActorComponent, public ISR_State
 {
 	GENERATED_BODY()
 
@@ -46,7 +50,7 @@ protected:
 
 	// Reference to the owner character
 	UPROPERTY()
-	class ACharacter* OwnerCharacter;
+	ASR_Character* OwnerCharacter;
 
 	// Properties of the dash
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Dash Settings")
@@ -70,9 +74,6 @@ protected:
 	float CurveValue = 0.0f;
 
 private:
-	// Dash update
-	void UpdateDash(float DeltaTime);
-
 	// End of the dash
 	void EndDash();
 
@@ -88,4 +89,24 @@ private:
 	// Dash State
 	bool bIsDashing = false;
 	bool bCanDash = true;
+
+
+public:
+	virtual void EnterState() override;
+	
+	UFUNCTION(BlueprintCallable, Category = "Movement")
+	virtual void LeaveState(int32 rootMotionId, bool bForced = false) override;
+	
+	virtual bool LookAheadQuery() override;
+	virtual void UpdateState() override;
+	virtual FName GetStateName() const override;
+	virtual int32 GetStatePriority() const override;
+	virtual bool IsStateActive() const override;
+
+
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Dash Settings", meta = (ExposeOnSpawn = true))
+	UCurveFloat* StrengthOverTime = nullptr;
+private:
+	int32 m_CurrentRootMotionID = 0;
+	bool bIsStateActive = false;
 };

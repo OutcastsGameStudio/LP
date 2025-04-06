@@ -11,6 +11,7 @@
 #include "EnhancedInputComponent.h"
 #include "EnhancedInputSubsystems.h"
 #include "InputActionValue.h"
+#include "Components/ContextState/SR_ContextStateComponent.h"
 #include "Components/Dash/SR_DashComponent.h"
 #include "Components/Energy Component/SR_EnergyComponent.h"
 #include "Components/Slide/SR_SlideComponent.h"
@@ -52,9 +53,6 @@ ASR_Character::ASR_Character()
 
 	SlideComponent = CreateDefaultSubobject<USR_SlideComponent>(TEXT("SlideComponent"));
 
-	// Set the dash component to the character
-	DashComponent = CreateDefaultSubobject<USR_DashComponent>(TEXT("DashComponent"));
-
 	// set the energy component to the character
 	EnergyComponent = CreateDefaultSubobject<USR_EnergyComponent>(TEXT("EnergyComponent"));
 
@@ -62,6 +60,14 @@ ASR_Character::ASR_Character()
 	
 	// set the debug component
 	DebugComponent = CreateDefaultSubobject<USR_DebugComponent>(TEXT("DebugComponent"));
+
+	// ==== STATE CORE SYSTEM COMPONENTS ====
+	ContextStateComponent = CreateDefaultSubobject<USR_ContextStateComponent>(TEXT("ContextStateComponent"));
+	MotionController = CreateDefaultSubobject<USR_MotionController>(TEXT("MotionController"));
+
+	// ==== STATE COMPONENTS IMPLEMENTS ISR_STATE INTERFACE ====
+	DashComponent = CreateDefaultSubobject<USR_DashComponent>(TEXT("DashComponent"));
+
 	// Note: The skeletal mesh and anim blueprint references on the Mesh component (inherited from Character) 
 	// are set in the derived blueprint asset named ThirdPersonCharacter (to avoid direct content references in C++)
 }
@@ -113,6 +119,28 @@ void ASR_Character::BeginPlay()
 	m_CharacterMovementComponent = Cast<USR_CharacterMovementComponent>(GetCharacterMovement());
 }
 
+void ASR_Character::OnDashPressed(const FInputActionValue& Value)
+{
+	OnDashInputPressed.Broadcast();
+}
+
+void ASR_Character::OnDashReleased(const FInputActionValue& Value)
+{
+	OnDashInputReleased.Broadcast();
+}
+
+// Method by state core components used to retrieve State component from the character casted as ISR_STATE 
+ISR_State* ASR_Character::GetState(MotionState StateName) const
+{
+	switch(StateName)
+	{
+		case MotionState::DASH:
+			return Cast<ISR_State>(DashComponent);
+		default:
+			return nullptr;
+	}
+}
+
 //////////////////////////////////////////////////////////////////////////
 // Input
 
@@ -139,7 +167,8 @@ void ASR_Character::SetupPlayerInputComponent(UInputComponent* PlayerInputCompon
 		EnhancedInputComponent->BindAction(LookAction, ETriggerEvent::Triggered, this, &ASR_Character::Look);
 
 		// Dashing
-		EnhancedInputComponent->BindAction(DashAction, ETriggerEvent::Triggered, this, &ASR_Character::Dash);
+		EnhancedInputComponent->BindAction(DashAction, ETriggerEvent::Started, this, &ASR_Character::OnDashPressed);
+		EnhancedInputComponent->BindAction(DashAction, ETriggerEvent::Completed, this, &ASR_Character::OnDashReleased);
 
 		// Slide
 		EnhancedInputComponent->BindAction(SlideAction, ETriggerEvent::Started, this, &ASR_Character::Slide);
@@ -310,22 +339,7 @@ void ASR_Character::ClimbUp()
 		}
 	}
 }
-void ASR_Character::Dash(const FInputActionValue& Value)
-{
-		FVector CharacterForward = GetActorForwardVector();
-		FVector CharacterRight = GetActorRightVector();
 
-		//if the character is not moving then dash in the direction of the character forward vector
-		if (Value.Get<FVector2D>().Size() == 0)
-		{
-			DashComponent->DashDirection = CharacterForward;
-		}
-		else
-		{
-			DashComponent->DashDirection = CharacterForward * Value.Get<FVector2D>().X + CharacterRight * Value.Get<FVector2D>().Y;
-		}		
-		DashComponent->Dash();	
-}
 
 void ASR_Character::Slide()
 {

@@ -51,7 +51,6 @@ public:
 	UFUNCTION(BlueprintCallable, Category = "Ledge Grab Height")
 	float GetWallJumpSpeed();
 
-
 	UFUNCTION(BlueprintCallable, Category = "Ledge Grab Height")
 	void SetWallJumpSpeed(float NewWallJumpSpeed);
 
