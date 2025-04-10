@@ -64,6 +64,9 @@ void USR_DashComponent::Dash()
     CurrentDashTime = 0.0f;
 
     CurveValue = 0.0f;
+
+    CharacterGravityScale = CharacterMovement->GravityScale;
+    CharacterBrakingDecelerationFalling = CharacterMovement->BrakingDecelerationFalling;
     
     // Desactivate gravity
     CharacterMovement->GravityScale = 0.0f;
@@ -120,8 +123,8 @@ void USR_DashComponent::EndDash()
     if (!CharacterMovement) return;
 
     // reset the character movement
-    CharacterMovement->GravityScale = 1.0f;
-    CharacterMovement->BrakingDecelerationFalling = 960.0f; // Valeur par défaut
+    CharacterMovement->GravityScale = CharacterGravityScale;
+    CharacterMovement->BrakingDecelerationFalling = CharacterBrakingDecelerationFalling; // Valeur par défaut
 
     CharacterMovement->SetMovementMode(MOVE_Walking);
     
