@@ -64,6 +64,12 @@ public:
 
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "WallRun",meta = (ToolTip = "Durée maximale du wall run en secondes. Au-delà, le personnage tombe"))
 	float WallJumpRunForce = 3.f;
+	
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "WallRun",meta = (ToolTip = "Durée maximale du wall run en secondes. Au-delà, le personnage tombe"))
+	float WallRunDecelerationRatio = 0.8;
+
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "WallRun",meta = (ToolTip = "Durée maximale du wall run en secondes. Au-delà, le personnage tombe"))
+	float MinWallRunSpeed = 10.f;
 private:
 	UPROPERTY()
 	UCharacterMovementComponent* CharacterMovement;
@@ -93,17 +99,15 @@ private:
 	FVector m_WallNormal;
 	FVector m_WallRunDirection;
 
-	int32 m_WallRunMainMotionId = -1;
-
-
+	float WallRunFallingSpeed;
+	
+	void UpdateState(float deltaTime);
 	
 	UFUNCTION()
 	void OnJumpButtonPressed();
 
-
 	UFUNCTION()
 	void OnJumpButtonReleased();
-
 
 	// Debug
 	void DebugLineTrace(FHitResult hitResult, bool hit, FColor color,FVector vectorStart, FVector vectorEnd);

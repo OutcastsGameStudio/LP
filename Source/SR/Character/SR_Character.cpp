@@ -250,17 +250,17 @@ void ASR_Character::Look(const FInputActionValue& Value)
 
 void ASR_Character::Jump()
 {
-	// if(bIsHanging)
-	// {
-	// 	bIsHanging = false;
-	// 	// On vérifie si on est pas sur le sol après avoir terminé le climb
-	// 	if(!GetCharacterMovement()->IsMovingOnGround())
-	// 	{
-	// 		// Si on n'est pas sur le sol, on passe en mode falling
-	// 		GetCharacterMovement()->SetMovementMode(MOVE_Falling);
-	// 	}
-	// 	return;
-	// }
+	if(ContextStateComponent->GetCurrentMotionState() == MotionState::CLIMB)
+	{
+		ContextStateComponent->TransitionState(MotionState::NONE);
+		// On vérifie si on est pas sur le sol après avoir terminé le climb
+		if(!GetCharacterMovement()->IsMovingOnGround())
+		{
+			// Si on n'est pas sur le sol, on passe en mode falling
+			GetCharacterMovement()->SetMovementMode(MOVE_Falling);
+		}
+		return;
+	}
 	if(b_CurrentState == MotionState::WALL_JUMP)
 		return;
 	Super::Jump();

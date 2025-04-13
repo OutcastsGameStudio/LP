@@ -15,7 +15,6 @@ USR_WallRunComponent::USR_WallRunComponent()
 	// off to improve performance if you don't need them.
 	PrimaryComponentTick.bCanEverTick = true;
 
-	// ...
 }
 
 
@@ -45,7 +44,6 @@ void USR_WallRunComponent::BeginPlay()
 }
 
 
-// Called every frame
 void USR_WallRunComponent::TickComponent(float DeltaTime, ELevelTick TickType,
                                          FActorComponentTickFunction* ThisTickFunction)
 {
@@ -59,7 +57,7 @@ void USR_WallRunComponent::TickComponent(float DeltaTime, ELevelTick TickType,
 		if (!DetectNextWall(Hit))
 		{
 			// Plus de mur, arrêter le wall run
-			// StopWallRun();
+			// StopWallRun(); @TODO: maybe need it ?
 		}
 		else
 		{
@@ -69,17 +67,14 @@ void USR_WallRunComponent::TickComponent(float DeltaTime, ELevelTick TickType,
 			auto angle = FMath::RadiansToDegrees(FMath::Acos(DotProduct));
 			if (angle > MaxAngleBeforeStop)
 			{
-				// StopWallRun();
+				// StopWallRun(); @TODO: maybe need it ?
 			}
 		}
 	}
     
-	// Garder le check pour savoir si on peut wall run
-	// CanWallRun();
-
-	// ...
+	if(!bIsStateActive) return;
+	UpdateState(DeltaTime);
 }
-
 bool USR_WallRunComponent::DetectNextWall(FHitResult& Hit)
 {
 	UCapsuleComponent* Capsule = OwnerCharacter->GetCapsuleComponent();
@@ -98,7 +93,7 @@ bool USR_WallRunComponent::DetectNextWall(FHitResult& Hit)
 void USR_WallRunComponent::OnHit(UPrimitiveComponent* HitComponent, AActor* OtherActor, UPrimitiveComponent* OtherComp,
 	FVector NormalImpulse, const FHitResult& Hit)
 {
-	if(!bIsStateActive && m_IsMovingForward && FMath::Abs(Hit.Normal.Z) < MAX_Z_THRE_HOLD &&  CheckIfNotInCorner())
+	if(!bIsStateActive && m_IsMovingForward && FMath::Abs(Hit.Normal.Z) < MAX_Z_THRE_HOLD &&  CheckIfNotInCorner() && CharacterMovement->MovementMode == MOVE_Falling)
 	{
 		auto CharacterForwardVector = OwnerCharacter->GetActorForwardVector();
 		auto DotProduct = FVector::DotProduct(CharacterForwardVector, -Hit.Normal);
@@ -126,13 +121,12 @@ void USR_WallRunComponent::EnterState(void* data)
 		UE_LOG(LogTemp, Warning, TEXT("USR_WallRunComponent::EnterState() - State is already active"));
 		return;
 	}
-	UpdateState();
 	bIsStateActive = true;
+	CharacterMovement->SetMovementMode(MOVE_Custom);
 }
 
 void USR_WallRunComponent::LeaveState(int32 rootMotionId, bool bForced)
 {
-	if(rootMotionId != m_WallRunMainMotionId) return;
 	bIsStateActive = false;
 	StopWallRun();
 	ContextStateComponent->TransitionState(MotionState::NONE, bForced);
@@ -145,76 +139,6 @@ bool USR_WallRunComponent::LookAheadQuery()
 
 void USR_WallRunComponent::UpdateState()
 {
-	// Annuler tout mouvement existant
-	if (m_WallRunMainMotionId != -1)
-	{
-		MotionController->CancelRootMotion(m_WallRunMainMotionId);
-		m_WallRunMainMotionId = -1;
-	}
-
-	DrawDebugLine(
-		GetWorld(),
-		OwnerCharacter->GetActorLocation(),
-		OwnerCharacter->GetActorLocation() + m_WallRunDirection,
-		FColor::Green,
-		false,
-		10.f,
-		0,
-		1.f
-	);
-
-	DrawDebugLine(
-	GetWorld(),
-	OwnerCharacter->GetActorLocation(),
-	OwnerCharacter->GetActorLocation() + m_WallRunDirection + FVector(0, 0, 1),
-	FColor::Red,
-	false,
-	10.f,
-	0,
-	1.f
-);
-	
-	// Configurer la requête pour le mouvement horizontal
-	FRootMotionRequest WallRunRequest;
-	WallRunRequest.MovementName = FName("WallRun_Main");
-	WallRunRequest.Direction = m_WallRunDirection;
-	WallRunRequest.Strength = 1.0f * ForceMultiplier;
-	WallRunRequest.Duration = Duration; // @TODO Configurable
-	WallRunRequest.bIsAdditive = true;
-	WallRunRequest.Priority = RootMotionPriority::Medium;
-	WallRunRequest.StrengthOverTime = WallRunStrengthCurve;
-	WallRunRequest.VelocityOnFinish = ERootMotionFinishVelocityMode::MaintainLastRootMotionVelocity;
-	// WallRunRequest.SetVelocityOnFinish = m_WallRunDirection * MaxWalkSpeed * 0.8f;
-	// WallRunRequest.bEnableGravity = true;
-    
-	// Appliquer le mouvement principal
-	m_WallRunMainMotionId = MotionController->ApplyRootMotion(WallRunRequest);
-    
-	// Configurer la requête pour coller au mur
-	FRootMotionRequest WallStickRequest;
-	WallStickRequest.MovementName = FName("WallRun_Stick");
-	WallStickRequest.Direction = -m_WallNormal;
-	WallStickRequest.Strength = 1.0f * StickingRatio;
-	WallStickRequest.Duration = Duration;
-	WallStickRequest.bIsAdditive = true;
-	WallStickRequest.Priority = RootMotionPriority::Low;
-	WallStickRequest.VelocityOnFinish = ERootMotionFinishVelocityMode::ClampVelocity;
-	WallStickRequest.bEnableGravity = false;
- //    
-	// // Appliquer la force de collage au mur
-	MotionController->ApplyRootMotion(WallStickRequest);
- //    
-	// // Appliquer une force vers le bas progressive mais plus faible
-	// FRootMotionRequest GravityRequest;
-	// GravityRequest.MovementName = FName("WallRun_Gravity");
-	// GravityRequest.Direction = FVector(0, 0, -1);
-	// GravityRequest.Strength = WallRunFallingAcceleration;
-	// GravityRequest.Duration = 3.0f;
-	// GravityRequest.bIsAdditive = true;
-	// GravityRequest.Priority = RootMotionPriority::Low;
-	// GravityRequest.bEnableGravity = false;
- //    
-	// MotionController->ApplyRootMotion(GravityRequest);
 }
 
 FName USR_WallRunComponent::GetStateName() const
@@ -224,7 +148,7 @@ FName USR_WallRunComponent::GetStateName() const
 
 int32 USR_WallRunComponent::GetStatePriority() const
 {
-	return 1; //@TODO: see what priority we want to give to the wall run and what the async root movement do with this 
+	return 1; //@TODO: see what priority we want to give to the wall run and what the async root movement do with this, should be used in asyncmovement request payload but OSEF for now
 }
 
 bool USR_WallRunComponent::IsStateActive() const
@@ -242,8 +166,7 @@ void USR_WallRunComponent::OnMoveForwardInputReleased()
 	m_IsMovingForward = false;
 }
 
-
-// check if the character i not going to trigger a wall run on a corner
+// check if the character is not going to trigger a wall run on a corner
 bool USR_WallRunComponent::CheckIfNotInCorner()
 {
 	float rotation = 45.f;
@@ -292,9 +215,15 @@ bool USR_WallRunComponent::CheckIfNotInCorner()
 		QueryParams1
 	);
 
+	/*
+	 * Debugging
+	 */
 	// DebugLineTrace(HitResult, bHit, FColor::Green,OwnerCharacter->GetActorLocation(), OwnerCharacter->GetActorLocation() + RightVector * magnitude);
 	// DebugLineTrace(HitResult1, bHit1, FColor::Yellow, OwnerCharacter->GetActorLocation(), OwnerCharacter->GetActorLocation() + LeftVector * magnitude);
-	auto u = !(bHit && bHit1);
+	/*
+	* Debugging
+	*/
+	
 	return !(bHit && bHit1);
 }
 
@@ -303,7 +232,57 @@ void USR_WallRunComponent::StopWallRun()
 	bIsStateActive = false;
 	OwnerCharacter->GetCharacterMovement()->SetMovementMode(MOVE_Falling);
 	ContextStateComponent->TransitionState(MotionState::NONE, true);
-	// OwnerCharacter->GetCharacterMovement()->SafeMoveUpdatedComponent(Delta, UpdatedComponent->GetComponentRotation(), true, Hit);
+}
+
+void USR_WallRunComponent::UpdateState(float deltaTime)
+{
+    WallRunFallingSpeed += WallRunFallingAcceleration * deltaTime;
+    
+    FVector CurrentVelocity = CharacterMovement->Velocity;
+    float CurrentSpeed = FVector::DotProduct(CurrentVelocity, m_WallRunDirection);
+    float WallRunSpeed = CurrentSpeed;
+    
+    // Progressive resistance to simulate friction
+    WallRunSpeed = FMath::Max(WallRunSpeed * (1.0f - WallRunDecelerationRatio * deltaTime), MinWallRunSpeed);
+
+	if(WallRunSpeed <= MinWallRunSpeed)
+	{
+		return StopWallRun();
+	}
+	GEngine->AddOnScreenDebugMessage(-1, 5.f, FColor::Red, TEXT("WallRunSpeed: ") + FString::SanitizeFloat(WallRunSpeed));
+    
+    CharacterMovement->Velocity = m_WallRunDirection * WallRunSpeed;
+
+	// controlled gravity
+    CharacterMovement->Velocity.Z = CharacterMovement->Velocity.Z - WallRunFallingSpeed;
+    
+    FVector Delta = CharacterMovement->Velocity * deltaTime;
+    FHitResult Hit(1.f);
+    
+    CharacterMovement->SafeMoveUpdatedComponent(Delta, CharacterMovement->UpdatedComponent->GetComponentRotation(), true, Hit);
+
+    if (Hit.IsValidBlockingHit() && Hit.Normal.Z > 0.f)
+    {
+        if (Hit.Normal.Z > 0.5f)
+        {
+            CharacterMovement->SetMovementMode(MOVE_Walking, 0);
+        }
+    }
+    else if (!DetectNextWall(Hit))
+    {
+        bIsStateActive = false;
+        CharacterMovement->SetMovementMode(MOVE_Falling);
+        CharacterMovement->SafeMoveUpdatedComponent(Delta, CharacterMovement->UpdatedComponent->GetComponentRotation(), true, Hit);
+    }
+    
+    auto CharacterForwardVector = OwnerCharacter->GetActorForwardVector();
+    auto DotProduct = FVector::DotProduct(CharacterForwardVector, -Hit.Normal);
+    auto angle = FMath::RadiansToDegrees(FMath::Acos(DotProduct));
+    if(angle > MaxAngleBeforeStop)
+    {
+        bIsStateActive = false;
+        CharacterMovement->SetMovementMode(MOVE_Falling);
+    }
 }
 
 void USR_WallRunComponent::OnJumpButtonPressed()
@@ -313,9 +292,9 @@ void USR_WallRunComponent::OnJumpButtonPressed()
 	FWallJumpData WallJumpData;
 	WallJumpData.WallRunDirection = m_WallRunDirection;
 	WallJumpData.WallNormal = m_WallNormal;
-
 	void* Data = &WallJumpData;
 	ContextStateComponent->TransitionState(MotionState::WALL_JUMP, Data, true);
+	OwnerCharacter->GetCharacterMovement()->SetMovementMode(MOVE_Falling);
 }
 
 void USR_WallRunComponent::OnJumpButtonReleased()
