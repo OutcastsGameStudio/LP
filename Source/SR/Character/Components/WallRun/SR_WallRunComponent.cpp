@@ -59,7 +59,7 @@ void USR_WallRunComponent::TickComponent(float DeltaTime, ELevelTick TickType,
 		if (!DetectNextWall(Hit))
 		{
 			// Plus de mur, arrêter le wall run
-			StopWallRun();
+			// StopWallRun();
 		}
 		else
 		{
@@ -69,7 +69,7 @@ void USR_WallRunComponent::TickComponent(float DeltaTime, ELevelTick TickType,
 			auto angle = FMath::RadiansToDegrees(FMath::Acos(DotProduct));
 			if (angle > MaxAngleBeforeStop)
 			{
-				StopWallRun();
+				// StopWallRun();
 			}
 		}
 	}
@@ -98,7 +98,7 @@ bool USR_WallRunComponent::DetectNextWall(FHitResult& Hit)
 void USR_WallRunComponent::OnHit(UPrimitiveComponent* HitComponent, AActor* OtherActor, UPrimitiveComponent* OtherComp,
 	FVector NormalImpulse, const FHitResult& Hit)
 {
-	if(m_IsMovingForward && FMath::Abs(Hit.Normal.Z) < MAX_Z_THRE_HOLD &&  CheckIfNotInCorner())
+	if(!bIsStateActive && m_IsMovingForward && FMath::Abs(Hit.Normal.Z) < MAX_Z_THRE_HOLD &&  CheckIfNotInCorner())
 	{
 		auto CharacterForwardVector = OwnerCharacter->GetActorForwardVector();
 		auto DotProduct = FVector::DotProduct(CharacterForwardVector, -Hit.Normal);
@@ -116,10 +116,7 @@ void USR_WallRunComponent::OnHit(UPrimitiveComponent* HitComponent, AActor* Othe
 		USR_ContextStateComponent* ContextState = OwnerCharacter->FindComponentByClass<USR_ContextStateComponent>();
 		ContextState->TransitionState(MotionState::WALL_RUN);
 		bIsStateActive =  true;
-	} else {
-		bIsStateActive =  false;
 	}
-	
 }
 
 void USR_WallRunComponent::EnterState(void* data)
@@ -312,9 +309,11 @@ void USR_WallRunComponent::StopWallRun()
 void USR_WallRunComponent::OnJumpButtonPressed()
 {
 	if(!bIsStateActive) return;
+	bIsStateActive = false;
 	FWallJumpData WallJumpData;
 	WallJumpData.WallRunDirection = m_WallRunDirection;
 	WallJumpData.WallNormal = m_WallNormal;
+
 	void* Data = &WallJumpData;
 	ContextStateComponent->TransitionState(MotionState::WALL_JUMP, Data, true);
 }

@@ -35,6 +35,8 @@ void USR_ContextStateComponent::TickComponent(float DeltaTime, ELevelTick TickTy
 
 void USR_ContextStateComponent::TransitionState(MotionState NewStateName, bool bForced)
 {
+	DebugState(NewStateName);
+	TransitionGuard(NewStateName);
 	m_CurrentMotionState = NewStateName;
 	if(NewStateName == MotionState::NONE)
 	{
@@ -56,6 +58,8 @@ void USR_ContextStateComponent::TransitionState(MotionState NewStateName, bool b
 
 void USR_ContextStateComponent::TransitionState(MotionState NewStateName, void* data, bool bForced)
 {
+	DebugState(NewStateName);
+	TransitionGuard(NewStateName);
 	m_CurrentMotionState = NewStateName;
 	if(NewStateName == MotionState::NONE)
 	{
@@ -86,7 +90,7 @@ void USR_ContextStateComponent::RegisterStates()
 {
 	ASR_Character* owner = Cast<ASR_Character>(GetOwner());
 	m_States[MotionState::NONE] = nullptr;
-	m_States[MotionState::DASH] = owner->GetState(MotionState::DASH); // maybe use a loop here
+	m_States[MotionState::DASH] = owner->GetState(MotionState::DASH);
 	m_States[MotionState::WALL_RUN] = owner->GetState(MotionState::WALL_RUN);
 	m_States[MotionState::WALL_JUMP] = owner->GetState(MotionState::WALL_JUMP);;
 	m_States[MotionState::CLIMB] = owner->GetState(MotionState::CLIMB);;
@@ -95,5 +99,23 @@ void USR_ContextStateComponent::RegisterStates()
 
 	//set NONE state as default state
 	m_CurrentState = m_States[MotionState::NONE];
+}
+
+void USR_ContextStateComponent::TransitionGuard(MotionState newState)
+{
+	if(m_CurrentState == nullptr)
+	{
+		return;
+	}
+	if(m_CurrentState->IsStateActive())
+	{
+		GEngine->AddOnScreenDebugMessage(-1, 5.f, FColor::Black, TEXT("State is already active: ") + m_CurrentState->GetStateName().ToString() + "Override by: " + GetNameMyMotionState(newState).ToString());
+	}
+}
+
+void USR_ContextStateComponent::DebugState(MotionState newState)
+{
+	auto currentStateName = GetNameMyMotionState(m_CurrentMotionState);
+	GEngine->AddOnScreenDebugMessage(-1, 25.f, FColor::Purple, TEXT("Current State: ") + currentStateName.ToString() + " New State: " + GetNameMyMotionState(newState).ToString());
 }
 

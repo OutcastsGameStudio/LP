@@ -65,4 +65,31 @@ private:
 	MotionState m_CurrentMotionState = MotionState::NONE;
 	UPROPERTY()
 	ASR_Character* m_Character = nullptr;
+
+
+	void TransitionGuard(MotionState newState);
+
+
+	void DebugState(MotionState newState);
+
+	FName GetNameMyMotionState(MotionState state) const
+	{
+		switch (state)
+		{
+			case MotionState::NONE:
+				return "None";
+			case MotionState::WALL_RUN:
+				return "WallRun";
+			case MotionState::WALL_JUMP:
+				return "WallJump";
+			case MotionState::SLIDE:
+				return "Slide";
+			case MotionState::DASH:
+				return "Dash";
+			case MotionState::CLIMB:
+				return "Climb";
+			default:
+				return "Unknown";
+		}
+	}
 };
