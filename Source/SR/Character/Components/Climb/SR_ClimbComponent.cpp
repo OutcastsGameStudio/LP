@@ -37,7 +37,6 @@ void USR_ClimbComponent::BeginPlay()
 
 }
 
-
 // Called every frame
 void USR_ClimbComponent::TickComponent(float DeltaTime, ELevelTick TickType,
                                        FActorComponentTickFunction* ThisTickFunction)
@@ -50,10 +49,6 @@ void USR_ClimbComponent::TickComponent(float DeltaTime, ELevelTick TickType,
 
 void USR_ClimbComponent::LeaveState(int32 rootMotionId, bool bForced)
 {
-	if (rootMotionId != m_ClimbMotionId)
-		return;
-    
-	m_ClimbMotionId = -1;
 	b_IsActive = false;
     
 	// Vérifier si le personnage est sur le sol après avoir terminé le climb

@@ -80,13 +80,13 @@ bool USR_WallJumpComponent::LookAheadQuery()
 void USR_WallJumpComponent::UpdateState()
 {
 	// print normal
-	FVector JumpDirection = (m_WallRunDirection + m_WallNormal + FVector::UpVector * 2).GetSafeNormal();
+	FVector JumpDirection = (m_WallRunDirection * 2 + m_WallNormal + FVector::UpVector * 2).GetSafeNormal();
     
 	// Annuler les mouvements de wall run existants
 	
 	MotionController->CancelRootMotion(m_WallRunMainMotionId);
 	// m_WallRunMainMotionId = -1;
-
+	
 	GEngine->AddOnScreenDebugMessage(-1, 5.f, FColor::Purple, TEXT("WallNormal: ") + JumpDirection.ToString());
     
 	// Configurer la requête pour le saut depuis le mur
@@ -102,8 +102,7 @@ void USR_WallJumpComponent::UpdateState()
 	WallJumpRequest.bEnableGravity = true;
     
 	// Appliquer le mouvement de saut
-	MotionController->ApplyRootMotion(WallJumpRequest);
-    
+	m_WallRunMainMotionId = MotionController->ApplyRootMotion(WallJumpRequest);
 }
 
 FName USR_WallJumpComponent::GetStateName() const

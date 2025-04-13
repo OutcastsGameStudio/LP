@@ -58,8 +58,7 @@ void USR_DashComponent::UpdateState()
     FRootMotionRequest Request;
     Request.MovementName = FName("Dash");
     Request.Strength = DashSpeed;
-    Request.StrengthOverTime = StrengthOverTime;
-    Request.Duration = DashDuration;
+    Request.Duration = 0.1;
     Request.VelocityOnFinish = ERootMotionFinishVelocityMode::MaintainLastRootMotionVelocity;
     // Request.SetVelocityOnFinish = FVector::ZeroVector;
     Request.bEnableGravity = false;
