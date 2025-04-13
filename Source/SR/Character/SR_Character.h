@@ -9,6 +9,7 @@
 #include "Logging/LogMacros.h"
 #include "Components/Debug/SR_DebugComponent.h"
 #include "Components/Interaction/SR_InteractionComponent.h"
+#include "Motion/SR_MotionController.h"
 #include "SR_Character.generated.h"
 
 class USpringArmComponent;
@@ -21,6 +22,12 @@ DECLARE_LOG_CATEGORY_EXTERN(LogTemplateCharacter, Log, All);
 
 DECLARE_DYNAMIC_MULTICAST_DELEGATE(FOnDashInputPressed);
 DECLARE_DYNAMIC_MULTICAST_DELEGATE(FOnDashInputReleased);
+
+DECLARE_DYNAMIC_MULTICAST_DELEGATE(FOnMoveForwardInputPressed);
+DECLARE_DYNAMIC_MULTICAST_DELEGATE(FOnMoveForwardInputReleased);
+
+DECLARE_DYNAMIC_MULTICAST_DELEGATE(FOnJumpInputPressed);
+DECLARE_DYNAMIC_MULTICAST_DELEGATE(FOnJumpInputReleased);
 
 UCLASS()
 class SR_API ASR_Character : public ACharacter
@@ -74,7 +81,19 @@ public:
 	UPROPERTY(BlueprintAssignable, Category = "Input")
 	FOnDashInputReleased OnDashInputReleased;
 
+	// Event dispatchers pour les inputs
+	UPROPERTY(BlueprintAssignable, Category = "Input")
+	FOnMoveForwardInputPressed OnMoveForwardInputPressed;
+    
+	UPROPERTY(BlueprintAssignable, Category = "Input")
+	FOnMoveForwardInputReleased OnMoveForwardInputReleased;
 
+	// Event dispatchers pour les inputs
+	UPROPERTY(BlueprintAssignable, Category = "Input")
+	FOnMoveForwardInputPressed FOnJumpInputPressed;
+    
+	UPROPERTY(BlueprintAssignable, Category = "Input")
+	FOnMoveForwardInputReleased FOnJumpInputReleased;
 private:
 	float LedgeGrabReachDistance = 70.0f;
 	float LedgeGrabHeight = 150.0f;
@@ -115,19 +134,9 @@ public:
 	 */
 	void SetCharacterMovementCustomMode(USR_CharacterMovementComponent::CustomMode NewCustomMode);
 
-	bool IsHanging() const { return bIsHanging; }
-
 	USR_DebugComponent* GetDebugComponent() const { return DebugComponent; }
 protected:
-
-	bool bIsHanging = false;
 	FVector LedgeLocation;
-
-	UFUNCTION(BlueprintCallable, Category = "Ledge Grab")
-	void CheckForLedgeGrab();
-
-	UFUNCTION(BlueprintCallable, Category = "Ledge Grab")
-	void ClimbUp();
 
 	/** Called for movement input */
 	void Move(const FInputActionValue& Value);
@@ -149,6 +158,15 @@ protected:
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Dash")
 	class USR_DashComponent* DashComponent;
 
+	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Dash")
+	class USR_WallRunComponent* WallRunComponent;
+
+	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Dash")
+	class USR_WallJumpComponent* WallJumpComponent;
+	
+	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Dash")
+	class USR_ClimbComponent* ClimbComponent;
+
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Acceleration")
 	class USR_SlideComponent* SlideComponent;
 
@@ -162,7 +180,6 @@ protected:
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Debug")
 	class USR_DebugComponent* DebugComponent;
 
-	
 	virtual void SetupPlayerInputComponent(class UInputComponent* PlayerInputComponent) override;
 	
 	virtual void BeginPlay();
@@ -188,4 +205,12 @@ private:
 public:
 
 	ISR_State* GetState(MotionState StateName) const;
+
+//@TODO: workaround for the retrieving of the current State
+public:
+	UFUNCTION(BlueprintCallable, Category = "State")
+	FName GetCurrentStateName();
+	void SetCurrentState(MotionState NewStateName) { b_CurrentState = NewStateName; }
+private:
+	MotionState b_CurrentState = MotionState::NONE;
 };
