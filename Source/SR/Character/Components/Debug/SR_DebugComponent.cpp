@@ -72,54 +72,58 @@ float USR_DebugComponent::GetClimbUpSpeed()
 
 float USR_DebugComponent::GetWallJumpSpeed() 
 {
-	if(CharacterMovementComponent == nullptr) return 0.f;
-	return CharacterMovementComponent->GetWallJumpSpeed();
+	// if(CharacterMovementComponent == nullptr) return 0.f;
+	// return CharacterMovementComponent->GetWallJumpSpeed();
+	return 0;
 }
 
 void USR_DebugComponent::SetWallJumpSpeed(float NewWallJumpSpeed)
 {
-	if(CharacterMovementComponent == nullptr) return;
-	CharacterMovementComponent->SetWallJumpSpeed(NewWallJumpSpeed);
-	UpdateTable("WallJumpSpeed", NewWallJumpSpeed);
+	// if(CharacterMovementComponent == nullptr) return;
+	// CharacterMovementComponent->SetWallJumpSpeed(NewWallJumpSpeed);
+	// UpdateTable("WallJumpSpeed", NewWallJumpSpeed);
 }
 
 float USR_DebugComponent::GetMaxAngleWallRun() 
 {
-	if(CharacterMovementComponent == nullptr) return 0.f;
-	return CharacterMovementComponent->GetMaxAngleWallRun();
+	// if(CharacterMovementComponent == nullptr) return 0.f;
+	// return CharacterMovementComponent->GetMaxAngleWallRun();
+	return 0;
 }
 
 void USR_DebugComponent::SetMaxAngleWallRun(float NewMaxAngleWallRun)
 {
-	if(CharacterMovementComponent == nullptr) return;
-	CharacterMovementComponent->SetMaxAngleWallRun(NewMaxAngleWallRun);
-	UpdateTable("MaxAngleWallRun", NewMaxAngleWallRun);
+	// if(CharacterMovementComponent == nullptr) return;
+	// CharacterMovementComponent->SetMaxAngleWallRun(NewMaxAngleWallRun);
+	// UpdateTable("MaxAngleWallRun", NewMaxAngleWallRun);
 }
 
 float USR_DebugComponent::GetMaxAngleBeforeStop() 
 {
-	if(CharacterMovementComponent == nullptr) return 0.f;
-	return CharacterMovementComponent->GetMaxAngleBeforeStop();
+	// if(CharacterMovementComponent == nullptr) return 0.f;
+	// return CharacterMovementComponent->GetMaxAngleBeforeStop();
+	return 0;
 }
 
 void USR_DebugComponent::SetMaxAngleBeforeStop(float NewMaxAngleBeforeStop)
 {
-	if(CharacterMovementComponent == nullptr) return;
-	CharacterMovementComponent->SetMaxAngleBeforeStop(NewMaxAngleBeforeStop);
-	UpdateTable("MaxAngleBeforeStop", NewMaxAngleBeforeStop);
+	// if(CharacterMovementComponent == nullptr) return;
+	// CharacterMovementComponent->SetMaxAngleBeforeStop(NewMaxAngleBeforeStop);
+	// UpdateTable("MaxAngleBeforeStop", NewMaxAngleBeforeStop);
 }
 
 float USR_DebugComponent::GetWallRunFallingAcceleration() 
 {
-	if(CharacterMovementComponent == nullptr) return 0.f;
-	return CharacterMovementComponent->GetWallRunFallingAcceleration();
+	// if(CharacterMovementComponent == nullptr) return 0.f;
+	// return CharacterMovementComponent->GetWallRunFallingAcceleration();
+	return 0;
 }
 
 void USR_DebugComponent::SetWallRunFallingAcceleration(float NewWallRunFallingAcceleration)
 {
-	if(CharacterMovementComponent == nullptr) return;
-	CharacterMovementComponent->SetWallRunFallingAcceleration(NewWallRunFallingAcceleration);
-	UpdateTable("WallRunFallingAcceleration", NewWallRunFallingAcceleration);
+	// if(CharacterMovementComponent == nullptr) return;
+	// CharacterMovementComponent->SetWallRunFallingAcceleration(NewWallRunFallingAcceleration);
+	// UpdateTable("WallRunFallingAcceleration", NewWallRunFallingAcceleration);
 }
 
 void USR_DebugComponent::InitDataTable()
@@ -167,45 +171,45 @@ void USR_DebugComponent::InitDataTable()
 
 void USR_DebugComponent::SetValuesFromDataTable()
 {
-	if (DebugDataTable->GetRowNames().Num() == 0)
-	{
-		return;
-	}
-
-	for (const auto& prop : DebugProps)
-	{
-		if (const FSR_DebugData* RowData = DebugDataTable->FindRow<FSR_DebugData>(FName(prop), TEXT("")))
-		{
-			if (prop == "CharacterLedgeGrabReachDistance")
-			{
-				CharacterOwner->SetCharacterLedgeGrabReachDistance(RowData->Value);
-			}
-			else if (prop == "LedgeGrabHeight")
-			{
-				CharacterOwner->SetLedgeGrabHeight(RowData->Value);
-			}
-			else if (prop == "ClimbUpSpeed")
-			{
-				CharacterOwner->SetClimbUpSpeed(RowData->Value);
-			}
-			else if (prop == "WallJumpSpeed" && CharacterMovementComponent)
-			{
-				CharacterMovementComponent->SetWallJumpSpeed(RowData->Value);
-			}
-			else if (prop == "MaxAngleWallRun" && CharacterMovementComponent)
-			{
-				CharacterMovementComponent->SetMaxAngleWallRun(RowData->Value);
-			}
-			else if (prop == "MaxAngleBeforeStop" && CharacterMovementComponent)
-			{
-				CharacterMovementComponent->SetMaxAngleBeforeStop(RowData->Value);
-			}
-			else if (prop == "WallRunFallingAcceleration" && CharacterMovementComponent)
-			{
-				CharacterMovementComponent->SetWallRunFallingAcceleration(RowData->Value);
-			}
-		}
-	}
+	// if (DebugDataTable->GetRowNames().Num() == 0)
+	// {
+	// 	return;
+	// }
+	//
+	// for (const auto& prop : DebugProps)
+	// {
+	// 	if (const FSR_DebugData* RowData = DebugDataTable->FindRow<FSR_DebugData>(FName(prop), TEXT("")))
+	// 	{
+	// 		if (prop == "CharacterLedgeGrabReachDistance")
+	// 		{
+	// 			CharacterOwner->SetCharacterLedgeGrabReachDistance(RowData->Value);
+	// 		}
+	// 		else if (prop == "LedgeGrabHeight")
+	// 		{
+	// 			CharacterOwner->SetLedgeGrabHeight(RowData->Value);
+	// 		}
+	// 		else if (prop == "ClimbUpSpeed")
+	// 		{
+	// 			CharacterOwner->SetClimbUpSpeed(RowData->Value);
+	// 		}
+	// 		else if (prop == "WallJumpSpeed" && CharacterMovementComponent)
+	// 		{
+	// 			CharacterMovementComponent->SetWallJumpSpeed(RowData->Value);
+	// 		}
+	// 		else if (prop == "MaxAngleWallRun" && CharacterMovementComponent)
+	// 		{
+	// 			CharacterMovementComponent->SetMaxAngleWallRun(RowData->Value);
+	// 		}
+	// 		else if (prop == "MaxAngleBeforeStop" && CharacterMovementComponent)
+	// 		{
+	// 			CharacterMovementComponent->SetMaxAngleBeforeStop(RowData->Value);
+	// 		}
+	// 		else if (prop == "WallRunFallingAcceleration" && CharacterMovementComponent)
+	// 		{
+	// 			CharacterMovementComponent->SetWallRunFallingAcceleration(RowData->Value);
+	// 		}
+	// 	}
+	// }
 }
 
 void USR_DebugComponent::UpdateTable(FName RowName, float NewValue)
@@ -223,16 +227,6 @@ void USR_DebugComponent::UpdateTable(FName RowName, float NewValue)
 		NewData.Value = NewValue;
 		DebugDataTable->AddRow(RowName, NewData);
 	}
-}
-
-bool USR_DebugComponent::GetIsCharacterWallRunning()
-{
-	return CharacterMovementComponent->IsWallRunning();
-}
-
-bool USR_DebugComponent::GetIsCharacterClimbing()
-{
-	return CharacterOwner->IsHanging();
 }
 
 void USR_DebugComponent::LoadDataTable()

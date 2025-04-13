@@ -7,6 +7,7 @@
 #include "GameFramework/CharacterMovementComponent.h"
 #include "SR/Character/SR_Character.h"
 #include "SR/Character/Components/ContextState/SR_State.h"
+#include "SR/Character/Motion/SR_MotionController.h"
 #include "SR_DashComponent.generated.h"
 
 
@@ -40,62 +41,15 @@ public:
 
 	// Dash Direction
 	FVector DashDirection;
-
-	float CharacterGravityScale;
-	float CharacterBrakingDecelerationFalling;
-	
-	
-
 protected:
-	// Component of the character movement
-	UPROPERTY()
-	UCharacterMovementComponent* CharacterMovement;
-
-	// Reference to the owner character
-	UPROPERTY()
-	ASR_Character* OwnerCharacter;
-
-	// Properties of the dash
-	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Dash Settings")
-	float DashDistance = 500.0f;
-
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Dash Settings")
 	float DashSpeed = 3000.0f;
 
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Dash Settings")
 	float DashDuration = 0.2f;
 
-	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Dash Settings")
-	float DashCooldown = 1.0f;
-
-	// UCurveFloat to get the y value of the curve
-	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Dash Settings")
-	UCurveFloat* DashCurve;
-
-	//set dash curve float value
-	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Dash Settings")
-	float CurveValue = 0.0f;
-
-private:
-	// End of the dash
-	void EndDash();
-
-	// Start location of the dash
-	FVector DashStartLocation;
-
-	// Dash Current Time
-	float CurrentDashTime;
-
-	// Dash Current Cooldown Time
-	float CurrentCooldownTime;
-
-	// Dash State
-	bool bIsDashing = false;
-	bool bCanDash = true;
-
-
 public:
-	virtual void EnterState() override;
+	virtual void EnterState(void* data) override;
 	
 	UFUNCTION(BlueprintCallable, Category = "Movement")
 	virtual void LeaveState(int32 rootMotionId, bool bForced = false) override;
@@ -106,10 +60,19 @@ public:
 	virtual int32 GetStatePriority() const override;
 	virtual bool IsStateActive() const override;
 
-
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Dash Settings", meta = (ExposeOnSpawn = true))
 	UCurveFloat* StrengthOverTime = nullptr;
 private:
+	UPROPERTY()
+	UCharacterMovementComponent* CharacterMovement;
+	// Reference to the owner character
+	UPROPERTY()
+	ASR_Character* OwnerCharacter;
+	UPROPERTY()
+	USR_MotionController* MotionController;
+	UPROPERTY()
+	USR_ContextStateComponent* ContextStateComponent;
+	
 	int32 m_CurrentRootMotionID = 0;
 	bool bIsStateActive = false;
 };

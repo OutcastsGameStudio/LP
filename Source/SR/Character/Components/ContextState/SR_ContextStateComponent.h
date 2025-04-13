@@ -10,10 +10,13 @@
 #include "SR_ContextStateComponent.generated.h"
 
 
+class ASR_Character;
+
 enum class MotionState
 {
 	NONE,
 	WALL_RUN,
+	WALL_JUMP,
 	SLIDE,
 	DASH,
 	CLIMB,
@@ -39,11 +42,27 @@ public:
 
 
 	void TransitionState(MotionState NewStateName, bool bForced = false);
+
+	void TransitionState(MotionState NewStateName, void* data, bool bForced = false);
+
+
+	UFUNCTION(BlueprintCallable, Category = "Movement")
+	FName GetCurrentStateName();
+
+	MotionState GetCurrentMotionState() const
+	{
+		return m_CurrentMotionState;
+	}
 private:
 
 	void RegisterStates();
-	
+
 	ISR_State* m_CurrentState = nullptr;
 
 	std::map<MotionState, ISR_State*> m_States;
+
+	FName m_CurrentStateName = "None";
+	MotionState m_CurrentMotionState = MotionState::NONE;
+	UPROPERTY()
+	ASR_Character* m_Character = nullptr;
 };

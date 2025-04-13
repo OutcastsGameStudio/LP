@@ -21,6 +21,7 @@ void USR_ContextStateComponent::BeginPlay()
 {
 	Super::BeginPlay();
 	RegisterStates();
+	m_Character = Cast<ASR_Character>(GetOwner());
 }
 
 
@@ -30,17 +31,55 @@ void USR_ContextStateComponent::TickComponent(float DeltaTime, ELevelTick TickTy
 {
 	Super::TickComponent(DeltaTime, TickType, ThisTickFunction);
 
-	// ...
 }
 
 void USR_ContextStateComponent::TransitionState(MotionState NewStateName, bool bForced)
 {
+	m_CurrentMotionState = NewStateName;
 	if(NewStateName == MotionState::NONE)
 	{
+		// not ideal here, ideally the NONE state should be its own class
+		m_CurrentState = m_States[MotionState::NONE];
+		m_Character->SetCurrentState(NewStateName);
 		return;
 	}
 	m_CurrentState = m_States[NewStateName]; // needed ?
-	m_CurrentState->EnterState();
+	if(m_CurrentState == NULL)
+	{
+		if(GEngine)
+			GEngine->AddOnScreenDebugMessage(-1, 5.f, FColor::Red, TEXT("State not found"));	
+		return;
+	}
+	m_CurrentState->EnterState(nullptr);
+	m_Character->SetCurrentState(NewStateName);
+}
+
+void USR_ContextStateComponent::TransitionState(MotionState NewStateName, void* data, bool bForced)
+{
+	m_CurrentMotionState = NewStateName;
+	if(NewStateName == MotionState::NONE)
+	{
+		
+		m_CurrentState = m_States[MotionState::NONE];
+		m_Character->SetCurrentState(NewStateName);
+		return;
+	}
+	m_CurrentState = m_States[NewStateName]; // needed ?
+	if(m_CurrentState == NULL)
+	{
+		if(GEngine)
+			GEngine->AddOnScreenDebugMessage(-1, 5.f, FColor::Red, TEXT("State not found"));	
+		return;
+	}
+	m_CurrentState->EnterState(data);
+	m_Character->SetCurrentState(NewStateName);
+}
+
+
+//@TODO: do know why it not getting updated when trying to display the name of the state from the outside
+FName USR_ContextStateComponent::GetCurrentStateName()
+{
+	return m_CurrentStateName;
 }
 
 void USR_ContextStateComponent::RegisterStates()
@@ -48,8 +87,9 @@ void USR_ContextStateComponent::RegisterStates()
 	ASR_Character* owner = Cast<ASR_Character>(GetOwner());
 	m_States[MotionState::NONE] = nullptr;
 	m_States[MotionState::DASH] = owner->GetState(MotionState::DASH); // maybe use a loop here
-	// m_States[MotionState::SLIDE] = new USR_SlideState(this);
-	// m_States[MotionState::DASH] = new USR_DashState(this);
+	m_States[MotionState::WALL_RUN] = owner->GetState(MotionState::WALL_RUN);
+	m_States[MotionState::WALL_JUMP] = owner->GetState(MotionState::WALL_JUMP);;
+	m_States[MotionState::CLIMB] = owner->GetState(MotionState::CLIMB);;
 	// m_States[MotionState::CLIMB] = new USR_ClimbState(this);
 
 

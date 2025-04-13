@@ -18,11 +18,13 @@ void USR_DashComponent::BeginPlay()
     // Get the character movement component and the owner character
     OwnerCharacter = Cast<ASR_Character>(GetOwner());
     CharacterMovement = OwnerCharacter->FindComponentByClass<UCharacterMovementComponent>();
-
-    USR_MotionController* MotionController = GetOwner()->FindComponentByClass<USR_MotionController>();
-    if (!CharacterMovement || !OwnerCharacter || !MotionController)
+    ContextStateComponent = OwnerCharacter->FindComponentByClass<USR_ContextStateComponent>();
+    MotionController = GetOwner()->FindComponentByClass<USR_MotionController>();
+    
+    if (!CharacterMovement || !OwnerCharacter || !MotionController || !ContextStateComponent)
     {
         UE_LOG(LogTemp, Error, TEXT("Failed to load components in USR_DashComponent::BeginPlay()"));
+        return;
     }
    
     OwnerCharacter->OnDashInputPressed.AddDynamic(this, &USR_DashComponent::Dash);
@@ -48,21 +50,18 @@ void USR_DashComponent::TickComponent(float DeltaTime, ELevelTick TickType, FAct
 
 void USR_DashComponent::Dash()
 {
-    USR_ContextStateComponent* ContextState = OwnerCharacter->FindComponentByClass<USR_ContextStateComponent>();
-    ContextState->TransitionState(MotionState::DASH);
+    ContextStateComponent->TransitionState(MotionState::DASH);
 }
 
 void USR_DashComponent::UpdateState()
 {
-    USR_MotionController* MotionController = OwnerCharacter->FindComponentByClass<USR_MotionController>();
     FRootMotionRequest Request;
     Request.MovementName = FName("Dash");
     Request.Strength = DashSpeed;
     Request.StrengthOverTime = StrengthOverTime;
     Request.Duration = DashDuration;
-    Request.VelocityOnFinish = ERootMotionFinishVelocityMode::ClampVelocity;
-    Request.SetVelocityOnFinish = FVector::ZeroVector;
-    Request.ClampVelocityOnFinish = 0.0f;
+    Request.VelocityOnFinish = ERootMotionFinishVelocityMode::MaintainLastRootMotionVelocity;
+    // Request.SetVelocityOnFinish = FVector::ZeroVector;
     Request.bEnableGravity = false;
     Request.Direction = OwnerCharacter->GetActorForwardVector();
     Request.bIsAdditive = false;
@@ -70,26 +69,14 @@ void USR_DashComponent::UpdateState()
     m_CurrentRootMotionID = MotionController->ApplyRootMotion(Request);
 }
 
-void USR_DashComponent::EndDash()
+
+void USR_DashComponent::EnterState(void* data)
 {
-    if (!CharacterMovement) return;
-
-    // reset the character movement
-    CharacterMovement->GravityScale = 1.0f;
-    CharacterMovement->BrakingDecelerationFalling = 960.0f; // Valeur par défaut
-
-    CharacterMovement->SetMovementMode(MOVE_Walking);
-    
-    // Reset the flags
-    bIsDashing = false;
-
-    // Optional: Add a visual/sound effect at the end of the dash
-    UE_LOG(LogTemp, Warning, TEXT("Dash Ended!"));
-}
-
-void USR_DashComponent::EnterState()
-{
-    if (bIsStateActive) return;
+    if (bIsStateActive)
+    {
+        UE_LOG(LogTemp, Warning, TEXT("USR_DashComponent::EnterState() - State is already active"));
+        return;
+    }
     UpdateState();
     bIsStateActive = true;
 }
@@ -98,15 +85,16 @@ void USR_DashComponent::LeaveState(int32 rootMotionId, bool bForced)
 {
     if(rootMotionId != m_CurrentRootMotionID) return;
 
-    USR_ContextStateComponent* ContextState = OwnerCharacter->FindComponentByClass<USR_ContextStateComponent>();
 
-    if(!ContextState)
+    if(!ContextStateComponent)
         UE_LOG(LogTemp, Error, TEXT("Failed to load ContextState in USR_DashComponent::LeaveState()"));
 
     bIsStateActive = false;
-    ContextState->TransitionState(MotionState::NONE, bForced);
+    ContextStateComponent->TransitionState(MotionState::NONE, bForced);
 }
 
+
+// used to check if the state can be activated 
 bool USR_DashComponent::LookAheadQuery()
 {
     return !bIsStateActive;
