@@ -96,10 +96,10 @@ private:
 
 	bool bIsStateActive = false;
 
-	FVector m_WallNormal;
-	FVector m_WallRunDirection;
+	FVector m_WallNormal = FVector::ZeroVector;
+	FVector m_WallRunDirection = FVector::ZeroVector;
 
-	float WallRunFallingSpeed;
+	float WallRunFallingSpeed = 0;
 	
 	void UpdateState(float deltaTime);
 	

@@ -230,6 +230,7 @@ bool USR_WallRunComponent::CheckIfNotInCorner()
 void USR_WallRunComponent::StopWallRun()
 {
 	bIsStateActive = false;
+	WallRunFallingSpeed = 0;
 	OwnerCharacter->GetCharacterMovement()->SetMovementMode(MOVE_Falling);
 	ContextStateComponent->TransitionState(MotionState::NONE, true);
 }
@@ -288,6 +289,7 @@ void USR_WallRunComponent::UpdateState(float deltaTime)
 void USR_WallRunComponent::OnJumpButtonPressed()
 {
 	if(!bIsStateActive) return;
+	WallRunFallingSpeed = 0;
 	bIsStateActive = false;
 	FWallJumpData WallJumpData;
 	WallJumpData.WallRunDirection = m_WallRunDirection;
