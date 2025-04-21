@@ -55,17 +55,35 @@ void USR_DashComponent::Dash()
 
 void USR_DashComponent::UpdateState()
 {
+    bool bIsInAir = !CharacterMovement->IsMovingOnGround();
+    float AdjustedDashSpeed = bIsInAir ? DashSpeed : DashSpeed * GroundAirRatioForce;
+    
     FRootMotionRequest Request;
     Request.MovementName = FName("Dash");
-    Request.Strength = DashSpeed;
-    Request.Duration = 0.1;
-    Request.VelocityOnFinish = ERootMotionFinishVelocityMode::MaintainLastRootMotionVelocity;
-    // Request.SetVelocityOnFinish = FVector::ZeroVector;
-    Request.bEnableGravity = false;
+    Request.Strength = AdjustedDashSpeed;
+    Request.Duration = 0.1f;
     Request.Direction = OwnerCharacter->GetActorForwardVector();
     Request.bIsAdditive = false;
     Request.Priority = RootMotionPriority::High;
+    Request.bEnableGravity = false;
+    
+    if(bIsInAir)
+    {
+        Request.VelocityOnFinish = ERootMotionFinishVelocityMode::MaintainLastRootMotionVelocity;
+    } else
+    {
+        Request.VelocityOnFinish = ERootMotionFinishVelocityMode::SetVelocity;
+        Request.SetVelocityOnFinish = OwnerCharacter->GetActorForwardVector() * (DashSpeed * 0.8f);
+    }
+    
     m_CurrentRootMotionID = MotionController->ApplyRootMotion(Request);
+
+    // disable ground friction
+    if (!bIsInAir)
+    {
+        bOriginalGroundFriction = CharacterMovement->GroundFriction;
+        CharacterMovement->GroundFriction = 0.0f;
+    }
 }
 
 
@@ -87,6 +105,12 @@ void USR_DashComponent::LeaveState(int32 rootMotionId, bool bForced)
 
     if(!ContextStateComponent)
         UE_LOG(LogTemp, Error, TEXT("Failed to load ContextState in USR_DashComponent::LeaveState()"));
+
+    // enable ground friction
+    if (CharacterMovement)
+    {
+        CharacterMovement->GroundFriction = bOriginalGroundFriction;
+    }
 
     bIsStateActive = false;
     ContextStateComponent->TransitionState(MotionState::NONE, bForced);
