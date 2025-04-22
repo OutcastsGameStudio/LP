@@ -29,6 +29,8 @@ void USR_DashComponent::BeginPlay()
    
     OwnerCharacter->OnDashInputPressed.AddDynamic(this, &USR_DashComponent::Dash);
     MotionController->OnRootMotionCompleted.AddDynamic(this, &USR_DashComponent::LeaveState);
+
+    bOriginalGroundFriction = CharacterMovement->GroundFriction;
 }
 
 void USR_DashComponent::TickComponent(float DeltaTime, ELevelTick TickType, FActorComponentTickFunction* ThisTickFunction)
@@ -56,32 +58,22 @@ void USR_DashComponent::Dash()
 void USR_DashComponent::UpdateState()
 {
     bool bIsInAir = !CharacterMovement->IsMovingOnGround();
-    float AdjustedDashSpeed = bIsInAir ? DashSpeed : DashSpeed * GroundAirRatioForce;
     
     FRootMotionRequest Request;
     Request.MovementName = FName("Dash");
-    Request.Strength = AdjustedDashSpeed;
+    Request.Strength = DashSpeed;
     Request.Duration = 0.1f;
     Request.Direction = OwnerCharacter->GetActorForwardVector();
     Request.bIsAdditive = false;
     Request.Priority = RootMotionPriority::High;
     Request.bEnableGravity = false;
-    
-    if(bIsInAir)
-    {
-        Request.VelocityOnFinish = ERootMotionFinishVelocityMode::MaintainLastRootMotionVelocity;
-    } else
-    {
-        Request.VelocityOnFinish = ERootMotionFinishVelocityMode::SetVelocity;
-        Request.SetVelocityOnFinish = OwnerCharacter->GetActorForwardVector() * (DashSpeed * 0.8f);
-    }
+    Request.VelocityOnFinish = ERootMotionFinishVelocityMode::MaintainLastRootMotionVelocity;
     
     m_CurrentRootMotionID = MotionController->ApplyRootMotion(Request);
 
     // disable ground friction
     if (!bIsInAir)
     {
-        bOriginalGroundFriction = CharacterMovement->GroundFriction;
         CharacterMovement->GroundFriction = 0.0f;
     }
 }

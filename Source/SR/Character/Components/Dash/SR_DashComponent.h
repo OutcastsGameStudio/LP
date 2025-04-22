@@ -33,8 +33,6 @@ protected:
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Dash Settings")
 	float DashSpeed = 2000.0f;
 
-	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Dash Settings", meta = (ClampMin = "1.0", ClampMax = "10.0"), meta=(ToolTip = "Le rapport entre la force du dash au sol et en l'air. eg. valeur de 2.0 = 2 fois plus de force au sol qu'en l'air. 1.0 = même force au sol et en l'air."))
-	float GroundAirRatioForce = 1.8f;
 public:
 	virtual void EnterState(void* data) override;
 	UFUNCTION(BlueprintCallable, Category = "Movement")
