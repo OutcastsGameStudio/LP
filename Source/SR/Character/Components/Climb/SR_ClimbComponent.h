@@ -39,9 +39,9 @@ public:
 	virtual int32 GetStatePriority() const override;
 	virtual bool IsStateActive() const override;
 
-
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "WallRun", meta = (ExposeOnSpawn = true))
-	UCurveFloat* ClimbCurve = nullptr;
+	float ReachDistance = 20.f;
+
 private:
 	UPROPERTY()
 	UCharacterMovementComponent* CharacterMovement;
@@ -51,6 +51,8 @@ private:
 	USR_MotionController* MotionController;
 	UPROPERTY()
 	USR_ContextStateComponent* ContextStateComponent;
+
+	FVector StartLocation = FVector::ZeroVector;
 
 	void CheckForLedgeGrab();
 

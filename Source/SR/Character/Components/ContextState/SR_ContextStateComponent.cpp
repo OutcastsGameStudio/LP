@@ -35,7 +35,7 @@ void USR_ContextStateComponent::TickComponent(float DeltaTime, ELevelTick TickTy
 
 void USR_ContextStateComponent::TransitionState(MotionState NewStateName, bool bForced)
 {
-	DebugState(NewStateName);
+	// DebugState(NewStateName);
 	TransitionGuard(NewStateName);
 	m_CurrentMotionState = NewStateName;
 	if(NewStateName == MotionState::NONE)
@@ -48,8 +48,6 @@ void USR_ContextStateComponent::TransitionState(MotionState NewStateName, bool b
 	m_CurrentState = m_States[NewStateName]; // needed ?
 	if(m_CurrentState == NULL)
 	{
-		if(GEngine)
-			GEngine->AddOnScreenDebugMessage(-1, 5.f, FColor::Red, TEXT("State not found"));	
 		return;
 	}
 	m_CurrentState->EnterState(nullptr);
@@ -58,7 +56,7 @@ void USR_ContextStateComponent::TransitionState(MotionState NewStateName, bool b
 
 void USR_ContextStateComponent::TransitionState(MotionState NewStateName, void* data, bool bForced)
 {
-	DebugState(NewStateName);
+	// DebugState(NewStateName);
 	TransitionGuard(NewStateName);
 	m_CurrentMotionState = NewStateName;
 	if(NewStateName == MotionState::NONE)
@@ -71,8 +69,6 @@ void USR_ContextStateComponent::TransitionState(MotionState NewStateName, void* 
 	m_CurrentState = m_States[NewStateName]; // needed ?
 	if(m_CurrentState == NULL)
 	{
-		if(GEngine)
-			GEngine->AddOnScreenDebugMessage(-1, 5.f, FColor::Red, TEXT("State not found"));	
 		return;
 	}
 	m_CurrentState->EnterState(data);
