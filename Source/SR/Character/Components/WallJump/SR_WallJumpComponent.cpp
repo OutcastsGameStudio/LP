@@ -54,8 +54,6 @@ void USR_WallJumpComponent::EnterState(void* data)
 	{
 		m_WallRunDirection = wallJumpData->WallRunDirection;
 		m_WallNormal = wallJumpData->WallNormal;
-        
-		GEngine->AddOnScreenDebugMessage(-1, 5.f, FColor::Purple, TEXT("WallRunDirection: ") + m_WallRunDirection.ToString());
 	}
 	else 
 	{
@@ -79,29 +77,19 @@ bool USR_WallJumpComponent::LookAheadQuery()
 
 void USR_WallJumpComponent::UpdateState()
 {
-	// print normal
-	FVector JumpDirection = (m_WallRunDirection * 2 + m_WallNormal + FVector::UpVector * 2).GetSafeNormal();
-    
-	// Annuler les mouvements de wall run existants
-	
+	FVector JumpDirection = (m_WallRunDirection + m_WallNormal + FVector::UpVector).GetSafeNormal();
 	MotionController->CancelRootMotion(m_WallRunMainMotionId);
-	// m_WallRunMainMotionId = -1;
-	
-	GEngine->AddOnScreenDebugMessage(-1, 5.f, FColor::Purple, TEXT("WallNormal: ") + JumpDirection.ToString());
     
-	// Configurer la requête pour le saut depuis le mur
 	FRootMotionRequest WallJumpRequest;
 	WallJumpRequest.MovementName = FName("WallJump");
 	WallJumpRequest.Direction = JumpDirection;
-	WallJumpRequest.Strength = WallJumpForce; // Utiliser la même variable que dans votre code original
-	WallJumpRequest.Duration = 0.1; // Court, juste pour l'impulsion
-	WallJumpRequest.bIsAdditive = false; // Remplacer les autres mouvements
+	WallJumpRequest.Strength = WallJumpForce;
+	WallJumpRequest.Duration = 0.1;
+	WallJumpRequest.bIsAdditive = false; 
 	WallJumpRequest.Priority = RootMotionPriority::High;
 	WallJumpRequest.VelocityOnFinish = ERootMotionFinishVelocityMode::MaintainLastRootMotionVelocity;
-	// WallJumpRequest.SetVelocityOnFinish = JumpDirection * WallJumpSpeed * 0.8f; // Conserver une partie de l'élan
-	WallJumpRequest.bEnableGravity = true;
+	WallJumpRequest.bEnableGravity = false;
     
-	// Appliquer le mouvement de saut
 	m_WallRunMainMotionId = MotionController->ApplyRootMotion(WallJumpRequest);
 }
 

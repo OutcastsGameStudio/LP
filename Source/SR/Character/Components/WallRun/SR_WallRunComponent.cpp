@@ -3,6 +3,7 @@
 
 #include "SR_WallRunComponent.h"
 
+#include "DrawDebugHelpers.h"
 #include "Components/CapsuleComponent.h"
 #include "SR/Character/SR_Character.h"
 #include "SR/Character/Components/WallJump/SR_WallJumpComponent.h"
@@ -243,23 +244,14 @@ void USR_WallRunComponent::UpdateState(float deltaTime)
     float CurrentSpeed = FVector::DotProduct(CurrentVelocity, m_WallRunDirection);
     float WallRunSpeed = CurrentSpeed;
     
-    // Progressive resistance to simulate friction
-    WallRunSpeed = FMath::Max(WallRunSpeed * (1.0f - WallRunDecelerationRatio * deltaTime), MinWallRunSpeed);
-
-	if(WallRunSpeed <= MinWallRunSpeed)
-	{
-		return StopWallRun();
-	}
-	GEngine->AddOnScreenDebugMessage(-1, 5.f, FColor::Red, TEXT("WallRunSpeed: ") + FString::SanitizeFloat(WallRunSpeed));
-    
     CharacterMovement->Velocity = m_WallRunDirection * WallRunSpeed;
-
+ 
 	// controlled gravity
     CharacterMovement->Velocity.Z = CharacterMovement->Velocity.Z - WallRunFallingSpeed;
     
     FVector Delta = CharacterMovement->Velocity * deltaTime;
     FHitResult Hit(1.f);
-    
+
     CharacterMovement->SafeMoveUpdatedComponent(Delta, CharacterMovement->UpdatedComponent->GetComponentRotation(), true, Hit);
 
     if (Hit.IsValidBlockingHit() && Hit.Normal.Z > 0.f)

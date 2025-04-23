@@ -102,7 +102,6 @@ void USR_SlideComponent::HandleCrouchFallback()
 	{
 		bIsCrouching = true;
 		CharacterMovement->Crouch();
-		GEngine->AddOnScreenDebugMessage(-1, 5.f, FColor::Blue, TEXT("CapsuleHalfHeight: ") + FString::FromInt(CapsuleComponent->GetScaledCapsuleHalfHeight()));
 	}
 }
 
