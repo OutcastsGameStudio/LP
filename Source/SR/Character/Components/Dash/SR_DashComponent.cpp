@@ -164,7 +164,7 @@ bool USR_DashComponent::LookAheadQuery()
     if (bIsStateActive)
         return false;
         
-    bool bIsInAir = CharacterMovement ? !CharacterMovement->IsMovingOnGround() : false;
+    bool bIsInAir = !CharacterMovement->IsMovingOnGround();
     
     // Return true only if the appropriate cooldown allows dashing
     return bIsInAir ? bCanDashInAir : bCanDashOnGround;
