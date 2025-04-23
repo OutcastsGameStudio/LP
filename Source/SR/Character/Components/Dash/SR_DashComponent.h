@@ -36,6 +36,9 @@ public:
 
 	// Dash Direction
 	FVector DashDirection;
+
+	float CharacterGravityScale;
+	float CharacterBrakingDecelerationFalling;
 	
 	
 
