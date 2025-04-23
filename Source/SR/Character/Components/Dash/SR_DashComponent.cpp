@@ -133,7 +133,7 @@ void USR_DashComponent::LeaveState(int32 rootMotionId, bool bForced)
         UE_LOG(LogTemp, Error, TEXT("Failed to load ContextState in USR_DashComponent::LeaveState()"));
 
     // Apply the appropriate cooldown based on whether the character is in the air or on the ground
-    bool bIsInAir = CharacterMovement ? !CharacterMovement->IsMovingOnGround() : false;
+    bool bIsInAir = !CharacterMovement->IsMovingOnGround();
     if (bIsInAir)
     {
         bCanDashInAir = false;
