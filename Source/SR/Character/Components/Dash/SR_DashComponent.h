@@ -10,6 +10,8 @@
 #include "SR/Character/Motion/SR_MotionController.h"
 #include "SR_DashComponent.generated.h"
 
+DECLARE_DYNAMIC_MULTICAST_DELEGATE(FOnDashStarted);
+DECLARE_DYNAMIC_MULTICAST_DELEGATE(FOnDashEnded);
 
 UCLASS(ClassGroup=(Custom), meta=(BlueprintSpawnableComponent))
 class SR_API USR_DashComponent : public UActorComponent, public ISR_State
@@ -21,6 +23,15 @@ public:
 
 	UFUNCTION(BlueprintCallable, Category = "Movement")
 	void Dash();
+
+	// Nouvel événement qui se déclenche au début du dash
+	UPROPERTY(BlueprintAssignable, Category = "Movement|Events")
+	FOnDashStarted OnDashStarted;
+	
+	// Nouvel événement qui se déclenche à la fin du dash
+	UPROPERTY(BlueprintAssignable, Category = "Movement|Events")
+	FOnDashEnded OnDashEnded;
+	
 protected:
 	virtual void BeginPlay() override;
 
@@ -32,7 +43,12 @@ public:
 protected:
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Dash Settings")
 	float DashSpeed = 2000.0f;
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Dash Settings")
+	float DashCooldownInAir = 5.0f;
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Dash Settings")
+	float DashCooldownOnGround = 0.5f;
 
+	
 public:
 	virtual void EnterState(void* data) override;
 	UFUNCTION(BlueprintCallable, Category = "Movement")
@@ -42,6 +58,7 @@ public:
 	virtual FName GetStateName() const override;
 	virtual int32 GetStatePriority() const override;
 	virtual bool IsStateActive() const override;
+	
 
 private:
 	UPROPERTY()
@@ -56,4 +73,8 @@ private:
 	int32 m_CurrentRootMotionID = 0;
 	bool bIsStateActive = false;
 	float bOriginalGroundFriction = 0.0f;
+	float CurrentCooldownTimeInAir = 0.0f;
+	float CurrentCooldownTimeOnGround = 0.0f;
+	bool bCanDashInAir = true;
+	bool bCanDashOnGround = true;
 };

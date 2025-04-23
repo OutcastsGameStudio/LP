@@ -1,6 +1,8 @@
 ﻿// Fill out your copyright notice in the Description page of Project Settings.
 
 #include "SR_DashComponent.h"
+
+#include "Camera/CameraComponent.h"
 #include "GameFramework/Character.h"
 #include "GameFramework/CharacterMovementComponent.h"
 #include "SR/Character/SR_Character.h"
@@ -37,21 +39,51 @@ void USR_DashComponent::TickComponent(float DeltaTime, ELevelTick TickType, FAct
 {
     Super::TickComponent(DeltaTime, TickType, ThisTickFunction);
 
-    // @TODO: implement cooldown logic
-    // // cooldown update
-    // if (!bCanDash)
-    // {
-    //     CurrentCooldownTime += DeltaTime;
-    //     if (CurrentCooldownTime >= DashCooldown)
-    //     {
-    //         bCanDash = true;
-    //         CurrentCooldownTime = 0.0f;
-    //     }
-    // }
+    bool bIsInAir = CharacterMovement ? !CharacterMovement->IsMovingOnGround() : false;
+    
+    // Cooldown update for air dash
+    if (!bCanDashInAir)
+    {
+        CurrentCooldownTimeInAir += DeltaTime;
+        if (CurrentCooldownTimeInAir >= DashCooldownInAir)
+        {
+            bCanDashInAir = true;
+            CurrentCooldownTimeInAir = 0.0f;
+        }
+    }
+    
+    // Cooldown update for ground dash
+    if (!bCanDashOnGround)
+    {
+        CurrentCooldownTimeOnGround += DeltaTime;
+        if (CurrentCooldownTimeOnGround >= DashCooldownOnGround)
+        {
+            bCanDashOnGround = true;
+            CurrentCooldownTimeOnGround = 0.0f;
+        }
+    }
 }
 
 void USR_DashComponent::Dash()
 {
+    if (!CharacterMovement || !OwnerCharacter)
+        return;
+        
+    bool bIsInAir = !CharacterMovement->IsMovingOnGround();
+    
+    // Check the appropriate cooldown based on whether the character is in the air or on the ground
+    if (bIsInAir && !bCanDashInAir)
+    {
+        // Cannot dash in air during cooldown
+        return;
+    }
+    else if (!bIsInAir && !bCanDashOnGround)
+    {
+        // Cannot dash on ground during cooldown
+        return;
+    }
+    
+    // Transition to dash state
     ContextStateComponent->TransitionState(MotionState::DASH);
 }
 
@@ -86,17 +118,32 @@ void USR_DashComponent::EnterState(void* data)
         UE_LOG(LogTemp, Warning, TEXT("USR_DashComponent::EnterState() - State is already active"));
         return;
     }
+    
     UpdateState();
     bIsStateActive = true;
+    OnDashStarted.Broadcast();
+    
 }
 
 void USR_DashComponent::LeaveState(int32 rootMotionId, bool bForced)
 {
     if(rootMotionId != m_CurrentRootMotionID) return;
-
-
+    
     if(!ContextStateComponent)
         UE_LOG(LogTemp, Error, TEXT("Failed to load ContextState in USR_DashComponent::LeaveState()"));
+
+    // Apply the appropriate cooldown based on whether the character is in the air or on the ground
+    bool bIsInAir = CharacterMovement ? !CharacterMovement->IsMovingOnGround() : false;
+    if (bIsInAir)
+    {
+        bCanDashInAir = false;
+        CurrentCooldownTimeInAir = 0.0f;
+    }
+    else
+    {
+        bCanDashOnGround = false;
+        CurrentCooldownTimeOnGround = 0.0f;
+    }
 
     // enable ground friction
     if (CharacterMovement)
@@ -106,13 +153,21 @@ void USR_DashComponent::LeaveState(int32 rootMotionId, bool bForced)
 
     bIsStateActive = false;
     ContextStateComponent->TransitionState(MotionState::NONE, bForced);
+
+    OnDashEnded.Broadcast();
 }
 
 
 // used to check if the state can be activated 
 bool USR_DashComponent::LookAheadQuery()
 {
-    return !bIsStateActive;
+    if (bIsStateActive)
+        return false;
+        
+    bool bIsInAir = CharacterMovement ? !CharacterMovement->IsMovingOnGround() : false;
+    
+    // Return true only if the appropriate cooldown allows dashing
+    return bIsInAir ? bCanDashInAir : bCanDashOnGround;
 }
 
 FName USR_DashComponent::GetStateName() const
@@ -129,3 +184,5 @@ bool USR_DashComponent::IsStateActive() const
 {
     return bIsStateActive;
 }
+
+
