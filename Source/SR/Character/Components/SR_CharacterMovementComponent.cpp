@@ -4,6 +4,8 @@
 #include "SR_CharacterMovementComponent.h"
 
 #include "DrawDebugHelpers.h"
+#include "Camera/CameraComponent.h"
+#include "SR/Character/SR_Character.h"
 
 // Sets default values for this component's properties
 USR_CharacterMovementComponent::USR_CharacterMovementComponent()
@@ -21,4 +23,5 @@ void USR_CharacterMovementComponent::BeginPlay()
 void USR_CharacterMovementComponent::TickComponent(float DeltaTime, ELevelTick TickType, FActorComponentTickFunction* ThisTickFunction)
 {
 	Super::TickComponent(DeltaTime, TickType, ThisTickFunction);
+	
 }
