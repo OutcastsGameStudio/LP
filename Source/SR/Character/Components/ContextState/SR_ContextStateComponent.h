@@ -62,13 +62,13 @@ private:
 	std::map<MotionState, ISR_State*> m_States;
 
 	FName m_CurrentStateName = "None";
+	
 	MotionState m_CurrentMotionState = MotionState::NONE;
+	
 	UPROPERTY()
 	ASR_Character* m_Character = nullptr;
 
-
 	void TransitionGuard(MotionState newState);
-
 
 	void DebugState(MotionState newState);
 

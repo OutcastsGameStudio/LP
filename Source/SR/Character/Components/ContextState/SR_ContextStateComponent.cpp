@@ -30,7 +30,6 @@ void USR_ContextStateComponent::TickComponent(float DeltaTime, ELevelTick TickTy
                                               FActorComponentTickFunction* ThisTickFunction)
 {
 	Super::TickComponent(DeltaTime, TickType, ThisTickFunction);
-
 }
 
 void USR_ContextStateComponent::TransitionState(MotionState NewStateName, bool bForced)
@@ -61,7 +60,6 @@ void USR_ContextStateComponent::TransitionState(MotionState NewStateName, void* 
 	m_CurrentMotionState = NewStateName;
 	if(NewStateName == MotionState::NONE)
 	{
-		
 		m_CurrentState = m_States[MotionState::NONE];
 		m_Character->SetCurrentState(NewStateName);
 		return;
@@ -91,7 +89,6 @@ void USR_ContextStateComponent::RegisterStates()
 	m_States[MotionState::WALL_JUMP] = owner->GetState(MotionState::WALL_JUMP);;
 	m_States[MotionState::CLIMB] = owner->GetState(MotionState::CLIMB);;
 	// m_States[MotionState::CLIMB] = new USR_ClimbState(this);
-
 
 	//set NONE state as default state
 	m_CurrentState = m_States[MotionState::NONE];

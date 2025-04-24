@@ -41,7 +41,6 @@ public:
 
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "WallRun", meta = (ExposeOnSpawn = true))
 	float ReachDistance = 20.f;
-
 private:
 	UPROPERTY()
 	UCharacterMovementComponent* CharacterMovement;
@@ -51,19 +50,14 @@ private:
 	USR_MotionController* MotionController;
 	UPROPERTY()
 	USR_ContextStateComponent* ContextStateComponent;
-
+	
 	FVector StartLocation = FVector::ZeroVector;
-
-	void CheckForLedgeGrab();
-
 	bool b_IsActive = false;
-
 private:
+	void CheckForLedgeGrab();
 	float LedgeGrabReachDistance = 70.0f;
 	float LedgeGrabHeight = 150.0f;
 	float ClimbUpSpeed = 20.0f;
-
 	FVector LedgeLocation;
-
 	int32 m_ClimbMotionId = -1;
 };

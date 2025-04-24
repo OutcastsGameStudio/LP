@@ -51,6 +51,7 @@ protected:
 	
 public:
 	virtual void EnterState(void* data) override;
+	
 	UFUNCTION(BlueprintCallable, Category = "Movement")
 	virtual void LeaveState(int32 rootMotionId, bool bForced = false) override;
 	virtual bool LookAheadQuery() override;

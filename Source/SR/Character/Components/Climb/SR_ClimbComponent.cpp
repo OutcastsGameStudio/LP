@@ -214,20 +214,7 @@ void USR_ClimbComponent::CheckForLedgeGrab()
 			auto distanceZFromPlayer = FMath::Abs(EdgeHit.ImpactPoint.Z - OwnerCharacter->GetActorLocation().Z); 
 			if(distanceZFromPlayer < LedgeGrabHeight)
 			{
-				// GEngine->AddOnScreenDebugMessage(-1, 5.0f, FColor::Green, TEXT("Ledge Found"));
 				LedgeLocation = EdgeHit.ImpactPoint;
-				DrawDebugSphere(
-					GetWorld(),         // Le monde actuel
-					LedgeLocation,      // La position du rebord
-					20.0f,              // Rayon de la sphère en unités Unreal
-					8,                  // Nombre de segments (résolution)
-					FColor::Green,      // Couleur (vert pour la cible)
-					false,              // Persistant (false = redessiner à chaque frame)
-					5,              // Durée d'affichage (-1 = juste un frame)
-					0,                  // Priorité d'affichage
-					2.0f                // Épaisseur des lignes
-				);
-	            StartLocation = OwnerCharacter->GetActorLocation();
 				ContextStateComponent->TransitionState(MotionState::CLIMB);
 			}
 		}
