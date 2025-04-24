@@ -5,90 +5,76 @@
 #include "CoreMinimal.h"
 #include "Components/ActorComponent.h"
 #include "GameFramework/CharacterMovementComponent.h"
+#include "SR/Character/SR_Character.h"
+#include "SR/Character/Components/ContextState/SR_State.h"
+#include "SR/Character/Motion/SR_MotionController.h"
 #include "SR_DashComponent.generated.h"
 
+DECLARE_DYNAMIC_MULTICAST_DELEGATE(FOnDashStarted);
+DECLARE_DYNAMIC_MULTICAST_DELEGATE(FOnDashEnded);
 
 UCLASS(ClassGroup=(Custom), meta=(BlueprintSpawnableComponent))
-class SR_API USR_DashComponent : public UActorComponent
+class SR_API USR_DashComponent : public UActorComponent, public ISR_State
 {
 	GENERATED_BODY()
 
 public:    
-	// Constructor
 	USR_DashComponent();
 
-	/**
-	 * @description : Call when player dash input is triggered
-	 * @name : Dash
-	 * @param 
-	 */
 	UFUNCTION(BlueprintCallable, Category = "Movement")
 	void Dash();
 
+	// Nouvel événement qui se déclenche au début du dash
+	UPROPERTY(BlueprintAssignable, Category = "Movement|Events")
+	FOnDashStarted OnDashStarted;
+	
+	// Nouvel événement qui se déclenche à la fin du dash
+	UPROPERTY(BlueprintAssignable, Category = "Movement|Events")
+	FOnDashEnded OnDashEnded;
+	
 protected:
-	// called when the game starts
 	virtual void BeginPlay() override;
 
 public:    
-	// Called every frame
 	virtual void TickComponent(float DeltaTime, ELevelTick TickType, 
 							   FActorComponentTickFunction* ThisTickFunction) override;
 
-	// Dash Direction
 	FVector DashDirection;
-
-	float CharacterGravityScale;
-	float CharacterBrakingDecelerationFalling;
-	
-	
-
 protected:
-	// Component of the character movement
-	UPROPERTY()
-	UCharacterMovementComponent* CharacterMovement;
-
-	// Reference to the owner character
-	UPROPERTY()
-	class ACharacter* OwnerCharacter;
-
-	// Properties of the dash
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Dash Settings")
-	float DashDistance = 500.0f;
-
+	float DashSpeed = 2000.0f;
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Dash Settings")
-	float DashSpeed = 3000.0f;
-
+	float DashCooldownInAir = 5.0f;
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Dash Settings")
-	float DashDuration = 0.2f;
+	float DashCooldownOnGround = 0.5f;
 
-	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Dash Settings")
-	float DashCooldown = 1.0f;
-
-	// UCurveFloat to get the y value of the curve
-	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Dash Settings")
-	UCurveFloat* DashCurve;
-
-	//set dash curve float value
-	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Dash Settings")
-	float CurveValue = 0.0f;
+	
+public:
+	virtual void EnterState(void* data) override;
+	UFUNCTION(BlueprintCallable, Category = "Movement")
+	virtual void LeaveState(int32 rootMotionId, bool bForced = false) override;
+	virtual bool LookAheadQuery() override;
+	virtual void UpdateState() override;
+	virtual FName GetStateName() const override;
+	virtual int32 GetStatePriority() const override;
+	virtual bool IsStateActive() const override;
+	
 
 private:
-	// Dash update
-	void UpdateDash(float DeltaTime);
-
-	// End of the dash
-	void EndDash();
-
-	// Start location of the dash
-	FVector DashStartLocation;
-
-	// Dash Current Time
-	float CurrentDashTime;
-
-	// Dash Current Cooldown Time
-	float CurrentCooldownTime;
-
-	// Dash State
-	bool bIsDashing = false;
-	bool bCanDash = true;
+	UPROPERTY()
+	UCharacterMovementComponent* CharacterMovement;
+	UPROPERTY()
+	ASR_Character* OwnerCharacter;
+	UPROPERTY()
+	USR_MotionController* MotionController;
+	UPROPERTY()
+	USR_ContextStateComponent* ContextStateComponent;
+	
+	int32 m_CurrentRootMotionID = 0;
+	bool bIsStateActive = false;
+	float bOriginalGroundFriction = 0.0f;
+	float CurrentCooldownTimeInAir = 0.0f;
+	float CurrentCooldownTimeOnGround = 0.0f;
+	bool bCanDashInAir = true;
+	bool bCanDashOnGround = true;
 };

@@ -11,9 +11,13 @@
 #include "EnhancedInputComponent.h"
 #include "EnhancedInputSubsystems.h"
 #include "InputActionValue.h"
+#include "Components/Climb/SR_ClimbComponent.h"
+#include "Components/ContextState/SR_ContextStateComponent.h"
 #include "Components/Dash/SR_DashComponent.h"
 #include "Components/Energy Component/SR_EnergyComponent.h"
 #include "Components/Slide/SR_SlideComponent.h"
+#include "Components/WallJump/SR_WallJumpComponent.h"
+#include "Components/WallRun/SR_WallRunComponent.h"
 
 DEFINE_LOG_CATEGORY(LogTemplateCharacter);
 
@@ -52,9 +56,6 @@ ASR_Character::ASR_Character()
 
 	SlideComponent = CreateDefaultSubobject<USR_SlideComponent>(TEXT("SlideComponent"));
 
-	// Set the dash component to the character
-	DashComponent = CreateDefaultSubobject<USR_DashComponent>(TEXT("DashComponent"));
-
 	// set the energy component to the character
 	EnergyComponent = CreateDefaultSubobject<USR_EnergyComponent>(TEXT("EnergyComponent"));
 
@@ -62,6 +63,17 @@ ASR_Character::ASR_Character()
 	
 	// set the debug component
 	DebugComponent = CreateDefaultSubobject<USR_DebugComponent>(TEXT("DebugComponent"));
+
+	// ==== STATE CORE SYSTEM COMPONENTS ====
+	ContextStateComponent = CreateDefaultSubobject<USR_ContextStateComponent>(TEXT("ContextStateComponent"));
+	MotionController = CreateDefaultSubobject<USR_MotionController>(TEXT("MotionController"));
+
+	// ==== STATE COMPONENTS IMPLEMENTS ISR_STATE INTERFACE ====
+	DashComponent = CreateDefaultSubobject<USR_DashComponent>(TEXT("DashComponent"));
+	WallRunComponent = CreateDefaultSubobject<USR_WallRunComponent>(TEXT("WallRunComponent"));
+	WallJumpComponent = CreateDefaultSubobject<USR_WallJumpComponent>(TEXT("WallJumpComponent"));
+	ClimbComponent = CreateDefaultSubobject<USR_ClimbComponent>(TEXT("ClimbComponent"));
+
 	// Note: The skeletal mesh and anim blueprint references on the Mesh component (inherited from Character) 
 	// are set in the derived blueprint asset named ThirdPersonCharacter (to avoid direct content references in C++)
 }
@@ -82,9 +94,6 @@ void ASR_Character::Tick(float DeltaTime)
 		// Faire tourner le personnage pour qu'il s'aligne avec la caméra
 		SetActorRotation(ControlRotation);
 	}
-
-	CheckForLedgeGrab();
-	ClimbUp();
 }
 
 void ASR_Character::SetLedgeGrabHeight(float NewLedgeGrabHeight)
@@ -113,6 +122,51 @@ void ASR_Character::BeginPlay()
 	m_CharacterMovementComponent = Cast<USR_CharacterMovementComponent>(GetCharacterMovement());
 }
 
+void ASR_Character::OnDashPressed(const FInputActionValue& Value)
+{
+	OnDashInputPressed.Broadcast();
+}
+
+void ASR_Character::OnDashReleased(const FInputActionValue& Value)
+{
+	OnDashInputReleased.Broadcast();
+}
+
+// Method by state core components used to retrieve State component from the character casted as ISR_STATE 
+ISR_State* ASR_Character::GetState(MotionState StateName) const
+{
+	switch(StateName)
+	{
+		case MotionState::DASH:
+			return Cast<ISR_State>(DashComponent);
+		case MotionState::WALL_RUN:
+			return Cast<ISR_State>(WallRunComponent);
+		case MotionState::WALL_JUMP:
+			return Cast<ISR_State>(WallJumpComponent);
+		case MotionState::CLIMB:
+			return Cast<ISR_State>(ClimbComponent);
+		default:
+			return nullptr;
+	}
+}
+
+FName ASR_Character::GetCurrentStateName()
+{
+	switch(b_CurrentState)
+	{
+		case MotionState::DASH:
+			return DashComponent->GetStateName();
+		case MotionState::WALL_RUN:
+			return WallRunComponent->GetStateName();
+		case MotionState::WALL_JUMP:
+			return WallJumpComponent->GetStateName();
+		case MotionState::CLIMB:
+			return ClimbComponent->GetStateName();
+		default:
+			return FName("None");
+	}
+}
+
 //////////////////////////////////////////////////////////////////////////
 // Input
 
@@ -139,7 +193,8 @@ void ASR_Character::SetupPlayerInputComponent(UInputComponent* PlayerInputCompon
 		EnhancedInputComponent->BindAction(LookAction, ETriggerEvent::Triggered, this, &ASR_Character::Look);
 
 		// Dashing
-		EnhancedInputComponent->BindAction(DashAction, ETriggerEvent::Triggered, this, &ASR_Character::Dash);
+		EnhancedInputComponent->BindAction(DashAction, ETriggerEvent::Started, this, &ASR_Character::OnDashPressed);
+		EnhancedInputComponent->BindAction(DashAction, ETriggerEvent::Completed, this, &ASR_Character::OnDashReleased);
 
 		// Slide
 		EnhancedInputComponent->BindAction(SlideAction, ETriggerEvent::Started, this, &ASR_Character::Slide);
@@ -176,8 +231,7 @@ void ASR_Character::Move(const FInputActionValue& Value)
 
 void ASR_Character::StopWallJump()
 {
-	if(bIsHanging) return;
-	m_CharacterMovementComponent->StopWallJump();
+	FOnJumpInputPressed.Broadcast();
 }
 
 void ASR_Character::Look(const FInputActionValue& Value)
@@ -196,9 +250,9 @@ void ASR_Character::Look(const FInputActionValue& Value)
 
 void ASR_Character::Jump()
 {
-	if(bIsHanging)
+	if(ContextStateComponent->GetCurrentMotionState() == MotionState::CLIMB)
 	{
-		bIsHanging = false;
+		ContextStateComponent->TransitionState(MotionState::NONE);
 		// On vérifie si on est pas sur le sol après avoir terminé le climb
 		if(!GetCharacterMovement()->IsMovingOnGround())
 		{
@@ -207,124 +261,24 @@ void ASR_Character::Jump()
 		}
 		return;
 	}
+	if(b_CurrentState == MotionState::WALL_JUMP)
+		return;
 	Super::Jump();
 }
 
 void ASR_Character::MoveForward()
 {
-	m_CharacterMovementComponent->SetIsMovingForward(true);
+	OnMoveForwardInputPressed.Broadcast();
 }
 
 void ASR_Character::StopMoveForward()
 {
-	m_CharacterMovementComponent->SetIsMovingForward(false);
+	OnMoveForwardInputReleased.Broadcast();
 }
 
 void ASR_Character::SetCharacterMovementCustomMode(USR_CharacterMovementComponent::CustomMode NewCustomMode)
 {
 	GetCharacterMovement()->SetMovementMode(MOVE_Custom, NewCustomMode);
-}
-
-void ASR_Character::CheckForLedgeGrab()
-{
-	USR_CharacterMovementComponent* CharacterMovementComponent = Cast<USR_CharacterMovementComponent>(GetCharacterMovement());
-	if (bIsHanging || GetCharacterMovement()->IsMovingOnGround() || CharacterMovementComponent->IsWallRunning())
-		return;
-
-	FVector Start = GetActorLocation();
-	FVector Forward = GetActorForwardVector();
-    
-	FHitResult WallHit;
-	FCollisionQueryParams QueryParams;
-	QueryParams.AddIgnoredActor(this);
-
-	bool bHitWall = GetWorld()->LineTraceSingleByChannel(WallHit, 
-	   Start, 
-	   Start + Forward * LedgeGrabReachDistance,
-	   ECC_Visibility, 
-	   QueryParams);
-	
-	if(bHitWall)
-	{
-		FVector EdgeCheckStart = WallHit.ImpactPoint 
-			+ FVector(0, 0, LedgeGrabHeight * 3);  // multiply LedgedGrabHeight by 3 to get greater lattitude for the ledge grab
-	
-		FVector VerticalFrontEnd = EdgeCheckStart 
-		   + Forward * 10.0f ;
-
-		FVector EdgeCheckEnd = VerticalFrontEnd  // Distance vers le bas
-			- FVector(0, 0, LedgeGrabHeight * 3);
-
-		FHitResult EdgeHit; // if we hit a face of the wall
-		bool bFoundEdge = GetWorld()->LineTraceSingleByChannel(EdgeHit,
-			VerticalFrontEnd,
-			EdgeCheckEnd,
-			ECC_Visibility,
-			QueryParams);
-
-		if (bFoundEdge) // we hit a wall
-		{
-			auto distanceZFromPlayer = FMath::Abs(EdgeHit.ImpactPoint.Z - GetActorLocation().Z); 
-			if(distanceZFromPlayer < LedgeGrabHeight)
-			{
-				LedgeLocation = WallHit.ImpactPoint 
-					- Forward * 30.0f 
-					+ FVector(0, 0, GetCapsuleComponent()->GetScaledCapsuleHalfHeight());
-	            
-				bIsHanging = true;
-				GetCharacterMovement()->SetMovementMode(MOVE_Flying);
-				GetCharacterMovement()->StopMovementImmediately();
-			}
-		}
-	}
-}
-
-void ASR_Character::ClimbUp()
-{
-	if (!bIsHanging)
-		return;
-
-	FVector TargetLocation = LedgeLocation;
-    
-	SetActorLocation(FMath::VInterpTo(
-		GetActorLocation(),
-		TargetLocation,
-		GetWorld()->GetDeltaSeconds(),
-		ClimbUpSpeed
-	));
-
-	// Une fois en haut, reprendre le mouvement normal
-	if (FVector::Distance(GetActorLocation(), TargetLocation) < 10.0f)
-	{
-		bIsHanging = false;
-		// Vérifier si le personnage est sur le sol après avoir terminé le climb
-		if(GetCharacterMovement()->IsMovingOnGround())
-		{
-			// S'il est sur le sol, passer en mode walking
-			GetCharacterMovement()->SetMovementMode(MOVE_Walking);
-		}
-		else
-		{
-			// Sinon, il doit tomber
-			GetCharacterMovement()->SetMovementMode(MOVE_Falling);
-		}
-	}
-}
-void ASR_Character::Dash(const FInputActionValue& Value)
-{
-		FVector CharacterForward = GetActorForwardVector();
-		FVector CharacterRight = GetActorRightVector();
-
-		//if the character is not moving then dash in the direction of the character forward vector
-		if (Value.Get<FVector2D>().Size() == 0)
-		{
-			DashComponent->DashDirection = CharacterForward;
-		}
-		else
-		{
-			DashComponent->DashDirection = CharacterForward * Value.Get<FVector2D>().X + CharacterRight * Value.Get<FVector2D>().Y;
-		}		
-		DashComponent->Dash();	
 }
 
 void ASR_Character::Slide()
