@@ -5,12 +5,15 @@
 #include "CoreMinimal.h"
 #include "Components/ActorComponent.h"
 #include "Components/CapsuleComponent.h"
-#include "GameFramework/CharacterMovementComponent.h"
+#include "SR/Character/Components/ContextState/SR_ContextStateComponent.h"
+#include "SR/Character/Components/ContextState/SR_State.h"
+#include "SR/Character/Motion/SR_MotionController.h"
+
 #include "SR_SlideComponent.generated.h"
 
 
 UCLASS(ClassGroup=(Custom), meta=(BlueprintSpawnableComponent))
-class SR_API USR_SlideComponent : public UActorComponent
+class SR_API USR_SlideComponent : public UActorComponent, public ISR_State
 {
 	GENERATED_BODY()
 
@@ -18,11 +21,16 @@ public:
 	// Sets default values for this component's properties
 	USR_SlideComponent();
 
+
+	UFUNCTION()
+	void Slide();
+	
 	/**
 	 * @description : Call when player slide input is pressed
 	 * @name : StartSlide
 	 * @param 
 	 */
+	UFUNCTION(BlueprintCallable)
 	void StartSlide();
 
 	/**
@@ -30,6 +38,7 @@ public:
 	 * @name : StopSlide
 	 * @param 
 	 */
+	UFUNCTION()
 	void StopSlide();
 	
 	virtual void TickComponent(float DeltaTime, ELevelTick TickType,
@@ -38,10 +47,32 @@ public:
 	bool bIsSliding = false;
 	bool bIsCrouching = false;
 
-	// TODO : Cast to USR_CharacterMovementComponent for garbage collection
+	virtual void EnterState(void* data) override;
+	UFUNCTION(BlueprintCallable, Category = "Movement")
+	virtual void LeaveState(int32 rootMotionId, bool bForced = false) override;
+	virtual bool LookAheadQuery() override;
+	virtual void UpdateState() override;
+	virtual FName GetStateName() const override;
+	virtual int32 GetStatePriority() const override;
+	virtual bool IsStateActive() const override;
+
+	UPROPERTY()
+	float FGravity = 0.0f;
+
+	UPROPERTY()
+	float FFriction = 0.0f;
+
+	UPROPERTY()
 	UCapsuleComponent* CapsuleComponent;
+
+	UPROPERTY()
 	UMeshComponent* MeshComponent;
+
+	UPROPERTY()
 	UCharacterMovementComponent* CharacterMovement;
+	
+	UPROPERTY(BlueprintReadWrite, Category = "Slide Movement")
+	UCurveFloat* CurveFloat = nullptr;
 
 protected:
 	// Called when the game starts
@@ -51,10 +82,7 @@ protected:
 	float FSlideDistance = 800.0f;
 
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Slide Movement")
-	float FSlideDuration = 0.5f;
-
-	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Slide Movement")
-	float FSlideSpeed = 1800.0f;
+	float FSlideSpeed = 200.0f;
 
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Slide Movement")
 	float FCapsuleHalfHeightSliding = 40.0f;
@@ -79,7 +107,7 @@ private:
 	 * @description : Check if the character is on the ground
 	 * @name : UpdateSlideDirection
 	 */
-	void UpdateSlideDirection();
+	FVector UpdateSlideDirection();
 
 	/**
 	 * @description : Check if the character is on the ground
@@ -108,41 +136,34 @@ private:
 	void ProcessSlide(float DeltaTime);
 
 	/**
-	 * @description : Calculate the current speed of the slide
-	 * @name : CalculateCurrentSlideSpeed
-	 */
-	float CalculateCurrentSlideSpeed() const;
-
-	/**
-	 * @description : Calculate the speed multiplier from the slope
-	 * @name : CalculateSpeedMultiplierFromSlope
-	 * @param GroundHit
-	 */
-	float CalculateSpeedMultiplierFromSlope(const FHitResult& GroundHit) const;
-
-	/**
-	 * @description : Update the slide position
-	 * @name : UpdateSlidePosition
-	 * @param DeltaTime
-	 */
-	bool UpdateSlidePosition(float DeltaTime);
-
-	/**
 	 * @description : Check if the new location is not colliding with anything
 	 * @name : CheckCollisionAtNewPosition
 	 * @param NewLocation
 	 */
 	bool CheckCollisionAtNewPosition(const FVector& NewLocation) const;
 
-	/**
-	 * @description : Update the slide distance
-	 * @name : UpdateSlideDistance
-	 * @param FrameDistance
-	 */
-	void UpdateSlideDistance(float FrameDistance);
+	float GetCurrentFloorAngle();
+
+	float CalculateSlideSpeed(float DeltaTime);
+	
+	UPROPERTY()
+	ASR_Character* OwnerCharacter;
+	UPROPERTY()
+	USR_MotionController* MotionController;
+	UPROPERTY()
+	USR_ContextStateComponent* ContextStateComponent;
+	
+
+	int32 m_CurrentRootMotionID = 0;
 
 	FVector SlideStartLocation;
 	FVector SlideDirection;
+
+	float FOriginalFriction = 0.0f;
+	float FOriginalBrakingFriction = 0.0f;
+	
+	bool bIsStateActive = false;
+	
 	float FInitialCapsuleHalfHeight = 96.0f;
 	float CurrentSlideDistance = 0.0f;
 };
