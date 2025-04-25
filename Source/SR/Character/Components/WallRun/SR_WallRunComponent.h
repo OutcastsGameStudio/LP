@@ -53,8 +53,13 @@ public:
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "WallRun",meta = (ToolTip = "Durée maximale du wall run en secondes. Au-delà, le personnage tombe"))
 	float WallRunDecelerationRatio = 0.8;
 
-	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "WallRun",meta = (ToolTip = "Durée maximale du wall run en secondes. Au-delà, le personnage tombe"))
-	float MinWallRunSpeed = 10.f;
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "WallRun", 
+	meta = (ToolTip = "Vitesse maximale pendant le wall run. Une valeur de 0 signifie aucune limite.", ClampMin = "1.0", ClampMax= "10000.0"))
+	float MaxWallRunSpeed = 800.0f;
+
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "WallRun", 
+meta = (ToolTip = "Vitesse minimale pour trigger le wall run.", ClampMin = "1.0", ClampMax= "10000.0"))
+	float MinWallRunSpeed = 1.0f;
 private:
 	UPROPERTY()
 	UCharacterMovementComponent* CharacterMovement;

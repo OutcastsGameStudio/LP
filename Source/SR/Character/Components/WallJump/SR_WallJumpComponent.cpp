@@ -77,7 +77,7 @@ bool USR_WallJumpComponent::LookAheadQuery()
 
 void USR_WallJumpComponent::UpdateState()
 {
-	FVector JumpDirection = (m_WallRunDirection + m_WallNormal + FVector::UpVector).GetSafeNormal();
+	FVector JumpDirection = (m_WallRunDirection * WallRunDirectionRatio + m_WallNormal * WallRunNormalRatio + FVector::UpVector * WallRunUpRatio).GetSafeNormal();
 	MotionController->CancelRootMotion(m_WallRunMainMotionId);
     
 	FRootMotionRequest WallJumpRequest;

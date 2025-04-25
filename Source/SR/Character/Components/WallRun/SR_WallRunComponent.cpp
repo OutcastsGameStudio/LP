@@ -49,7 +49,6 @@ void USR_WallRunComponent::TickComponent(float DeltaTime, ELevelTick TickType,
                                          FActorComponentTickFunction* ThisTickFunction)
 {
 	Super::TickComponent(DeltaTime, TickType, ThisTickFunction);
-    
 	// Vérifier si le wall run doit continuer
 	if (bIsStateActive)
 	{
@@ -94,7 +93,13 @@ bool USR_WallRunComponent::DetectNextWall(FHitResult& Hit)
 void USR_WallRunComponent::OnHit(UPrimitiveComponent* HitComponent, AActor* OtherActor, UPrimitiveComponent* OtherComp,
 	FVector NormalImpulse, const FHitResult& Hit)
 {
-	if(!bIsStateActive && m_IsMovingForward && FMath::Abs(Hit.Normal.Z) < MAX_Z_THRE_HOLD &&  CheckIfNotInCorner() && CharacterMovement->MovementMode == MOVE_Falling)
+	if(!bIsStateActive
+		&& m_IsMovingForward
+		&& FMath::Abs(Hit.Normal.Z) < MAX_Z_THRE_HOLD
+		&&  CheckIfNotInCorner()
+		&& CharacterMovement->MovementMode == MOVE_Falling
+		&& FVector(CharacterMovement->Velocity.X, CharacterMovement->Velocity.Y, 0).Size() > MinWallRunSpeed
+		)
 	{
 		auto CharacterForwardVector = OwnerCharacter->GetActorForwardVector();
 		auto DotProduct = FVector::DotProduct(CharacterForwardVector, -Hit.Normal);
@@ -239,14 +244,13 @@ void USR_WallRunComponent::StopWallRun()
 void USR_WallRunComponent::UpdateState(float deltaTime)
 {
     WallRunFallingSpeed += WallRunFallingAcceleration * deltaTime;
-    
     FVector CurrentVelocity = CharacterMovement->Velocity;
     float CurrentSpeed = FVector::DotProduct(CurrentVelocity, m_WallRunDirection);
-    float WallRunSpeed = CurrentSpeed;
-    
+
+	float WallRunSpeed = FMath::Clamp(CurrentSpeed, MinWallRunSpeed, MaxWallRunSpeed);
     CharacterMovement->Velocity = m_WallRunDirection * WallRunSpeed;
  
-	// controlled gravity
+    // controlled gravity
     CharacterMovement->Velocity.Z = CharacterMovement->Velocity.Z - WallRunFallingSpeed;
     
     FVector Delta = CharacterMovement->Velocity * deltaTime;

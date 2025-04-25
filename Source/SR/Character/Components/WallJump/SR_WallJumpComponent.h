@@ -67,6 +67,18 @@ public:
 
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "WallRun",meta = (ToolTip = "Durée maximale du wall run en secondes. Au-delà, le personnage tombe"))
     float WallJumpSpeed = 10.f;
+
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "WallRun", 
+	meta = (ToolTip = "Multiplicateur de la composante vers l'avant lors du saut depuis un wall run. Valeurs élevées = saut plus loin dans la direction de course. Valeur par défaut : 1.0"))
+	float WallRunDirectionRatio = 1.0f;
+
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "WallRun", 
+		meta = (ToolTip = "Multiplicateur de la composante perpendiculaire au mur lors du saut depuis un wall run. Valeurs élevées = saut plus loin du mur. Valeur par défaut : 1.0"))
+	float WallRunNormalRatio = 1.0f;
+
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "WallRun", 
+		meta = (ToolTip = "Multiplicateur de la composante verticale lors du saut depuis un wall run. Valeurs élevées = saut plus haut. Valeur par défaut : 1.0"))
+	float WallRunUpRatio = 1.0f;
 private:
 	UPROPERTY()
 	UCharacterMovementComponent* CharacterMovement;
