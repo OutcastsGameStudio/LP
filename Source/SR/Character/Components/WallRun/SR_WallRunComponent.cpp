@@ -49,6 +49,9 @@ void USR_WallRunComponent::TickComponent(float DeltaTime, ELevelTick TickType,
                                          FActorComponentTickFunction* ThisTickFunction)
 {
 	Super::TickComponent(DeltaTime, TickType, ThisTickFunction);
+
+	auto velocity = FVector(CharacterMovement->Velocity.X, CharacterMovement->Velocity.Y, 0).Size();
+	GEngine->AddOnScreenDebugMessage(-1, 0.0f, FColor::Red, FString::Printf(TEXT("Velocity: %f"), velocity));
 	// Vérifier si le wall run doit continuer
 	if (bIsStateActive)
 	{
@@ -247,7 +250,7 @@ void USR_WallRunComponent::UpdateState(float deltaTime)
     FVector CurrentVelocity = CharacterMovement->Velocity;
     float CurrentSpeed = FVector::DotProduct(CurrentVelocity, m_WallRunDirection);
 
-	float WallRunSpeed = FMath::Clamp(CurrentSpeed, MinWallRunSpeed, MaxWallRunSpeed);
+	float WallRunSpeed = FMath::Clamp(CurrentSpeed, MinWallRunClampedSpeed, MaxWallRunClampedSpeed);
     CharacterMovement->Velocity = m_WallRunDirection * WallRunSpeed;
  
     // controlled gravity
