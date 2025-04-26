@@ -33,6 +33,9 @@ void USR_DashComponent::BeginPlay()
     MotionController->OnRootMotionCompleted.AddDynamic(this, &USR_DashComponent::LeaveState);
 
     bOriginalGroundFriction = CharacterMovement->GroundFriction;
+    
+    PreviousMotionState = ContextStateComponent->GetCurrentMotionState();
+    PreviousGroundState = CharacterMovement->IsMovingOnGround();
 }
 
 void USR_DashComponent::TickComponent(float DeltaTime, ELevelTick TickType, FActorComponentTickFunction* ThisTickFunction)
@@ -40,6 +43,24 @@ void USR_DashComponent::TickComponent(float DeltaTime, ELevelTick TickType, FAct
     Super::TickComponent(DeltaTime, TickType, ThisTickFunction);
 
     bool bIsInAir = CharacterMovement ? !CharacterMovement->IsMovingOnGround() : false;
+    
+    const MotionState CurrentMotionState = ContextStateComponent->GetCurrentMotionState();
+    
+    if (CurrentMotionState != PreviousMotionState)
+    {
+        if (CurrentMotionState == MotionState::WALL_RUN)
+        {
+            ResetAllCooldowns();
+        }
+        PreviousMotionState = CurrentMotionState;
+    }
+    
+    const bool bIsOnGround = !bIsInAir;
+    if (bIsOnGround && !PreviousGroundState)
+    {
+        ResetAllCooldowns();
+    }
+    PreviousGroundState = bIsOnGround;
     
     // Cooldown update for air dash
     if (!bCanDashInAir)
@@ -62,6 +83,15 @@ void USR_DashComponent::TickComponent(float DeltaTime, ELevelTick TickType, FAct
             CurrentCooldownTimeOnGround = 0.0f;
         }
     }
+}
+
+void USR_DashComponent::ResetAllCooldowns()
+{
+    bCanDashInAir = true;
+    CurrentCooldownTimeInAir = 0.0f;
+    
+    bCanDashOnGround = true;
+    CurrentCooldownTimeOnGround = 0.0f;
 }
 
 void USR_DashComponent::Dash()
@@ -93,7 +123,14 @@ void USR_DashComponent::UpdateState()
     
     FRootMotionRequest Request;
     Request.MovementName = FName("Dash");
-    Request.Strength = DashSpeed;
+    if(bIsInAir)
+    {
+        Request.Strength = DashSpeedInAir;
+    }
+    else
+    {
+        Request.Strength = DashSpeedOnGround;
+    }
     Request.Duration = 0.1f;
     Request.Direction = OwnerCharacter->GetActorForwardVector();
     Request.bIsAdditive = false;
@@ -184,5 +221,3 @@ bool USR_DashComponent::IsStateActive() const
 {
     return bIsStateActive;
 }
-
-

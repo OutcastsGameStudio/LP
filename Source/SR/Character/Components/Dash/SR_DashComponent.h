@@ -42,12 +42,15 @@ public:
 	FVector DashDirection;
 protected:
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Dash Settings")
-	float DashSpeed = 2000.0f;
+	float DashSpeedInAir = 2000.0f;
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Dash Settings")
+	float DashSpeedOnGround = 2000.0f;
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Dash Settings")
 	float DashCooldownInAir = 5.0f;
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Dash Settings")
 	float DashCooldownOnGround = 0.5f;
 
+	void ResetAllCooldowns();
 	
 public:
 	virtual void EnterState(void* data) override;
@@ -78,4 +81,7 @@ private:
 	float CurrentCooldownTimeOnGround = 0.0f;
 	bool bCanDashInAir = true;
 	bool bCanDashOnGround = true;
+	
+	MotionState PreviousMotionState = MotionState::NONE;
+	bool PreviousGroundState = true;
 };
