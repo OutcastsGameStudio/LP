@@ -30,7 +30,6 @@ public:
 	 * @name : StartSlide
 	 * @param 
 	 */
-	UFUNCTION(BlueprintCallable)
 	void StartSlide();
 
 	/**
@@ -82,7 +81,7 @@ protected:
 	float FSlideDistance = 800.0f;
 
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Slide Movement")
-	float FSlideSpeed = 200.0f;
+	float FSlideSpeed = 0.0f;
 
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Slide Movement")
 	float FCapsuleHalfHeightSliding = 40.0f;
@@ -145,6 +144,8 @@ private:
 	float GetCurrentFloorAngle();
 
 	float CalculateSlideSpeed(float DeltaTime);
+
+	float ProcessBasicSlide(float DeltaTime);
 	
 	UPROPERTY()
 	ASR_Character* OwnerCharacter;
@@ -165,5 +166,8 @@ private:
 	bool bIsStateActive = false;
 	
 	float FInitialCapsuleHalfHeight = 96.0f;
+
 	float CurrentSlideDistance = 0.0f;
+	float MaxSlideDistance = 500.0f; // Distance en unités que le personnage peut glisser sur une surface plane
+	float BasicSlideDeceleration = 200.0f;
 };

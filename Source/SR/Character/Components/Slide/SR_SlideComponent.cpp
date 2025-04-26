@@ -81,6 +81,7 @@ void USR_SlideComponent::InitializeSlideState()
 	SlideStartLocation = GetOwner()->GetActorLocation();
 	SlideDirection = GetOwner()->GetActorForwardVector();
 	FSlideSpeed = 950.0f;
+	CurrentSlideDistance = 0.0f;
 }
 
 FVector USR_SlideComponent::UpdateSlideDirection()
@@ -134,9 +135,6 @@ void USR_SlideComponent::HandleCrouchFallback()
 void USR_SlideComponent::ProcessSlide(float DeltaTime)
 {
 	FSlideSpeed = CalculateSlideSpeed(DeltaTime);
-
-	GEngine->AddOnScreenDebugMessage(-1, 10.0f, FColor::Red,
-		FString::Printf(TEXT("Slide speed : %f"), FSlideSpeed));
 	
 	FVector NewLocation = GetOwner()->GetActorLocation() + 
 						 (SlideDirection * FSlideSpeed * DeltaTime);
@@ -145,8 +143,11 @@ void USR_SlideComponent::ProcessSlide(float DeltaTime)
     {
 	    StopSlide();
     }
+	else
+	{
+		GetOwner()->SetActorLocation(NewLocation);
+ 	}
 
-	GetOwner()->SetActorLocation(NewLocation);
 }
 
 bool USR_SlideComponent::CheckCollisionAtNewPosition(const FVector& NewLocation) const
@@ -191,8 +192,6 @@ void USR_SlideComponent::StopSlide()
 	}
 	else
 	{
-		bIsCrouching = false;
-		CharacterMovement->UnCrouch();
 		CapsuleComponent->SetCapsuleHalfHeight(FInitialCapsuleHalfHeight);
 		MeshComponent->SetRelativeLocation(FVector(0.0f, 0.0f, -90.0f));
 	}
@@ -224,10 +223,7 @@ float USR_SlideComponent::GetCurrentFloorAngle()
 		ProjectedNormal.Normalize();
         
 		float SlopeAngle = FMath::RadiansToDegrees(FMath::Acos(FVector::DotProduct(SurfaceNormal, FVector(0, 0, 1))));
-
-		/*
-		 * Add Switch for different methode if -1, 0 or 1
-		 */
+		
 		float DirectionModifier = FVector::DotProduct(ForwardVector, SurfaceNormal) > 0 ? -1.0f : 1.0f;
         
 		return SlopeAngle * DirectionModifier;
@@ -239,12 +235,36 @@ float USR_SlideComponent::GetCurrentFloorAngle()
 float USR_SlideComponent::CalculateSlideSpeed(float DeltaTime)
 {
 	float CurrentFloorAngle = GetCurrentFloorAngle();
+	
+	GEngine->AddOnScreenDebugMessage(1, 10.0f, FColor::Red,
+		FString::Printf(TEXT("Current Floor Angle : %f"), CurrentFloorAngle));
+
+	if (FMath::IsNearlyZero(CurrentFloorAngle, 1.0f))
+	{
+		return ProcessBasicSlide(DeltaTime);
+	}
 
 	float GravityForce = FGravity * sin(CurrentFloorAngle);
 	float resultGravityForce = GravityForce - FFriction * FGravity * cos(CurrentFloorAngle);
 
 	float NewSlideSpeed = FSlideSpeed + resultGravityForce * DeltaTime;
 	
+	return NewSlideSpeed;
+}
+
+float USR_SlideComponent::ProcessBasicSlide(float DeltaTime)
+{
+	float NewSlideSpeed = FMath::Max(0.0f, FSlideSpeed - BasicSlideDeceleration * DeltaTime);
+    
+	CurrentSlideDistance += FSlideSpeed * DeltaTime;
+    
+	if (CurrentSlideDistance >= MaxSlideDistance || FMath::IsNearlyZero(NewSlideSpeed, 10.0f))
+	{
+		GetWorld()->GetTimerManager().SetTimerForNextTick([this]() {
+			StopSlide();
+		});
+	}
+    
 	return NewSlideSpeed;
 }
 

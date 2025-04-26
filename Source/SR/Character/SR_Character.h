@@ -102,10 +102,10 @@ public:
 	FOnMoveForwardInputReleased FOnJumpInputReleased;
 
 	UPROPERTY(BlueprintAssignable, Category = "Input")
-	FOnMoveForwardInputReleased FOnSlideInputReleased;
+	FOnSlideInputReleased FOnSlideInputReleased;
 
 	UPROPERTY(BlueprintAssignable, Category = "Input")
-	FOnMoveForwardInputPressed FOnSlideInputPressed;
+	FOnSlideInputPressed FOnSlideInputPressed;
 
 	UPROPERTY(BlueprintAssignable, Category = "Input")
 	FOnMoveForwardInputPressed FOnCrouchInputReleased;
