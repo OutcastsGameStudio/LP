@@ -26,7 +26,8 @@ void USR_SlideComponent::BeginPlay()
 	MeshComponent = GetOwner()->FindComponentByClass<UMeshComponent>();
 
 	FFriction = CharacterMovement->BrakingFriction;
-	FGravity = 980.0f;
+	FGravity = 9.80f;
+	FInitialCapsuleHalfHeight = CapsuleComponent->GetScaledCapsuleHalfHeight();
 
 
 	if (!CharacterMovement || !OwnerCharacter || !MotionController || !ContextStateComponent)
@@ -58,7 +59,6 @@ void USR_SlideComponent::StartSlide()
 	InitializeSlideState();
 	UpdateSlideDirection();
 	AdjustCharacterCollision();
-	CharacterMovement->MaxWalkSpeed = 2400.0f;
 }
 
 bool USR_SlideComponent::CanInitiateSlide() const
@@ -80,7 +80,7 @@ void USR_SlideComponent::InitializeSlideState()
 	bIsSliding = true;
 	SlideStartLocation = GetOwner()->GetActorLocation();
 	SlideDirection = GetOwner()->GetActorForwardVector();
-	FSlideSpeed = CharacterMovement->Velocity.Size();
+	FSlideSpeed = 950.0f;
 }
 
 FVector USR_SlideComponent::UpdateSlideDirection()
@@ -144,14 +144,7 @@ void USR_SlideComponent::ProcessSlide(float DeltaTime)
     if (CheckCollisionAtNewPosition(NewLocation))
     {
 	    StopSlide();
-    	return;
     }
-
-	if (CharacterMovement->Velocity.IsNearlyZero())
-	{
-		StopSlide();
-		return;
-	}
 
 	GetOwner()->SetActorLocation(NewLocation);
 }
@@ -174,7 +167,6 @@ bool USR_SlideComponent::CheckCollisionAtNewPosition(const FVector& NewLocation)
 void USR_SlideComponent::StopSlide()
 {
 	bIsSliding = false;
-	CharacterMovement->MaxWalkSpeed = 950.0f;
 
 	FCollisionQueryParams QueryParams;
 	QueryParams.AddIgnoredActor(GetOwner());
@@ -200,15 +192,12 @@ void USR_SlideComponent::StopSlide()
 	else
 	{
 		bIsCrouching = false;
-		CharacterMovement->bWantsToCrouch = false;
-        
-		if (CapsuleComponent->GetUnscaledCapsuleHalfHeight() < FInitialCapsuleHalfHeight)
-		{
-			CharacterMovement->UnCrouch();
-		}
+		CharacterMovement->UnCrouch();
+		CapsuleComponent->SetCapsuleHalfHeight(FInitialCapsuleHalfHeight);
+		MeshComponent->SetRelativeLocation(FVector(0.0f, 0.0f, -90.0f));
 	}
-
-	ContextStateComponent->TransitionState(MotionState::NONE);
+	
+	LeaveState(m_CurrentRootMotionID);
 }
 
 float USR_SlideComponent::GetCurrentFloorAngle()
@@ -235,8 +224,11 @@ float USR_SlideComponent::GetCurrentFloorAngle()
 		ProjectedNormal.Normalize();
         
 		float SlopeAngle = FMath::RadiansToDegrees(FMath::Acos(FVector::DotProduct(SurfaceNormal, FVector(0, 0, 1))));
-        
-		float DirectionModifier = FVector::DotProduct(ForwardVector, SurfaceNormal) < 0 ? -1.0f : 1.0f;
+
+		/*
+		 * Add Switch for different methode if -1, 0 or 1
+		 */
+		float DirectionModifier = FVector::DotProduct(ForwardVector, SurfaceNormal) > 0 ? -1.0f : 1.0f;
         
 		return SlopeAngle * DirectionModifier;
 	}
