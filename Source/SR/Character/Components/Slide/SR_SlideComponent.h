@@ -18,33 +18,31 @@ class SR_API USR_SlideComponent : public UActorComponent, public ISR_State
 	GENERATED_BODY()
 
 public:
-	// Sets default values for this component's properties
 	USR_SlideComponent();
 
-
-	UFUNCTION()
+	/**
+	 * @description : Call when player press the slide input
+	 * @name : Slide
+	 */
+	UFUNCTION(BlueprintCallable, Category = "Movement")
 	void Slide();
 	
 	/**
-	 * @description : Call when player slide input is pressed
+	 * @description : Call when state is activated and can be used
 	 * @name : StartSlide
-	 * @param 
 	 */
+	UFUNCTION()
 	void StartSlide();
 
 	/**
-	 * @description : Call when player slide input is release
+	 * @description : Call when slide should stop
 	 * @name : StopSlide
-	 * @param 
 	 */
 	UFUNCTION()
 	void StopSlide();
 	
 	virtual void TickComponent(float DeltaTime, ELevelTick TickType,
 							   FActorComponentTickFunction* ThisTickFunction) override;
-
-	bool bIsSliding = false;
-	bool bIsCrouching = false;
 
 	virtual void EnterState(void* data) override;
 	UFUNCTION(BlueprintCallable, Category = "Movement")
@@ -55,30 +53,11 @@ public:
 	virtual int32 GetStatePriority() const override;
 	virtual bool IsStateActive() const override;
 
-	UPROPERTY()
-	float FGravity = 0.0f;
-
-	UPROPERTY()
-	float FFriction = 0.0f;
-
-	UPROPERTY()
-	UCapsuleComponent* CapsuleComponent;
-
-	UPROPERTY()
-	UMeshComponent* MeshComponent;
-
-	UPROPERTY()
-	UCharacterMovementComponent* CharacterMovement;
-	
-	UPROPERTY(BlueprintReadWrite, Category = "Slide Movement")
-	UCurveFloat* CurveFloat = nullptr;
-
 protected:
-	// Called when the game starts
 	virtual void BeginPlay() override;
 
-	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Slide Movement")
-	float FSlideDistance = 800.0f;
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Slide Settings")
+	float MaxSlideDistance = 800.0f;
 
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Slide Movement")
 	float FSlideSpeed = 0.0f;
@@ -141,33 +120,56 @@ private:
 	 */
 	bool CheckCollisionAtNewPosition(const FVector& NewLocation) const;
 
+	/**
+	 * @description : Get the floor angle where the player is sliding
+	 * @name : GetCurrentFloorAngle
+	 */
 	float GetCurrentFloorAngle();
 
+	/**
+	 * @description : Calculate the slide speed based on the floor angle
+	 * @name : CalculateSlideSpeed
+	 * @param DeltaTime
+	 */
 	float CalculateSlideSpeed(float DeltaTime);
 
+	/**
+	 * @description : Process slide movement when the floor is flat
+	 * @name : ProcessBasicSlide
+	 * @param DeltaTime
+	 */
 	float ProcessBasicSlide(float DeltaTime);
 	
 	UPROPERTY()
 	ASR_Character* OwnerCharacter;
+	
 	UPROPERTY()
 	USR_MotionController* MotionController;
+	
 	UPROPERTY()
 	USR_ContextStateComponent* ContextStateComponent;
-	
 
+	UPROPERTY()
+	UCapsuleComponent* CapsuleComponent;
+
+	UPROPERTY()
+	UMeshComponent* MeshComponent;
+
+	UPROPERTY()
+	UCharacterMovementComponent* CharacterMovement;
+	
+	float FGravity = 0.0f;
+	float FFriction = 0.0f;
+	
 	int32 m_CurrentRootMotionID = 0;
 
 	FVector SlideStartLocation;
 	FVector SlideDirection;
-
-	float FOriginalFriction = 0.0f;
-	float FOriginalBrakingFriction = 0.0f;
 	
 	bool bIsStateActive = false;
+	bool bIsSliding = false;
 	
 	float FInitialCapsuleHalfHeight = 96.0f;
-
 	float CurrentSlideDistance = 0.0f;
-	float MaxSlideDistance = 500.0f; // Distance en unités que le personnage peut glisser sur une surface plane
 	float BasicSlideDeceleration = 200.0f;
 };

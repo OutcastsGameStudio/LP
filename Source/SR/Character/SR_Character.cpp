@@ -175,7 +175,7 @@ void ASR_Character::SetupPlayerInputComponent(UInputComponent* PlayerInputCompon
 		EnhancedInputComponent->BindAction(JumpAction, ETriggerEvent::Completed, this, &ASR_Character::StopJumping);
 
 		// Crouch
-		EnhancedInputComponent->BindAction(CrouchAction, ETriggerEvent::Triggered, this, &ASR_Character::StartCrouch);
+		EnhancedInputComponent->BindAction(CrouchAction, ETriggerEvent::Triggered, this, &ASR_Character::OnCrouchPressed);
 
 		// Moving
 		EnhancedInputComponent->BindAction(MoveAction, ETriggerEvent::Triggered, this, &ASR_Character::Move);
@@ -191,8 +191,8 @@ void ASR_Character::SetupPlayerInputComponent(UInputComponent* PlayerInputCompon
 		EnhancedInputComponent->BindAction(DashAction, ETriggerEvent::Completed, this, &ASR_Character::OnDashReleased);
 
 		// Slide
-		EnhancedInputComponent->BindAction(SlideAction, ETriggerEvent::Started, this, &ASR_Character::Slide);
-		EnhancedInputComponent->BindAction(SlideAction, ETriggerEvent::Completed, this, &ASR_Character::StopSlide);
+		EnhancedInputComponent->BindAction(SlideAction, ETriggerEvent::Started, this, &ASR_Character::OnSlidePressed);
+		EnhancedInputComponent->BindAction(SlideAction, ETriggerEvent::Completed, this, &ASR_Character::OnSlideReleased);
 	}
 	else
 	{
@@ -275,22 +275,22 @@ void ASR_Character::SetCharacterMovementCustomMode(USR_CharacterMovementComponen
 	GetCharacterMovement()->SetMovementMode(MOVE_Custom, NewCustomMode);
 }
 
-void ASR_Character::Slide()
+void ASR_Character::OnSlidePressed()
 {
 	FOnSlideInputPressed.Broadcast();
 }
 
-void ASR_Character::StopSlide()
+void ASR_Character::OnSlideReleased()
 {
 	FOnSlideInputReleased.Broadcast();
 }
 
-void ASR_Character::StartCrouch()
+void ASR_Character::OnCrouchPressed()
 {
 	FOnCrouchInputPressed.Broadcast();
 }
 
-void ASR_Character::StopCrouch()
+void ASR_Character::OnCrouchReleased()
 {
 	FOnCrouchInputReleased.Broadcast();
 }

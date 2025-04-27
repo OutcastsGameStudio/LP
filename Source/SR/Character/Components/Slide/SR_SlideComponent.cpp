@@ -29,7 +29,6 @@ void USR_SlideComponent::BeginPlay()
 	FGravity = 9.80f;
 	FInitialCapsuleHalfHeight = CapsuleComponent->GetScaledCapsuleHalfHeight();
 
-
 	if (!CharacterMovement || !OwnerCharacter || !MotionController || !ContextStateComponent)
 	{
 		UE_LOG(LogTemp, Error, TEXT("Failed to load components in USR_DashComponent::BeginPlay()"));
@@ -127,7 +126,6 @@ void USR_SlideComponent::HandleCrouchFallback()
 	if (CharacterMovement->GetLastUpdateVelocity() == FVector::ZeroVector && 
 		!CharacterMovement->IsFalling())
 	{
-		bIsCrouching = true;
 		CharacterMovement->Crouch();
 	}
 }
@@ -186,7 +184,6 @@ void USR_SlideComponent::StopSlide()
 
 	if (bHitCeiling)
 	{
-		bIsCrouching = true;
 		CharacterMovement->bWantsToCrouch = true;
 		CharacterMovement->Crouch();
 	}
@@ -236,29 +233,24 @@ float USR_SlideComponent::CalculateSlideSpeed(float DeltaTime)
 {
 	float CurrentFloorAngle = GetCurrentFloorAngle();
 
-	float NewSlideSpeed = FSlideSpeed;
-	
 	if (FMath::IsNearlyZero(CurrentFloorAngle, 1.0f))
 	{
 		return ProcessBasicSlide(DeltaTime);
 	}
-	if (CurrentFloorAngle > 0.0f)
-	{
-		float GravityForce = FGravity * sin(CurrentFloorAngle);
-		float resultGravityForce = GravityForce - FFriction * FGravity * cos(CurrentFloorAngle);
+    
+	float GravityForce = FGravity * sin(CurrentFloorAngle);
+	float resultGravityForce = GravityForce - FFriction * FGravity * cos(CurrentFloorAngle);
 
-		NewSlideSpeed = FSlideSpeed + resultGravityForce * DeltaTime * 100.0f;
-	}
-	else if (CurrentFloorAngle < 0.0f)
-	{
-		float GravityForce = FGravity * sin(CurrentFloorAngle);
-		float resultGravityForce = GravityForce - FFriction * FGravity * cos(CurrentFloorAngle);
-
-		NewSlideSpeed = FSlideSpeed + resultGravityForce * DeltaTime;
-	}
-	
+	/*
+	 * If the player is sliding down a slope, we want to increase the slide speed.
+	 * If the player is sliding up a slope, we want to decrease the slide speed by 100.0 for simulate ground friction and gravity.
+	 */
+	float AngleMultiplier = (CurrentFloorAngle > 0.0f) ? 100.0f : 1.0f;
+    
+	float NewSlideSpeed = FSlideSpeed + resultGravityForce * DeltaTime * AngleMultiplier;
+    
 	return NewSlideSpeed;
-}
+} 
 
 float USR_SlideComponent::ProcessBasicSlide(float DeltaTime)
 {
