@@ -235,19 +235,27 @@ float USR_SlideComponent::GetCurrentFloorAngle()
 float USR_SlideComponent::CalculateSlideSpeed(float DeltaTime)
 {
 	float CurrentFloorAngle = GetCurrentFloorAngle();
-	
-	GEngine->AddOnScreenDebugMessage(1, 10.0f, FColor::Red,
-		FString::Printf(TEXT("Current Floor Angle : %f"), CurrentFloorAngle));
 
+	float NewSlideSpeed = FSlideSpeed;
+	
 	if (FMath::IsNearlyZero(CurrentFloorAngle, 1.0f))
 	{
 		return ProcessBasicSlide(DeltaTime);
 	}
+	if (CurrentFloorAngle > 0.0f)
+	{
+		float GravityForce = FGravity * sin(CurrentFloorAngle);
+		float resultGravityForce = GravityForce - FFriction * FGravity * cos(CurrentFloorAngle);
 
-	float GravityForce = FGravity * sin(CurrentFloorAngle);
-	float resultGravityForce = GravityForce - FFriction * FGravity * cos(CurrentFloorAngle);
+		NewSlideSpeed = FSlideSpeed + resultGravityForce * DeltaTime * 100.0f;
+	}
+	else if (CurrentFloorAngle < 0.0f)
+	{
+		float GravityForce = FGravity * sin(CurrentFloorAngle);
+		float resultGravityForce = GravityForce - FFriction * FGravity * cos(CurrentFloorAngle);
 
-	float NewSlideSpeed = FSlideSpeed + resultGravityForce * DeltaTime;
+		NewSlideSpeed = FSlideSpeed + resultGravityForce * DeltaTime;
+	}
 	
 	return NewSlideSpeed;
 }
@@ -286,6 +294,12 @@ void USR_SlideComponent::EnterState(void* data)
 		UE_LOG(LogTemp, Warning, TEXT("USR_SlideComponent::EnterState() - State is already active"));
 		return;
 	}
+
+	if (OwnerCharacter)
+	{
+		OwnerCharacter->DisableInput(Cast<APlayerController>(OwnerCharacter->GetController()));
+	}
+	
 	UpdateState();
 }
 
@@ -296,6 +310,12 @@ void USR_SlideComponent::LeaveState(int32 rootMotionId, bool bForced)
 	if(!ContextStateComponent)
 		UE_LOG(LogTemp, Error, TEXT("Failed to load ContextState in USR_SlideComponent::LeaveState()"));
 
+
+	if (OwnerCharacter)
+	{
+		OwnerCharacter->EnableInput(Cast<APlayerController>(OwnerCharacter->GetController()));
+	}
+	
 	bIsStateActive = false;
 	ContextStateComponent->TransitionState(MotionState::NONE, true);
 }

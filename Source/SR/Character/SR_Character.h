@@ -112,12 +112,11 @@ public:
 
 	UPROPERTY(BlueprintAssignable, Category = "Input")
 	FOnMoveForwardInputPressed FOnCrouchInputPressed;
-private:
+private:   
 	float LedgeGrabReachDistance = 70.0f;
 	float LedgeGrabHeight = 150.0f;
 	float ClimbUpSpeed = 20.0f;
 	bool bIsCrouching = false;
-
 
 public:
 	ASR_Character();
