@@ -10,10 +10,6 @@
 USR_SlideComponent::USR_SlideComponent()
 {
 	PrimaryComponentTick.bCanEverTick = true;
-
-	CapsuleComponent = nullptr;
-	MeshComponent = nullptr;
-	CharacterMovement = nullptr;
 }
 
 
@@ -30,7 +26,7 @@ void USR_SlideComponent::BeginPlay()
 	MeshComponent = GetOwner()->FindComponentByClass<UMeshComponent>();
 
 	FFriction = CharacterMovement->BrakingFriction;
-	FGravity = 9.80f;
+	FGravity = 980.0f;
 
 
 	if (!CharacterMovement || !OwnerCharacter || !MotionController || !ContextStateComponent)
@@ -43,59 +39,6 @@ void USR_SlideComponent::BeginPlay()
 	OwnerCharacter->FOnSlideInputReleased.AddDynamic(this, &USR_SlideComponent::StopSlide);
 
 	MotionController->OnRootMotionCompleted.AddDynamic(this, &USR_SlideComponent::LeaveState);
-}
-
-void USR_SlideComponent::Slide()
-{
-	if (!CanInitiateSlide())
-		HandleCrouchFallback();
-	ContextStateComponent->TransitionState(MotionState::SLIDE);
-}
-
-void USR_SlideComponent::UpdateState()
-{
-	bIsStateActive = true;
-}
-
-void USR_SlideComponent::EnterState(void* data)
-{
-	if (bIsStateActive)
-	{
-		UE_LOG(LogTemp, Warning, TEXT("USR_SlideComponent::EnterState() - State is already active"));
-		return;
-	}
-	UpdateState();
-}
-
-void USR_SlideComponent::LeaveState(int32 rootMotionId, bool bForced)
-{
-	if(rootMotionId != m_CurrentRootMotionID) return;
-	
-	if(!ContextStateComponent)
-		UE_LOG(LogTemp, Error, TEXT("Failed to load ContextState in USR_SlideComponent::LeaveState()"));
-
-	bIsStateActive = false;
-	ContextStateComponent->TransitionState(MotionState::NONE, true);
-}
-
-bool USR_SlideComponent::LookAheadQuery()
-{
-	return !bIsStateActive;
-}
-
-FName USR_SlideComponent::GetStateName() const
-{
-	return FName("Slide");
-}
-
-int32 USR_SlideComponent::GetStatePriority() const
-{
-	return 0;
-}
-
-bool USR_SlideComponent::IsStateActive() const
-{
-	return bIsStateActive;
 }
 
 // Called every frame
@@ -115,14 +58,21 @@ void USR_SlideComponent::StartSlide()
 	InitializeSlideState();
 	UpdateSlideDirection();
 	AdjustCharacterCollision();
-	CharacterMovement->BrakingFriction = 0.0f;
+	CharacterMovement->MaxWalkSpeed = 2400.0f;
 }
 
 bool USR_SlideComponent::CanInitiateSlide() const
 {
-	return !bIsSliding && 
-		   CharacterMovement->GetLastUpdateVelocity() != FVector::ZeroVector && 
-		   !CharacterMovement->IsFalling();
+	if (CharacterMovement->GetLastUpdateVelocity().IsNearlyZero())
+		return false;
+
+	if (CharacterMovement->IsFalling())
+		return false;
+
+	if (!bIsSliding)
+		return false;
+	
+	return true;
 }
 
 void USR_SlideComponent::InitializeSlideState()
@@ -131,20 +81,16 @@ void USR_SlideComponent::InitializeSlideState()
 	SlideStartLocation = GetOwner()->GetActorLocation();
 	SlideDirection = GetOwner()->GetActorForwardVector();
 	FSlideSpeed = CharacterMovement->Velocity.Size();
-	CurrentSlideDistance = 0.0f;
 }
 
 FVector USR_SlideComponent::UpdateSlideDirection()
 {
 	FHitResult HitResult;
+	
 	if (PerformGroundCheck(HitResult))
 	{
 		FVector const FPlayerForward = GetOwner()->GetActorForwardVector();
 		SlideDirection = FVector::VectorPlaneProject(FPlayerForward, HitResult.Normal).GetSafeNormal();
-	}
-	else
-	{
-		SlideDirection = GetOwner()->GetActorForwardVector();
 	}
 
 	return SlideDirection;
@@ -167,8 +113,12 @@ void USR_SlideComponent::AdjustCharacterCollision()
 	{
 		CapsuleComponent->SetCapsuleHalfHeight(FCapsuleHalfHeightSliding);
 		MeshComponent->SetRelativeLocation(FVector(0.0f, 0.0f, -45.0f));
-		GEngine->AddOnScreenDebugMessage(-1, 5.f, FColor::Blue, TEXT("CapsuleHalfHeight: ") + FString::FromInt(CapsuleComponent->GetScaledCapsuleHalfHeight()));
 	}
+	else
+	{
+		UE_LOG(LogTemp, Error, TEXT("Failed to load CapsuleComponent or MeshComponent in USR_SlideComponent::AdjustCharacterCollision()"));
+	}
+	
 }
 
 void USR_SlideComponent::HandleCrouchFallback()
@@ -183,19 +133,25 @@ void USR_SlideComponent::HandleCrouchFallback()
 
 void USR_SlideComponent::ProcessSlide(float DeltaTime)
 {
-    if (!bIsSliding && !bIsCrouching)
-        return;
-
 	FSlideSpeed = CalculateSlideSpeed(DeltaTime);
+
+	GEngine->AddOnScreenDebugMessage(-1, 10.0f, FColor::Red,
+		FString::Printf(TEXT("Slide speed : %f"), FSlideSpeed));
 	
 	FVector NewLocation = GetOwner()->GetActorLocation() + 
 						 (SlideDirection * FSlideSpeed * DeltaTime);
 	
     if (CheckCollisionAtNewPosition(NewLocation))
-        StopSlide();
+    {
+	    StopSlide();
+    	return;
+    }
 
-	GEngine->AddOnScreenDebugMessage(-1, 10.0f, FColor::Green,
-		FString::Printf(TEXT("SLide speed : %f"), FSlideSpeed));
+	if (CharacterMovement->Velocity.IsNearlyZero())
+	{
+		StopSlide();
+		return;
+	}
 
 	GetOwner()->SetActorLocation(NewLocation);
 }
@@ -217,12 +173,8 @@ bool USR_SlideComponent::CheckCollisionAtNewPosition(const FVector& NewLocation)
 
 void USR_SlideComponent::StopSlide()
 {
-	if (!CharacterMovement || !CapsuleComponent)
-		return;
-
 	bIsSliding = false;
-
-	CharacterMovement->BrakingFriction = 500.0f;
+	CharacterMovement->MaxWalkSpeed = 950.0f;
 
 	FCollisionQueryParams QueryParams;
 	QueryParams.AddIgnoredActor(GetOwner());
@@ -284,7 +236,7 @@ float USR_SlideComponent::GetCurrentFloorAngle()
         
 		float SlopeAngle = FMath::RadiansToDegrees(FMath::Acos(FVector::DotProduct(SurfaceNormal, FVector(0, 0, 1))));
         
-		float DirectionModifier = FVector::DotProduct(ForwardVector, SurfaceNormal) > 0 ? -1.0f : 1.0f;
+		float DirectionModifier = FVector::DotProduct(ForwardVector, SurfaceNormal) < 0 ? -1.0f : 1.0f;
         
 		return SlopeAngle * DirectionModifier;
 	}
@@ -295,13 +247,63 @@ float USR_SlideComponent::GetCurrentFloorAngle()
 float USR_SlideComponent::CalculateSlideSpeed(float DeltaTime)
 {
 	float CurrentFloorAngle = GetCurrentFloorAngle();
-	
-	FSlideSpeed = CharacterMovement->Velocity.Size();
 
 	float GravityForce = FGravity * sin(CurrentFloorAngle);
 	float resultGravityForce = GravityForce - FFriction * FGravity * cos(CurrentFloorAngle);
 
-	float NewSlideSpeed = FSlideSpeed + resultGravityForce * DeltaTime * 10.0f;
+	float NewSlideSpeed = FSlideSpeed + resultGravityForce * DeltaTime;
 	
 	return NewSlideSpeed;
+}
+
+void USR_SlideComponent::Slide()
+{
+	ContextStateComponent->TransitionState(MotionState::SLIDE);
+	StartSlide();
+}
+
+void USR_SlideComponent::UpdateState()
+{
+	bIsStateActive = true;
+}
+
+void USR_SlideComponent::EnterState(void* data)
+{
+	if (bIsStateActive)
+	{
+		UE_LOG(LogTemp, Warning, TEXT("USR_SlideComponent::EnterState() - State is already active"));
+		return;
+	}
+	UpdateState();
+}
+
+void USR_SlideComponent::LeaveState(int32 rootMotionId, bool bForced)
+{
+	if(rootMotionId != m_CurrentRootMotionID) return;
+	
+	if(!ContextStateComponent)
+		UE_LOG(LogTemp, Error, TEXT("Failed to load ContextState in USR_SlideComponent::LeaveState()"));
+
+	bIsStateActive = false;
+	ContextStateComponent->TransitionState(MotionState::NONE, true);
+}
+
+bool USR_SlideComponent::LookAheadQuery()
+{
+	return !bIsStateActive;
+}
+
+FName USR_SlideComponent::GetStateName() const
+{
+	return FName("Slide");
+}
+
+int32 USR_SlideComponent::GetStatePriority() const
+{
+	return 0;
+}
+
+bool USR_SlideComponent::IsStateActive() const
+{
+	return bIsStateActive;
 }

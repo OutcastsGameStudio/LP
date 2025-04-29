@@ -45,7 +45,7 @@ void USR_ContextStateComponent::TransitionState(MotionState NewStateName, bool b
 		return;
 	}
 	m_CurrentState = m_States[NewStateName]; // needed ?
-	if(m_CurrentState == NULL)
+	if(m_CurrentState == nullptr)
 	{
 		return;
 	}
@@ -86,9 +86,10 @@ void USR_ContextStateComponent::RegisterStates()
 	m_States[MotionState::NONE] = nullptr;
 	m_States[MotionState::DASH] = owner->GetState(MotionState::DASH);
 	m_States[MotionState::WALL_RUN] = owner->GetState(MotionState::WALL_RUN);
-	m_States[MotionState::WALL_JUMP] = owner->GetState(MotionState::WALL_JUMP);;
-	m_States[MotionState::CLIMB] = owner->GetState(MotionState::CLIMB);;
-	// m_States[MotionState::CLIMB] = new USR_ClimbState(this);
+	m_States[MotionState::WALL_JUMP] = owner->GetState(MotionState::WALL_JUMP);
+	m_States[MotionState::CLIMB] = owner->GetState(MotionState::CLIMB);
+	m_States[MotionState::SLIDE] = owner->GetState(MotionState::SLIDE);
+	m_States[MotionState::CROUCH] = owner->GetState(MotionState::CROUCH);
 
 	//set NONE state as default state
 	m_CurrentState = m_States[MotionState::NONE];
