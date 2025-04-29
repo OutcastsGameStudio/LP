@@ -29,6 +29,12 @@ DECLARE_DYNAMIC_MULTICAST_DELEGATE(FOnMoveForwardInputReleased);
 DECLARE_DYNAMIC_MULTICAST_DELEGATE(FOnJumpInputPressed);
 DECLARE_DYNAMIC_MULTICAST_DELEGATE(FOnJumpInputReleased);
 
+DECLARE_DYNAMIC_MULTICAST_DELEGATE(FOnSlideInputPressed);
+DECLARE_DYNAMIC_MULTICAST_DELEGATE(FOnSlideInputReleased);
+
+DECLARE_DYNAMIC_MULTICAST_DELEGATE(FOnCrouchInputReleased);
+DECLARE_DYNAMIC_MULTICAST_DELEGATE(FOnCrouchInputPressed);
+
 UCLASS()
 class SR_API ASR_Character : public ACharacter
 {
@@ -68,7 +74,7 @@ class SR_API ASR_Character : public ACharacter
 
 	/** Crouch Input Action */
 	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = Input, meta = (AllowPrivateAccess = "true"))
-	UInputAction* ChrouchAction;
+	UInputAction* CrouchAction;
 
 
 
@@ -94,12 +100,18 @@ public:
     
 	UPROPERTY(BlueprintAssignable, Category = "Input")
 	FOnMoveForwardInputReleased FOnJumpInputReleased;
-private:
-	float LedgeGrabReachDistance = 70.0f;
-	float LedgeGrabHeight = 150.0f;
-	float ClimbUpSpeed = 20.0f;
-	bool isCrouching = false;
 
+	UPROPERTY(BlueprintAssignable, Category = "Input")
+	FOnSlideInputReleased FOnSlideInputReleased;
+
+	UPROPERTY(BlueprintAssignable, Category = "Input")
+	FOnSlideInputPressed FOnSlideInputPressed;
+
+	UPROPERTY(BlueprintAssignable, Category = "Input")
+	FOnCrouchInputReleased FOnCrouchInputReleased;
+
+	UPROPERTY(BlueprintAssignable, Category = "Input")
+	FOnCrouchInputPressed FOnCrouchInputPressed;
 
 public:
 	ASR_Character();
@@ -144,17 +156,6 @@ protected:
 	/** Called for looking input */
 	void Look(const FInputActionValue& Value);
 
-	void StartCrouch();
-
-	UFUNCTION()
-	void StopWallJump();
-
-	UFUNCTION()
-	void Slide();
-
-	UFUNCTION()
-	void StopSlide();
-
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Dash")
 	class USR_DashComponent* DashComponent;
 
@@ -170,15 +171,14 @@ protected:
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Acceleration")
 	class USR_SlideComponent* SlideComponent;
 
-	// assign a energy component to the character
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Energy")
 	class USR_EnergyComponent* EnergyComponent;
 
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Interaction")
-	class USR_InteractionComponent* InteractionComponent;
+	USR_InteractionComponent* InteractionComponent;
 	
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Debug")
-	class USR_DebugComponent* DebugComponent;
+	USR_DebugComponent* DebugComponent;
 
 	virtual void SetupPlayerInputComponent(class UInputComponent* PlayerInputComponent) override;
 	
@@ -192,15 +192,40 @@ public:
 	USR_CharacterMovementComponent* m_CharacterMovementComponent;
 
 private:
+	/*
+	 * Dash Section
+	 */
+	void OnDashPressed(const FInputActionValue& Value);
+	void OnDashReleased(const FInputActionValue& Value);
+	
+	/*
+	 * Crouch Section
+	 */
+	void OnCrouchPressed();
+	void OnCrouchReleased();
+
+
+	/*
+	 * WallMovement Section
+	 */
+	void StopWallJump();
+
+
+	/*
+	 * Slide Section
+	 */
+	void OnSlidePressed();
+	void OnSlideReleased();
+
 	UPROPERTY()
 	USR_ContextStateComponent* ContextStateComponent;
 
 	UPROPERTY()
 	USR_MotionController* MotionController;
-
-	void OnDashPressed(const FInputActionValue& Value);
-
-	void OnDashReleased(const FInputActionValue& Value);
+	
+	float LedgeGrabReachDistance = 70.0f;
+	float LedgeGrabHeight = 150.0f;
+	float ClimbUpSpeed = 20.0f;
 
 public:
 

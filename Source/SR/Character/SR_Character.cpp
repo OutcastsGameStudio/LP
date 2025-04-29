@@ -54,7 +54,6 @@ ASR_Character::ASR_Character()
 	FollowCamera->SetupAttachment(GetMesh(), FName("Camera"));
 	FollowCamera->bUsePawnControlRotation = false; // Camera does not rotate relative to arm
 
-	SlideComponent = CreateDefaultSubobject<USR_SlideComponent>(TEXT("SlideComponent"));
 
 	// set the energy component to the character
 	EnergyComponent = CreateDefaultSubobject<USR_EnergyComponent>(TEXT("EnergyComponent"));
@@ -73,6 +72,7 @@ ASR_Character::ASR_Character()
 	WallRunComponent = CreateDefaultSubobject<USR_WallRunComponent>(TEXT("WallRunComponent"));
 	WallJumpComponent = CreateDefaultSubobject<USR_WallJumpComponent>(TEXT("WallJumpComponent"));
 	ClimbComponent = CreateDefaultSubobject<USR_ClimbComponent>(TEXT("ClimbComponent"));
+	SlideComponent = CreateDefaultSubobject<USR_SlideComponent>(TEXT("SlideComponent"));
 
 	// Note: The skeletal mesh and anim blueprint references on the Mesh component (inherited from Character) 
 	// are set in the derived blueprint asset named ThirdPersonCharacter (to avoid direct content references in C++)
@@ -122,16 +122,6 @@ void ASR_Character::BeginPlay()
 	m_CharacterMovementComponent = Cast<USR_CharacterMovementComponent>(GetCharacterMovement());
 }
 
-void ASR_Character::OnDashPressed(const FInputActionValue& Value)
-{
-	OnDashInputPressed.Broadcast();
-}
-
-void ASR_Character::OnDashReleased(const FInputActionValue& Value)
-{
-	OnDashInputReleased.Broadcast();
-}
-
 // Method by state core components used to retrieve State component from the character casted as ISR_STATE 
 ISR_State* ASR_Character::GetState(MotionState StateName) const
 {
@@ -145,6 +135,8 @@ ISR_State* ASR_Character::GetState(MotionState StateName) const
 			return Cast<ISR_State>(WallJumpComponent);
 		case MotionState::CLIMB:
 			return Cast<ISR_State>(ClimbComponent);
+		case MotionState::SLIDE:
+			return Cast<ISR_State>(SlideComponent);
 		default:
 			return nullptr;
 	}
@@ -162,6 +154,8 @@ FName ASR_Character::GetCurrentStateName()
 			return WallJumpComponent->GetStateName();
 		case MotionState::CLIMB:
 			return ClimbComponent->GetStateName();
+		case MotionState::SLIDE:
+			return SlideComponent->GetStateName();
 		default:
 			return FName("None");
 	}
@@ -181,7 +175,7 @@ void ASR_Character::SetupPlayerInputComponent(UInputComponent* PlayerInputCompon
 		EnhancedInputComponent->BindAction(JumpAction, ETriggerEvent::Completed, this, &ASR_Character::StopJumping);
 
 		// Crouch
-		EnhancedInputComponent->BindAction(ChrouchAction, ETriggerEvent::Triggered, this, &ASR_Character::StartCrouch);
+		EnhancedInputComponent->BindAction(CrouchAction, ETriggerEvent::Triggered, this, &ASR_Character::OnCrouchPressed);
 
 		// Moving
 		EnhancedInputComponent->BindAction(MoveAction, ETriggerEvent::Triggered, this, &ASR_Character::Move);
@@ -197,8 +191,8 @@ void ASR_Character::SetupPlayerInputComponent(UInputComponent* PlayerInputCompon
 		EnhancedInputComponent->BindAction(DashAction, ETriggerEvent::Completed, this, &ASR_Character::OnDashReleased);
 
 		// Slide
-		EnhancedInputComponent->BindAction(SlideAction, ETriggerEvent::Started, this, &ASR_Character::Slide);
-		EnhancedInputComponent->BindAction(SlideAction, ETriggerEvent::Completed, this, &ASR_Character::StopSlide);
+		EnhancedInputComponent->BindAction(SlideAction, ETriggerEvent::Started, this, &ASR_Character::OnSlidePressed);
+		EnhancedInputComponent->BindAction(SlideAction, ETriggerEvent::Completed, this, &ASR_Character::OnSlideReleased);
 	}
 	else
 	{
@@ -281,26 +275,32 @@ void ASR_Character::SetCharacterMovementCustomMode(USR_CharacterMovementComponen
 	GetCharacterMovement()->SetMovementMode(MOVE_Custom, NewCustomMode);
 }
 
-void ASR_Character::Slide()
+void ASR_Character::OnSlidePressed()
 {
-	SlideComponent->CapsuleComponent = GetCapsuleComponent();
-	SlideComponent->MeshComponent = GetMesh();
-	SlideComponent->CharacterMovement = GetCharacterMovement();
-	SlideComponent->StartSlide();
+	FOnSlideInputPressed.Broadcast();
 }
 
-void ASR_Character::StopSlide()
+void ASR_Character::OnSlideReleased()
 {
-	SlideComponent->StopSlide();
+	FOnSlideInputReleased.Broadcast();
 }
 
-void ASR_Character::StartCrouch()
+void ASR_Character::OnCrouchPressed()
 {
-	const bool bIsCurrentlyCrouching = isCrouching || SlideComponent->bIsCrouching;
-	const bool bNewCrouchState = !bIsCurrentlyCrouching;
-    
-	isCrouching = bNewCrouchState;
-	SlideComponent->bIsCrouching = bNewCrouchState;
-    
-	bNewCrouchState ? Crouch() : UnCrouch();
+	FOnCrouchInputPressed.Broadcast();
+}
+
+void ASR_Character::OnCrouchReleased()
+{
+	FOnCrouchInputReleased.Broadcast();
+}
+
+void ASR_Character::OnDashPressed(const FInputActionValue& Value)
+{
+	OnDashInputPressed.Broadcast();
+}
+
+void ASR_Character::OnDashReleased(const FInputActionValue& Value)
+{
+	OnDashInputReleased.Broadcast();
 }

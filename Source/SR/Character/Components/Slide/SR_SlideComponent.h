@@ -5,56 +5,62 @@
 #include "CoreMinimal.h"
 #include "Components/ActorComponent.h"
 #include "Components/CapsuleComponent.h"
-#include "GameFramework/CharacterMovementComponent.h"
+#include "SR/Character/Components/ContextState/SR_ContextStateComponent.h"
+#include "SR/Character/Components/ContextState/SR_State.h"
+#include "SR/Character/Motion/SR_MotionController.h"
+
 #include "SR_SlideComponent.generated.h"
 
 
 UCLASS(ClassGroup=(Custom), meta=(BlueprintSpawnableComponent))
-class SR_API USR_SlideComponent : public UActorComponent
+class SR_API USR_SlideComponent : public UActorComponent, public ISR_State
 {
 	GENERATED_BODY()
 
 public:
-	// Sets default values for this component's properties
 	USR_SlideComponent();
 
 	/**
-	 * @description : Call when player slide input is pressed
-	 * @name : StartSlide
-	 * @param 
+	 * @description : Call when player press the slide input
+	 * @name : Slide
 	 */
+	UFUNCTION(BlueprintCallable, Category = "Movement")
+	void Slide();
+	
+	/**
+	 * @description : Call when state is activated and can be used
+	 * @name : StartSlide
+	 */
+	UFUNCTION()
 	void StartSlide();
 
 	/**
-	 * @description : Call when player slide input is release
+	 * @description : Call when slide should stop
 	 * @name : StopSlide
-	 * @param 
 	 */
+	UFUNCTION()
 	void StopSlide();
 	
 	virtual void TickComponent(float DeltaTime, ELevelTick TickType,
 							   FActorComponentTickFunction* ThisTickFunction) override;
 
-	bool bIsSliding = false;
-	bool bIsCrouching = false;
-
-	// TODO : Cast to USR_CharacterMovementComponent for garbage collection
-	UCapsuleComponent* CapsuleComponent;
-	UMeshComponent* MeshComponent;
-	UCharacterMovementComponent* CharacterMovement;
+	virtual void EnterState(void* data) override;
+	UFUNCTION(BlueprintCallable, Category = "Movement")
+	virtual void LeaveState(int32 rootMotionId, bool bForced = false) override;
+	virtual bool LookAheadQuery() override;
+	virtual void UpdateState() override;
+	virtual FName GetStateName() const override;
+	virtual int32 GetStatePriority() const override;
+	virtual bool IsStateActive() const override;
 
 protected:
-	// Called when the game starts
 	virtual void BeginPlay() override;
 
-	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Slide Movement")
-	float FSlideDistance = 800.0f;
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Slide Settings")
+	float MaxSlideDistance = 800.0f;
 
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Slide Movement")
-	float FSlideDuration = 0.5f;
-
-	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Slide Movement")
-	float FSlideSpeed = 1800.0f;
+	float FSlideSpeed = 0.0f;
 
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Slide Movement")
 	float FCapsuleHalfHeightSliding = 40.0f;
@@ -79,7 +85,7 @@ private:
 	 * @description : Check if the character is on the ground
 	 * @name : UpdateSlideDirection
 	 */
-	void UpdateSlideDirection();
+	FVector UpdateSlideDirection();
 
 	/**
 	 * @description : Check if the character is on the ground
@@ -108,26 +114,6 @@ private:
 	void ProcessSlide(float DeltaTime);
 
 	/**
-	 * @description : Calculate the current speed of the slide
-	 * @name : CalculateCurrentSlideSpeed
-	 */
-	float CalculateCurrentSlideSpeed() const;
-
-	/**
-	 * @description : Calculate the speed multiplier from the slope
-	 * @name : CalculateSpeedMultiplierFromSlope
-	 * @param GroundHit
-	 */
-	float CalculateSpeedMultiplierFromSlope(const FHitResult& GroundHit) const;
-
-	/**
-	 * @description : Update the slide position
-	 * @name : UpdateSlidePosition
-	 * @param DeltaTime
-	 */
-	bool UpdateSlidePosition(float DeltaTime);
-
-	/**
 	 * @description : Check if the new location is not colliding with anything
 	 * @name : CheckCollisionAtNewPosition
 	 * @param NewLocation
@@ -135,14 +121,55 @@ private:
 	bool CheckCollisionAtNewPosition(const FVector& NewLocation) const;
 
 	/**
-	 * @description : Update the slide distance
-	 * @name : UpdateSlideDistance
-	 * @param FrameDistance
+	 * @description : Get the floor angle where the player is sliding
+	 * @name : GetCurrentFloorAngle
 	 */
-	void UpdateSlideDistance(float FrameDistance);
+	float GetCurrentFloorAngle();
+
+	/**
+	 * @description : Calculate the slide speed based on the floor angle
+	 * @name : CalculateSlideSpeed
+	 * @param DeltaTime
+	 */
+	float CalculateSlideSpeed(float DeltaTime);
+
+	/**
+	 * @description : Process slide movement when the floor is flat
+	 * @name : ProcessBasicSlide
+	 * @param DeltaTime
+	 */
+	float ProcessBasicSlide(float DeltaTime);
+	
+	UPROPERTY()
+	ASR_Character* OwnerCharacter;
+	
+	UPROPERTY()
+	USR_MotionController* MotionController;
+	
+	UPROPERTY()
+	USR_ContextStateComponent* ContextStateComponent;
+
+	UPROPERTY()
+	UCapsuleComponent* CapsuleComponent;
+
+	UPROPERTY()
+	UMeshComponent* MeshComponent;
+
+	UPROPERTY()
+	UCharacterMovementComponent* CharacterMovement;
+	
+	float FGravity = 0.0f;
+	float FFriction = 0.0f;
+	
+	int32 m_CurrentRootMotionID = 0;
 
 	FVector SlideStartLocation;
 	FVector SlideDirection;
+	
+	bool bIsStateActive = false;
+	bool bIsSliding = false;
+	
 	float FInitialCapsuleHalfHeight = 96.0f;
 	float CurrentSlideDistance = 0.0f;
+	float BasicSlideDeceleration = 200.0f;
 };
