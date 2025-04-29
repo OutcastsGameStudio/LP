@@ -67,9 +67,6 @@ bool USR_SlideComponent::CanInitiateSlide() const
 
 	if (CharacterMovement->IsFalling())
 		return false;
-
-	if (!bIsSliding)
-		return false;
 	
 	return true;
 }
