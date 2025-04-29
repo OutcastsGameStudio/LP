@@ -108,10 +108,10 @@ public:
 	FOnSlideInputPressed FOnSlideInputPressed;
 
 	UPROPERTY(BlueprintAssignable, Category = "Input")
-	FOnMoveForwardInputPressed FOnCrouchInputReleased;
+	FOnCrouchInputReleased FOnCrouchInputReleased;
 
 	UPROPERTY(BlueprintAssignable, Category = "Input")
-	FOnMoveForwardInputPressed FOnCrouchInputPressed;
+	FOnCrouchInputPressed FOnCrouchInputPressed;
 
 public:
 	ASR_Character();
