@@ -62,10 +62,9 @@ void USR_SlideComponent::StartSlide()
 
 bool USR_SlideComponent::CanInitiateSlide() const
 {
-	if (CharacterMovement->GetLastUpdateVelocity().IsNearlyZero())
-		return false;
-
-	if (CharacterMovement->IsFalling())
+	if (CharacterMovement->GetLastUpdateVelocity().IsNearlyZero()
+		|| CharacterMovement->IsFalling()
+		|| bIsCrouching)
 		return false;
 	
 	return true;
@@ -74,6 +73,7 @@ bool USR_SlideComponent::CanInitiateSlide() const
 void USR_SlideComponent::InitializeSlideState()
 {
 	bIsSliding = true;
+	OwnerCharacter->DisableInput(Cast<APlayerController>(OwnerCharacter->GetController()));
 	SlideStartLocation = GetOwner()->GetActorLocation();
 	SlideDirection = GetOwner()->GetActorForwardVector();
 	FSlideSpeed = 950.0f;
@@ -120,10 +120,16 @@ void USR_SlideComponent::AdjustCharacterCollision()
 
 void USR_SlideComponent::HandleCrouchFallback()
 {
-	if (CharacterMovement->GetLastUpdateVelocity() == FVector::ZeroVector && 
-		!CharacterMovement->IsFalling())
+	if (CharacterMovement->Velocity.IsNearlyZero() && !bIsCrouching && !CharacterMovement->IsFalling())
 	{
+		bIsCrouching = true;
+		CharacterMovement->bWantsToCrouch = true;
 		CharacterMovement->Crouch();
+	} else if (CharacterMovement->Velocity.IsNearlyZero() && bIsCrouching && !CharacterMovement->IsFalling())
+	{
+		bIsCrouching = false;
+		CharacterMovement->bWantsToCrouch = false;
+		CharacterMovement->UnCrouch();
 	}
 }
 
@@ -181,6 +187,7 @@ void USR_SlideComponent::StopSlide()
 
 	if (bHitCeiling)
 	{
+		bIsCrouching = true;
 		CharacterMovement->bWantsToCrouch = true;
 		CharacterMovement->Crouch();
 	}
@@ -268,6 +275,13 @@ float USR_SlideComponent::ProcessBasicSlide(float DeltaTime)
 void USR_SlideComponent::Slide()
 {
 	ContextStateComponent->TransitionState(MotionState::SLIDE);
+
+	if (!CanInitiateSlide())
+	{
+		HandleCrouchFallback();
+		return;
+	}
+	
 	StartSlide();
 }
 
@@ -282,11 +296,6 @@ void USR_SlideComponent::EnterState(void* data)
 	{
 		UE_LOG(LogTemp, Warning, TEXT("USR_SlideComponent::EnterState() - State is already active"));
 		return;
-	}
-
-	if (OwnerCharacter)
-	{
-		OwnerCharacter->DisableInput(Cast<APlayerController>(OwnerCharacter->GetController()));
 	}
 	
 	UpdateState();
