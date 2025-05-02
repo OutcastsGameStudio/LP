@@ -1,8 +1,5 @@
 ﻿// Fill out your copyright notice in the Description page of Project Settings.
-
-
 #include "SR_ClimbComponent.h"
-
 #include "DrawDebugHelpers.h"
 #include "Components/CapsuleComponent.h"
 
@@ -71,6 +68,7 @@ void USR_ClimbComponent::LeaveState(int32 rootMotionId, bool bForced)
 void USR_ClimbComponent::EnterState(void* data)
 {
 	b_IsActive = true;
+	StartLocation = OwnerCharacter->GetActorLocation();
 }
 
 bool USR_ClimbComponent::LookAheadQuery()
@@ -91,7 +89,7 @@ void USR_ClimbComponent::UpdateState()
     
     bool bIsOnGround = MovementComp->IsMovingOnGround();
 
-	// if already on the ground, stop climbing and high enough from the start location
+    // if already on the ground, stop climbing and high enough from the start location
     if (bIsOnGround && CurrentLocation.Z > StartLocation.Z + 50.0f)
     {
         b_IsActive = false;
@@ -116,13 +114,10 @@ void USR_ClimbComponent::UpdateState()
     {
         b_IsActive = false;
 
-    	// prevent glitching
-        MovementComp->Velocity = FVector::ZeroVector;
-        
-        if(MovementComp->IsMovingOnGround())
-            MovementComp->SetMovementMode(MOVE_Walking);
-        else
-            MovementComp->SetMovementMode(MOVE_Falling);
+        // Ajouter une légère impulsion vers l'avant lorsqu'on atteint le haut
+        FVector ForwardImpulse = OwnerCharacter->GetActorForwardVector() * ForwardImpulseStrength;
+        MovementComp->Velocity = ForwardImpulse;
+        MovementComp->SetMovementMode(MOVE_Falling);
         
         ContextStateComponent->TransitionState(MotionState::NONE);
         return;
@@ -130,23 +125,23 @@ void USR_ClimbComponent::UpdateState()
     
     FVector Direction;
 
-	// STEP 1: Go UP while we are below the ledge
+    // STEP 1: Go UP while we are below the ledge
     if (CurrentLocation.Z < LedgeLocation.Z + 150)
     {
         Direction = FVector(0, 0, 1);
     }
-	// STEP	2: G FORWARD as we are above the ledge
+    // STEP 2: Go FORWARD as we are above the ledge (with a slight upward component to maintain height)
     else
     {
         Direction = FVector(LedgeLocation.X - CurrentLocation.X, 
                            LedgeLocation.Y - CurrentLocation.Y, 
-                           0).GetSafeNormal();
+                           0.2f).GetSafeNormal();
     }
     
     float Speed = ClimbUpSpeed;
     FVector DesiredMovement = Direction * Speed;
     
-	// Prevent strange glitching by preventing the character to move and other forces to apply
+    // Prevent strange glitching by preventing the character to move and other forces to apply
     MovementComp->Velocity = FVector::ZeroVector;
     
     FHitResult Hit;
@@ -220,4 +215,3 @@ void USR_ClimbComponent::CheckForLedgeGrab()
 		}
 	}
 }
-
