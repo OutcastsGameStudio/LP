@@ -7,11 +7,7 @@
 // Sets default values for this component's properties
 USR_ClimbComponent::USR_ClimbComponent()
 {
-	// Set this component to be initialized when the game starts, and to be ticked every frame.  You can turn these features
-	// off to improve performance if you don't need them.
 	PrimaryComponentTick.bCanEverTick = true;
-
-	// ...
 }
 
 
@@ -49,19 +45,19 @@ void USR_ClimbComponent::LeaveState(int32 rootMotionId, bool bForced)
 {
 	b_IsActive = false;
     
-	// Vérifier si le personnage est sur le sol après avoir terminé le climb
+	
 	if (OwnerCharacter->GetCharacterMovement()->IsMovingOnGround())
 	{
-		// S'il est sur le sol, passer en mode walking
+		
 		OwnerCharacter->GetCharacterMovement()->SetMovementMode(MOVE_Walking);
 	}
 	else
 	{
-		// Sinon, il doit tomber
+		
 		OwnerCharacter->GetCharacterMovement()->SetMovementMode(MOVE_Falling);
 	}
     
-	// Transition vers l'état NONE
+	
 	ContextStateComponent->TransitionState(MotionState::NONE);
 }
 
@@ -89,7 +85,7 @@ void USR_ClimbComponent::UpdateState()
     
     bool bIsOnGround = MovementComp->IsMovingOnGround();
 
-    // if already on the ground, stop climbing and high enough from the start location
+   
     if (bIsOnGround && CurrentLocation.Z > StartLocation.Z + 50.0f)
     {
         b_IsActive = false;
@@ -114,7 +110,7 @@ void USR_ClimbComponent::UpdateState()
     {
         b_IsActive = false;
 
-        // Ajouter une légère impulsion vers l'avant lorsqu'on atteint le haut
+        // add an impulse to the character to get him off the ledge
         FVector ForwardImpulse = OwnerCharacter->GetActorForwardVector() * ForwardImpulseStrength;
         MovementComp->Velocity = ForwardImpulse;
         MovementComp->SetMovementMode(MOVE_Falling);
@@ -194,7 +190,7 @@ void USR_ClimbComponent::CheckForLedgeGrab()
 		FVector VerticalFrontEnd = EdgeCheckStart 
 		   + Forward * 10.0f ;
 	
-		FVector EdgeCheckEnd = VerticalFrontEnd  // Distance vers le bas
+		FVector EdgeCheckEnd = VerticalFrontEnd 
 			- FVector(0, 0, LedgeGrabHeight * 3);
 	
 		FHitResult EdgeHit; // if we hit a face of the wall
