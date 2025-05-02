@@ -20,7 +20,6 @@ enum class MotionState
 	SLIDE,
 	DASH,
 	CLIMB,
-	CROUCH,
 };
 
 UCLASS(ClassGroup=(Custom), meta=(BlueprintSpawnableComponent))
@@ -89,8 +88,6 @@ private:
 				return "Dash";
 			case MotionState::CLIMB:
 				return "Climb";
-			case MotionState::CROUCH:
-				return "Crouch";
 			default:
 				return "Unknown";
 		}

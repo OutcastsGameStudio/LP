@@ -174,9 +174,6 @@ void ASR_Character::SetupPlayerInputComponent(UInputComponent* PlayerInputCompon
 		EnhancedInputComponent->BindAction(JumpAction, ETriggerEvent::Started, this, &ASR_Character::StopWallJump);
 		EnhancedInputComponent->BindAction(JumpAction, ETriggerEvent::Completed, this, &ASR_Character::StopJumping);
 
-		// Crouch
-		EnhancedInputComponent->BindAction(CrouchAction, ETriggerEvent::Triggered, this, &ASR_Character::OnCrouchPressed);
-
 		// Moving
 		EnhancedInputComponent->BindAction(MoveAction, ETriggerEvent::Triggered, this, &ASR_Character::Move);
 
@@ -283,16 +280,6 @@ void ASR_Character::OnSlidePressed()
 void ASR_Character::OnSlideReleased()
 {
 	FOnSlideInputReleased.Broadcast();
-}
-
-void ASR_Character::OnCrouchPressed()
-{
-	FOnCrouchInputPressed.Broadcast();
-}
-
-void ASR_Character::OnCrouchReleased()
-{
-	FOnCrouchInputReleased.Broadcast();
 }
 
 void ASR_Character::OnDashPressed(const FInputActionValue& Value)

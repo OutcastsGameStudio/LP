@@ -19,7 +19,7 @@ class SR_API USR_SlideComponent : public UActorComponent, public ISR_State
 
 public:
 	USR_SlideComponent();
-
+	
 	/**
 	 * @description : Call when player press the slide input
 	 * @name : Slide
@@ -68,6 +68,9 @@ protected:
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Slide Movement")
 	float FMeshLocationZ = -90.0f;
 
+	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Slide Movement")
+	bool bIsSliding = false;
+	
 private:
 	/**
 	 * @description : Check if different conditions are met to start the slide
@@ -167,7 +170,7 @@ private:
 	FVector SlideDirection;
 	
 	bool bIsStateActive = false;
-	bool bIsSliding = false;
+	bool bIsCrouching = false;
 	
 	float FInitialCapsuleHalfHeight = 96.0f;
 	float CurrentSlideDistance = 0.0f;

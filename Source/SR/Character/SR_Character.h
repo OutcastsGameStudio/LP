@@ -32,9 +32,6 @@ DECLARE_DYNAMIC_MULTICAST_DELEGATE(FOnJumpInputReleased);
 DECLARE_DYNAMIC_MULTICAST_DELEGATE(FOnSlideInputPressed);
 DECLARE_DYNAMIC_MULTICAST_DELEGATE(FOnSlideInputReleased);
 
-DECLARE_DYNAMIC_MULTICAST_DELEGATE(FOnCrouchInputReleased);
-DECLARE_DYNAMIC_MULTICAST_DELEGATE(FOnCrouchInputPressed);
-
 UCLASS()
 class SR_API ASR_Character : public ACharacter
 {
@@ -68,33 +65,24 @@ class SR_API ASR_Character : public ACharacter
 	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = Input, meta = (AllowPrivateAccess = "true"))
 	UInputAction* DashAction;
 
-	/** Silde Input Action */
+	/** Slide Input Action */
 	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = Input, meta = (AllowPrivateAccess = "true"))
 	UInputAction* SlideAction;
 
-	/** Crouch Input Action */
-	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = Input, meta = (AllowPrivateAccess = "true"))
-	UInputAction* CrouchAction;
-
-
-
 public:
 
-	// Event dispatchers pour les inputs
 	UPROPERTY(BlueprintAssignable, Category = "Input")
 	FOnDashInputPressed OnDashInputPressed;
     
 	UPROPERTY(BlueprintAssignable, Category = "Input")
 	FOnDashInputReleased OnDashInputReleased;
 
-	// Event dispatchers pour les inputs
 	UPROPERTY(BlueprintAssignable, Category = "Input")
 	FOnMoveForwardInputPressed OnMoveForwardInputPressed;
     
 	UPROPERTY(BlueprintAssignable, Category = "Input")
 	FOnMoveForwardInputReleased OnMoveForwardInputReleased;
 
-	// Event dispatchers pour les inputs
 	UPROPERTY(BlueprintAssignable, Category = "Input")
 	FOnMoveForwardInputPressed FOnJumpInputPressed;
     
@@ -107,15 +95,8 @@ public:
 	UPROPERTY(BlueprintAssignable, Category = "Input")
 	FOnSlideInputPressed FOnSlideInputPressed;
 
-	UPROPERTY(BlueprintAssignable, Category = "Input")
-	FOnCrouchInputReleased FOnCrouchInputReleased;
-
-	UPROPERTY(BlueprintAssignable, Category = "Input")
-	FOnCrouchInputPressed FOnCrouchInputPressed;
-
-public:
 	ASR_Character();
-
+	
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Camera")
 	bool bRotateCharacterWithCamera = true;
 	
@@ -132,14 +113,13 @@ public:
 	void SetClimbUpSpeed(float NewClimbUpSpeed) { ClimbUpSpeed = NewClimbUpSpeed; }
 
 	float GetClimbUpSpeed() const { return ClimbUpSpeed; }
-
 	
 	virtual void Jump() override;
 
 	void MoveForward();
 
-
 	void StopMoveForward();
+	
 	/**
 	 * @description : Set the custom movement mode of the character
 	 * @param NewCustomMode 
@@ -199,17 +179,9 @@ private:
 	void OnDashReleased(const FInputActionValue& Value);
 	
 	/*
-	 * Crouch Section
-	 */
-	void OnCrouchPressed();
-	void OnCrouchReleased();
-
-
-	/*
 	 * WallMovement Section
 	 */
 	void StopWallJump();
-
 
 	/*
 	 * Slide Section
@@ -232,7 +204,6 @@ public:
 	ISR_State* GetState(MotionState StateName) const;
 
 //@TODO: workaround for the retrieving of the current State
-public:
 	UFUNCTION(BlueprintCallable, Category = "State")
 	FName GetCurrentStateName();
 	void SetCurrentState(MotionState NewStateName) { b_CurrentState = NewStateName; }
