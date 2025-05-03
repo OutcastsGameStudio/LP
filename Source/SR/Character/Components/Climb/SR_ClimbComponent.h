@@ -42,7 +42,9 @@ public:
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "WallRun", meta = (ExposeOnSpawn = true))
 	float ReachDistance = 20.f;
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Climb", meta = (ExposeOnSpawn = true))
-	float ForwardImpulseStrength = 300.0f; // Ajouté pour l'impulsion vers l'avant
+	float ForwardImpulseStrength = 300.0f;
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Climb", meta = (ExposeOnSpawn = true))
+	float UpwardValue = 0.2f;
 private:
 	UPROPERTY()
 	UCharacterMovementComponent* CharacterMovement;

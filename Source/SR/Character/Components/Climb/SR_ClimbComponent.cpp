@@ -112,7 +112,7 @@ void USR_ClimbComponent::UpdateState()
 
         // add an impulse to the character to get him off the ledge
         FVector ForwardImpulse = OwnerCharacter->GetActorForwardVector() * ForwardImpulseStrength;
-        MovementComp->Velocity = ForwardImpulse;
+        OwnerCharacter->LaunchCharacter(ForwardImpulse, true, false);
         MovementComp->SetMovementMode(MOVE_Falling);
         
         ContextStateComponent->TransitionState(MotionState::NONE);
@@ -131,7 +131,7 @@ void USR_ClimbComponent::UpdateState()
     {
         Direction = FVector(LedgeLocation.X - CurrentLocation.X, 
                            LedgeLocation.Y - CurrentLocation.Y, 
-                           0.2f).GetSafeNormal();
+                           UpwardValue).GetSafeNormal();
     }
     
     float Speed = ClimbUpSpeed;
