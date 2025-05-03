@@ -1,8 +1,5 @@
 ﻿// Fill out your copyright notice in the Description page of Project Settings.
-
-
 #include "SR_ClimbComponent.h"
-
 #include "DrawDebugHelpers.h"
 #include "Components/CapsuleComponent.h"
 
@@ -10,11 +7,7 @@
 // Sets default values for this component's properties
 USR_ClimbComponent::USR_ClimbComponent()
 {
-	// Set this component to be initialized when the game starts, and to be ticked every frame.  You can turn these features
-	// off to improve performance if you don't need them.
 	PrimaryComponentTick.bCanEverTick = true;
-
-	// ...
 }
 
 
@@ -52,25 +45,26 @@ void USR_ClimbComponent::LeaveState(int32 rootMotionId, bool bForced)
 {
 	b_IsActive = false;
     
-	// Vérifier si le personnage est sur le sol après avoir terminé le climb
+	
 	if (OwnerCharacter->GetCharacterMovement()->IsMovingOnGround())
 	{
-		// S'il est sur le sol, passer en mode walking
+		
 		OwnerCharacter->GetCharacterMovement()->SetMovementMode(MOVE_Walking);
 	}
 	else
 	{
-		// Sinon, il doit tomber
+		
 		OwnerCharacter->GetCharacterMovement()->SetMovementMode(MOVE_Falling);
 	}
     
-	// Transition vers l'état NONE
+	
 	ContextStateComponent->TransitionState(MotionState::NONE);
 }
 
 void USR_ClimbComponent::EnterState(void* data)
 {
 	b_IsActive = true;
+	StartLocation = OwnerCharacter->GetActorLocation();
 }
 
 bool USR_ClimbComponent::LookAheadQuery()
@@ -91,7 +85,7 @@ void USR_ClimbComponent::UpdateState()
     
     bool bIsOnGround = MovementComp->IsMovingOnGround();
 
-	// if already on the ground, stop climbing and high enough from the start location
+   
     if (bIsOnGround && CurrentLocation.Z > StartLocation.Z + 50.0f)
     {
         b_IsActive = false;
@@ -116,13 +110,10 @@ void USR_ClimbComponent::UpdateState()
     {
         b_IsActive = false;
 
-    	// prevent glitching
-        MovementComp->Velocity = FVector::ZeroVector;
-        
-        if(MovementComp->IsMovingOnGround())
-            MovementComp->SetMovementMode(MOVE_Walking);
-        else
-            MovementComp->SetMovementMode(MOVE_Falling);
+        // add an impulse to the character to get him off the ledge
+        FVector ForwardImpulse = OwnerCharacter->GetActorForwardVector() * ForwardImpulseStrength;
+        OwnerCharacter->LaunchCharacter(ForwardImpulse, true, false);
+        MovementComp->SetMovementMode(MOVE_Falling);
         
         ContextStateComponent->TransitionState(MotionState::NONE);
         return;
@@ -130,23 +121,23 @@ void USR_ClimbComponent::UpdateState()
     
     FVector Direction;
 
-	// STEP 1: Go UP while we are below the ledge
+    // STEP 1: Go UP while we are below the ledge
     if (CurrentLocation.Z < LedgeLocation.Z + 150)
     {
         Direction = FVector(0, 0, 1);
     }
-	// STEP	2: G FORWARD as we are above the ledge
+    // STEP 2: Go FORWARD as we are above the ledge (with a slight upward component to maintain height)
     else
     {
         Direction = FVector(LedgeLocation.X - CurrentLocation.X, 
                            LedgeLocation.Y - CurrentLocation.Y, 
-                           0).GetSafeNormal();
+                           UpwardValue).GetSafeNormal();
     }
     
     float Speed = ClimbUpSpeed;
     FVector DesiredMovement = Direction * Speed;
     
-	// Prevent strange glitching by preventing the character to move and other forces to apply
+    // Prevent strange glitching by preventing the character to move and other forces to apply
     MovementComp->Velocity = FVector::ZeroVector;
     
     FHitResult Hit;
@@ -199,7 +190,7 @@ void USR_ClimbComponent::CheckForLedgeGrab()
 		FVector VerticalFrontEnd = EdgeCheckStart 
 		   + Forward * 10.0f ;
 	
-		FVector EdgeCheckEnd = VerticalFrontEnd  // Distance vers le bas
+		FVector EdgeCheckEnd = VerticalFrontEnd 
 			- FVector(0, 0, LedgeGrabHeight * 3);
 	
 		FHitResult EdgeHit; // if we hit a face of the wall
@@ -220,4 +211,3 @@ void USR_ClimbComponent::CheckForLedgeGrab()
 		}
 	}
 }
-

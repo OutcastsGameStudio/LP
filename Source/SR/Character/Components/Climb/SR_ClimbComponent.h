@@ -26,7 +26,7 @@ protected:
 public:
 	// Called every frame
 	virtual void TickComponent(float DeltaTime, ELevelTick TickType,
-	                           FActorComponentTickFunction* ThisTickFunction) override;
+							   FActorComponentTickFunction* ThisTickFunction) override;
 
 public:
 	UFUNCTION(BlueprintCallable, Category = "Movement")
@@ -41,6 +41,10 @@ public:
 
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "WallRun", meta = (ExposeOnSpawn = true))
 	float ReachDistance = 20.f;
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Climb", meta = (ExposeOnSpawn = true))
+	float ForwardImpulseStrength = 300.0f;
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Climb", meta = (ExposeOnSpawn = true))
+	float UpwardValue = 0.2f;
 private:
 	UPROPERTY()
 	UCharacterMovementComponent* CharacterMovement;
@@ -57,7 +61,7 @@ private:
 	void CheckForLedgeGrab();
 	float LedgeGrabReachDistance = 70.0f;
 	float LedgeGrabHeight = 150.0f;
-	float ClimbUpSpeed = 20.0f;
+	float ClimbUpSpeed = 20.0f;	
 	FVector LedgeLocation;
 	int32 m_ClimbMotionId = -1;
 };
