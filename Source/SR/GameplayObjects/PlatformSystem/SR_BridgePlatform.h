@@ -42,7 +42,6 @@ protected:
 	FRotator EndRotation;
     
 	float Alpha;
-	float Direction;
 
 public:
 	virtual void Tick(float DeltaTime) override;

@@ -11,7 +11,6 @@ ASR_BridgePlatform::ASR_BridgePlatform()
 	bIsMoving = false;
 	bShouldRotate = false;
 	MovementSpeed = 1.0f;
-	Direction = 1.0f;
 }
 
 void ASR_BridgePlatform::BeginPlay()
