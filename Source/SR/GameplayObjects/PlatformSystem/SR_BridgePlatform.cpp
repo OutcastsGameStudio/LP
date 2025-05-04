@@ -61,8 +61,6 @@ void ASR_BridgePlatform::ActivateMovement(bool bShouldActivate)
 		if (bShouldRotate)
 		{
 			StartRotation = GetActorRotation();
-			GEngine->AddOnScreenDebugMessage(-1, 10, FColor::Red, TEXT("FIRST"));
-
 			TargetRotation = StartRotation + EndRotation;
 		} else
 		{
@@ -75,8 +73,7 @@ void ASR_BridgePlatform::ActivateMovement(bool bShouldActivate)
 		if (bShouldRotate)
 		{
 			StartRotation = GetActorRotation();
-			GEngine->AddOnScreenDebugMessage(-1, 10, FColor::Green, TEXT("SECOND"));
-			TargetRotation = StartRotation - EndRotation;
+			TargetRotation = StartRotation + EndRotation;
 		} else
 		{
 			TargetPosition = StartPosition;
