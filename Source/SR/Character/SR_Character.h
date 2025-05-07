@@ -32,6 +32,8 @@ DECLARE_DYNAMIC_MULTICAST_DELEGATE(FOnJumpInputReleased);
 DECLARE_DYNAMIC_MULTICAST_DELEGATE(FOnSlideInputPressed);
 DECLARE_DYNAMIC_MULTICAST_DELEGATE(FOnSlideInputReleased);
 
+DECLARE_DYNAMIC_MULTICAST_DELEGATE_OneParam(FOnMoveInputChanged, FVector2D, Value);
+
 UCLASS()
 class SR_API ASR_Character : public ACharacter
 {
@@ -94,6 +96,9 @@ public:
 
 	UPROPERTY(BlueprintAssignable, Category = "Input")
 	FOnSlideInputPressed FOnSlideInputPressed;
+
+	UPROPERTY(BlueprintAssignable, Category = "Input")
+	FOnMoveInputChanged FOnMoveInputChanged;
 
 	ASR_Character();
 	

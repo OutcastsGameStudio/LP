@@ -26,9 +26,10 @@ void USR_ClimbComponent::BeginPlay()
 		UE_LOG(LogTemp, Error, TEXT("Failed to load components in USR_ClimbComponent::BeginPlay()"));
 		return;
 	}
-
+	OwnerCharacter->OnMoveForwardInputPressed.AddDynamic(this, &USR_ClimbComponent::OnMoveForwardInputPressed);
+	OwnerCharacter->OnMoveForwardInputReleased.AddDynamic(this, &USR_ClimbComponent::OnMoveForwardInputReleased);
+	
 	MotionController->OnRootMotionCompleted.AddDynamic(this, &USR_ClimbComponent::LeaveState);
-
 }
 
 // Called every frame
@@ -59,6 +60,16 @@ void USR_ClimbComponent::LeaveState(int32 rootMotionId, bool bForced)
     
 	
 	ContextStateComponent->TransitionState(MotionState::NONE);
+}
+
+void USR_ClimbComponent::OnMoveForwardInputPressed()
+{
+	m_IsMovingForward = true;
+}
+
+void USR_ClimbComponent::OnMoveForwardInputReleased()
+{
+	m_IsMovingForward = false;
 }
 
 void USR_ClimbComponent::EnterState(void* data)
@@ -166,7 +177,7 @@ bool USR_ClimbComponent::IsStateActive() const
 
 void USR_ClimbComponent::CheckForLedgeGrab()
 {
-	if (b_IsActive || CharacterMovement->IsMovingOnGround() || ContextStateComponent->GetCurrentMotionState() == MotionState::WALL_RUN)
+	if (b_IsActive || CharacterMovement->IsMovingOnGround() || ContextStateComponent->GetCurrentMotionState() == MotionState::WALL_RUN && !m_IsMovingForward)
 		return;
 	
 	FVector Start = OwnerCharacter->GetActorLocation();

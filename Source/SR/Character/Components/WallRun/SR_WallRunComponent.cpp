@@ -28,8 +28,9 @@ void USR_WallRunComponent::BeginPlay()
 	CharacterMovement = OwnerCharacter->FindComponentByClass<UCharacterMovementComponent>();
 	ContextStateComponent = OwnerCharacter->FindComponentByClass<USR_ContextStateComponent>();
 	MotionController = GetOwner()->FindComponentByClass<USR_MotionController>();
+	PlayerController = Cast<APlayerController>(OwnerCharacter->GetController());
 
-	if (!CharacterMovement || !OwnerCharacter || !MotionController || !ContextStateComponent)
+	if (!CharacterMovement || !OwnerCharacter || !MotionController || !ContextStateComponent || !PlayerController)
 	{
 		UE_LOG(LogTemp, Error, TEXT("Failed to load components in USR_WallRunComponent::BeginPlay()"));
 		return;
@@ -49,28 +50,31 @@ void USR_WallRunComponent::TickComponent(float DeltaTime, ELevelTick TickType,
                                          FActorComponentTickFunction* ThisTickFunction)
 {
 	Super::TickComponent(DeltaTime, TickType, ThisTickFunction);
+	ResetCameraRotation(DeltaTime);
 
 	auto velocity = FVector(CharacterMovement->Velocity.X, CharacterMovement->Velocity.Y, 0).Size();
 	GEngine->AddOnScreenDebugMessage(-1, 0.0f, FColor::Red, FString::Printf(TEXT("Velocity: %f"), velocity));
-	// Vérifier si le wall run doit continuer
 	if (bIsStateActive)
 	{
-		// Vérifier si on est toujours contre un mur
+		if(CharacterMovement->IsMovingOnGround())
+		{
+			StopWallRun();
+			return;
+		}
 		FHitResult Hit;
+		// if no wall is detected, stop the wall run
 		if (!DetectNextWall(Hit))
 		{
-			// Plus de mur, arrêter le wall run
-			// StopWallRun(); @TODO: maybe need it ?
+			StopWallRun();
 		}
 		else
 		{
-			// Vérifier l'angle
 			auto CharacterForwardVector = OwnerCharacter->GetActorForwardVector();
 			auto DotProduct = FVector::DotProduct(CharacterForwardVector, -Hit.Normal);
 			auto angle = FMath::RadiansToDegrees(FMath::Acos(DotProduct));
 			if (angle > MaxAngleBeforeStop)
 			{
-				// StopWallRun(); @TODO: maybe need it ?
+				StopWallRun();
 			}
 		}
 	}
@@ -78,6 +82,71 @@ void USR_WallRunComponent::TickComponent(float DeltaTime, ELevelTick TickType,
 	if(!bIsStateActive) return;
 	UpdateState(DeltaTime);
 }
+
+bool USR_WallRunComponent::HasDetectedPlayerMouseRotation(float DeltaTime)
+{
+	float CurrentMousePosX, CurrentMousePosY;
+	PlayerController->GetMousePosition(CurrentMousePosX, CurrentMousePosY);
+    
+	const float MovementThreshold = 0.1f;
+
+	if (FMath::Abs(CurrentMousePosX - m_MousePosXAtWallRunStart) > MovementThreshold ||
+		FMath::Abs(CurrentMousePosY - m_MousePosYAtWallRunStart) > MovementThreshold)
+	{
+		return true;
+	}
+    
+	return false;
+}
+
+void USR_WallRunComponent::UpdateCameraRotation(float DeltaTime)
+{
+    bool hasDetectedPlayerMouseRotation = HasDetectedPlayerMouseRotation(DeltaTime);
+    if(hasDetectedPlayerMouseRotation)
+        return;
+    
+    float TargetRoll = m_WallRunSide * m_WallRunCameraRollAngle;
+    m_CurrentCameraRoll = FMath::FInterpTo(m_CurrentCameraRoll, -TargetRoll, DeltaTime, m_CameraRollSpeed);
+    
+    FRotator CurrentRotation = PlayerController->GetControlRotation();
+    float CurrentYaw = CurrentRotation.Yaw;
+    float TargetYaw = m_WallRunDirection.Rotation().Yaw;
+
+	// for a right side wall (m_WallRunSide = 1), the offset is negative (camera outwards)
+	// for a left side wall (m_WallRunSide = -1), the offset is positive (camera inwards)
+	float YawOffset = -m_WallRunSide * m_WallRunCameraOffset;
+
+    // Use FindDeltaAngleDegrees to get the difference between the current and target yaw without bothering about the wrap-around where 180 degrees becomes -180 degrees
+    float YawDelta = FMath::FindDeltaAngleDegrees(CurrentYaw, TargetYaw) + YawOffset;
+    
+    float NewTargetYaw = CurrentYaw + YawDelta;
+    
+    float NewYaw = FMath::FInterpTo(CurrentYaw, NewTargetYaw, DeltaTime, m_CameraRollSpeed);
+    
+    PlayerController->SetControlRotation(FRotator(CurrentRotation.Pitch, NewYaw, m_CurrentCameraRoll));
+}
+
+void USR_WallRunComponent::ResetCameraRotation(float DeltaTime)
+{
+	if (!bResettingCamera)
+		return;
+    
+	m_CameraResetTimer += DeltaTime;
+    
+	float Alpha = FMath::Clamp(m_CameraResetTimer / m_CameraResetDuration, 0.0f, 1.0f);
+    
+	m_CurrentCameraRoll = FMath::Lerp(m_StartCameraRoll, 0.0f, Alpha);
+    
+	FRotator CurrentRotation = PlayerController->GetControlRotation();
+	PlayerController->SetControlRotation(FRotator(CurrentRotation.Pitch, CurrentRotation.Yaw, m_CurrentCameraRoll));
+    
+	if (m_CameraResetTimer >= m_CameraResetDuration)
+	{
+		bResettingCamera = false;
+		m_CurrentCameraRoll = 0.0f;
+	}
+}
+
 bool USR_WallRunComponent::DetectNextWall(FHitResult& Hit)
 {
 	UCapsuleComponent* Capsule = OwnerCharacter->GetCapsuleComponent();
@@ -87,9 +156,6 @@ bool USR_WallRunComponent::DetectNextWall(FHitResult& Hit)
 	FCollisionQueryParams Params = FCollisionQueryParams::DefaultQueryParam;
 	Params.AddIgnoredActor(OwnerCharacter);
 	GetWorld()->SweepSingleByProfile(Hit, Start, End, Capsule->GetComponentQuat(), CollisionProfile, Capsule->GetCollisionShape(), Params);
-	FVector Test = Start - m_WallNormal * Capsule->GetScaledCapsuleRadius();
-	Test = Capsule->GetComponentQuat().RotateVector(Test);
-	DrawDebugLine(GetWorld(), Start, Test, FColor::Green, false, 0.1f, 0, 1.f);
 	return Hit.bBlockingHit;
 }
 
@@ -114,11 +180,16 @@ void USR_WallRunComponent::OnHit(UPrimitiveComponent* HitComponent, AActor* Othe
 		};
 		m_WallNormal = Hit.Normal;
 		FVector WallDirection = FVector::CrossProduct(FVector::UpVector, Hit.Normal);
-		m_WallRunDirection = (WallDirection * (OwnerCharacter->GetActorForwardVector().Dot(WallDirection) > 0.f ? 1.f : -1.f)).GetSafeNormal();
+		m_WallRunSide = FVector::DotProduct(WallDirection, OwnerCharacter->GetActorForwardVector()) > 0.f ? 1 : -1;
+		m_WallRunDirection = (WallDirection * m_WallRunSide).GetSafeNormal();
 
 		// enter the wall run state
 		USR_ContextStateComponent* ContextState = OwnerCharacter->FindComponentByClass<USR_ContextStateComponent>();
 		ContextState->TransitionState(MotionState::WALL_RUN);
+		
+		// retrieve mouse position
+		PlayerController->GetMousePosition(m_MousePosXAtWallRunStart, m_MousePosYAtWallRunStart);
+		
 		bIsStateActive =  true;
 	}
 }
@@ -184,12 +255,10 @@ bool USR_WallRunComponent::CheckIfNotInCorner()
 
 	FQuat Quat1(Rotator1);
 	FQuat Quat2(Rotator2);
-	APlayerController* PC = Cast<APlayerController>(OwnerCharacter->GetController());
 
-	if(PC == nullptr) return false;
 	FRotator CameraRotation;
 	FVector CameraLocation;
-	PC->GetPlayerViewPoint(CameraLocation, CameraRotation);
+	PlayerController->GetPlayerViewPoint(CameraLocation, CameraRotation);
 
 	
 	FVector CameraDirection = CameraRotation.Vector();  // This gives us the direction the camera is facing
@@ -240,6 +309,12 @@ void USR_WallRunComponent::StopWallRun()
 {
 	bIsStateActive = false;
 	WallRunFallingSpeed = 0;
+	m_WallRunSide = 0;
+
+	m_StartCameraRoll = m_CurrentCameraRoll;
+	m_CameraResetTimer = 0.0f;
+	bResettingCamera = true;
+	
 	OwnerCharacter->GetCharacterMovement()->SetMovementMode(MOVE_Falling);
 	ContextStateComponent->TransitionState(MotionState::NONE, true);
 }
@@ -260,6 +335,8 @@ void USR_WallRunComponent::UpdateState(float deltaTime)
     FHitResult Hit(1.f);
 
     CharacterMovement->SafeMoveUpdatedComponent(Delta, CharacterMovement->UpdatedComponent->GetComponentRotation(), true, Hit);
+
+	UpdateCameraRotation(deltaTime);
 
     if (Hit.IsValidBlockingHit() && Hit.Normal.Z > 0.f)
     {
