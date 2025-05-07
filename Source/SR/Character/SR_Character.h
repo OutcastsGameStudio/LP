@@ -126,7 +126,7 @@ public:
 	 */
 	void SetCharacterMovementCustomMode(USR_CharacterMovementComponent::CustomMode NewCustomMode);
 
-	USR_DebugComponent* GetDebugComponent() const { return DebugComponent; }
+	// USR_DebugComponent* GetDebugComponent() const { return DebugComponent; }
 protected:
 	FVector LedgeLocation;
 
@@ -157,8 +157,8 @@ protected:
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Interaction")
 	USR_InteractionComponent* InteractionComponent;
 	
-	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Debug")
-	USR_DebugComponent* DebugComponent;
+	/*UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Debug")
+	USR_DebugComponent* DebugComponent;*/
 
 	virtual void SetupPlayerInputComponent(class UInputComponent* PlayerInputComponent) override;
 	
