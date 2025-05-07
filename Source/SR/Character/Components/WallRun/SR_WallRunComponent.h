@@ -73,6 +73,8 @@ private:
 	USR_MotionController* MotionController;
 	UPROPERTY()
 	USR_ContextStateComponent* ContextStateComponent;
+	UPROPERTY()
+	APlayerController* PlayerController;
 
 	UFUNCTION()
 	void OnMoveForwardInputPressed();
@@ -84,7 +86,7 @@ private:
 	bool CheckIfNotInCorner();
 
 	void StopWallRun();
-
+	
 	bool m_IsMovingForward = false;
 	float MAX_Z_THRE_HOLD = 0.01;
 
@@ -105,4 +107,36 @@ private:
 
 	// Debug
 	void DebugLineTrace(FHitResult hitResult, bool hit, FColor color,FVector vectorStart, FVector vectorEnd);
+
+private:
+	UPROPERTY(EditAnywhere, Category = "Wall Run | Camera", meta = (ClampMin = "0.0", ClampMax = "45.0"), meta = (ToolTip = "Angle de la caméra pendant le wall run. Plus la valeur est élevée, plus la caméra est inclinée vers le cote."))
+	float m_WallRunCameraRollAngle = 15.0f;
+    
+	UPROPERTY(EditAnywhere, Category = "Wall Run | Camera", meta = (ClampMin = "0.0", ClampMax = "50.0"),meta = (ToolTip = "Vitesse de rotation de la caméra pendant le wall run. Plus la valeur est élevée, plus la caméra tourne vite."))
+	float m_CameraRollSpeed = 20.0f;
+
+	UPROPERTY(EditAnywhere, Category = "Wall Run | Camera", meta = (ClampMin = "0.0", ClampMax = "30.0"),meta = (ToolTip = "Offset de l'angle de la caméra par rapport a la direction de la course. Plus la valeur est élevée, plus la caméra est éloignée de la direction de la course."))
+	float m_WallRunCameraOffset = 20.0f;
+    
+	float m_CurrentCameraRoll = 0.0f;
+
+	float m_StartCameraRoll = 0.0f;
+
+	bool bResettingCamera;
+
+	float m_CameraResetTimer = 0.0f;
+
+	UPROPERTY(EditAnywhere, Category = "Wall Run | Camera", meta = (ClampMin = "0.1", ClampMax = "5.0"), meta = (ToolTip = "Durée de la transition de la caméra vers la position de départ après le wall run. Plus la valeur est élevée, plus la transition est lente."))
+	float m_CameraResetDuration = 0.3f;
+
+	FRotator m_LastCameraRotation;
+
+	float m_MousePosXAtWallRunStart = 0.0f;
+	float m_MousePosYAtWallRunStart = 0.0f;
+
+	int32 m_WallRunSide = 0;
+
+	void UpdateCameraRotation(float DeltaTime);
+	bool HasDetectedPlayerMouseRotation(float DeltaTime);
+	void ResetCameraRotation(float DeltaTime);
 };

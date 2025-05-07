@@ -45,6 +45,11 @@ public:
 	float ForwardImpulseStrength = 300.0f;
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Climb", meta = (ExposeOnSpawn = true))
 	float UpwardValue = 0.2f;
+
+	UFUNCTION()
+	void OnMoveForwardInputPressed();
+	UFUNCTION()
+	void OnMoveForwardInputReleased();
 private:
 	UPROPERTY()
 	UCharacterMovementComponent* CharacterMovement;
@@ -64,4 +69,5 @@ private:
 	float ClimbUpSpeed = 20.0f;	
 	FVector LedgeLocation;
 	int32 m_ClimbMotionId = -1;
+	bool m_IsMovingForward = false;
 };
