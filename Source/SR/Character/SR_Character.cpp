@@ -61,7 +61,7 @@ ASR_Character::ASR_Character()
 	InteractionComponent = CreateDefaultSubobject<USR_InteractionComponent>(TEXT("InteractionComponent"));
 	
 	// set the debug component
-	DebugComponent = CreateDefaultSubobject<USR_DebugComponent>(TEXT("DebugComponent"));
+	// DebugComponent = CreateDefaultSubobject<USR_DebugComponent>(TEXT("DebugComponent"));
 
 	// ==== STATE CORE SYSTEM COMPONENTS ====
 	ContextStateComponent = CreateDefaultSubobject<USR_ContextStateComponent>(TEXT("ContextStateComponent"));
