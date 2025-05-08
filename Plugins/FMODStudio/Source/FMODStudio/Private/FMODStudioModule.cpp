@@ -1,4 +1,4 @@
-// Copyright (c), Firelight Technologies Pty, Ltd. 2012-2024.
+// Copyright (c), Firelight Technologies Pty, Ltd. 2012-2025.
 
 #include "FMODStudioModule.h"
 #include "FMODSettings.h"
@@ -463,7 +463,7 @@ void FFMODStudioModule::StartupModule()
     if (FParse::Param(FCommandLine::Get(), TEXT("nosound")) || FApp::IsBenchmarking() || IsRunningDedicatedServer() || IsRunningCommandlet())
     {
         bUseSound = false;
-        UE_LOG(LogFMOD, Log, TEXT("Running in nosound mode"));
+        UE_LOG(LogFMOD, Log, TEXT("Disabling FMOD Runtime."));
     }
 
     if (FParse::Param(FCommandLine::Get(), TEXT("noliveupdate")))
@@ -476,19 +476,7 @@ void FFMODStudioModule::StartupModule()
         verifyfmod(FMOD::Debug_Initialize(FMOD_DEBUG_LEVEL_WARNING, FMOD_DEBUG_MODE_CALLBACK, FMODLogCallback));
 
         const UFMODSettings &Settings = *GetDefault<UFMODSettings>();
-
         int32 size = Settings.GetMemoryPoolSize();
-
-        if (size == 0)
-        {
-#if defined(FMOD_PLATFORM_HEADER)
-            size = FMODPlatform_MemoryPoolSize();
-#elif PLATFORM_IOS || PLATFORM_TVOS || PLATFORM_ANDROID
-            size = Settings.MemoryPoolSizes.Mobile;
-#else
-            size = Settings.MemoryPoolSizes.Desktop;
-#endif
-        }
 
         if (!GIsEditor && size > 0)
         {
@@ -702,16 +690,12 @@ void FFMODStudioModule::CreateStudioSystem(EFMODSystemContext::Type Type)
     advSettings.cbSize = sizeof(FMOD_ADVANCEDSETTINGS);
     advSettings.vol0virtualvol = Settings.Vol0VirtualLevel;
 
-    if (!Settings.SetCodecs(advSettings))
-    {
-#if defined(FMOD_PLATFORM_HEADER)
-        FMODPlatform_SetRealChannelCount(&advSettings);
-#elif PLATFORM_IOS || PLATFORM_TVOS || PLATFORM_ANDROID
-        advSettings.maxFADPCMCodecs = Settings.RealChannelCount;
-#else
-        advSettings.maxVorbisCodecs = Settings.RealChannelCount;
-#endif
-    }
+    TMap<TEnumAsByte<EFMODCodec::Type>, int32> Codecs = Settings.GetCodecs();
+    advSettings.maxXMACodecs    = Codecs.Contains(EFMODCodec::XMA)      ? Codecs[EFMODCodec::XMA]       : 0;
+    advSettings.maxVorbisCodecs = Codecs.Contains(EFMODCodec::VORBIS)   ? Codecs[EFMODCodec::VORBIS]    : 0;
+    advSettings.maxAT9Codecs    = Codecs.Contains(EFMODCodec::AT9)      ? Codecs[EFMODCodec::AT9]       : 0;
+    advSettings.maxFADPCMCodecs = Codecs.Contains(EFMODCodec::FADPCM)   ? Codecs[EFMODCodec::FADPCM]    : 0;
+    advSettings.maxOpusCodecs   = Codecs.Contains(EFMODCodec::OPUS)     ? Codecs[EFMODCodec::OPUS]      : 0;
 
     if (Type == EFMODSystemContext::Runtime)
     {
