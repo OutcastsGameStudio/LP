@@ -27,9 +27,12 @@ void ASR_InteractibleObject::OnOverlapBegin(UPrimitiveComponent* OverlappedComp,
 	if (USR_EnergyComponent* EnergyComp = OtherActor->FindComponentByClass<USR_EnergyComponent>())
 	{
 		if (Tags.Contains("EnergyPickup"))
-		{
-			EnergyComp->AddEnergySlot();
-			Destroy();
+		{			
+			if(!EnergyComp->IsEnergyFull())
+			{
+				EnergyComp->AddEnergySlot();
+				Destroy();
+			}			
 		}
 		else
 		{

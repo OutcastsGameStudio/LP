@@ -259,10 +259,10 @@ TArray<FFMODEventInstance> UFMODBlueprintStatics::FindEventInstances(UObject *Wo
             if (Capacity > 0)
             {
                 TArray<FMOD::Studio::EventInstance *> InstancePointers;
-                InstancePointers.SetNum(Capacity, EAllowShrinking::Yes);
+                InstancePointers.SetNum(Capacity, true);
                 int Count = 0;
                 EventDesc->getInstanceList(InstancePointers.GetData(), Capacity, &Count);
-                Instances.SetNum(Count, EAllowShrinking::Yes);
+                Instances.SetNum(Count, true);
                 for (int i = 0; i < Count; ++i)
                 {
                     Instances[i].Instance = InstancePointers[i];
