@@ -75,3 +75,5 @@ Plugins/**/Intermediate/*
 DerivedDataCache/*
 
 SR.sln.DotSettings.user
+
+Plugins/
