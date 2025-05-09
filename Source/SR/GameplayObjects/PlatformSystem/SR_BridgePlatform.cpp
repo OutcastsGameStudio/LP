@@ -72,8 +72,8 @@ void ASR_BridgePlatform::ActivateMovement(bool bShouldActivate)
 	{
 		if (bShouldRotate)
 		{
-			StartRotation = GetActorRotation();
-			TargetRotation = StartRotation + EndRotation;
+			TargetRotation = StartRotation;
+			StartRotation = TargetRotation + EndRotation;
 		} else
 		{
 			TargetPosition = StartPosition;
