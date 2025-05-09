@@ -1,3 +1,4 @@
+<<<<<<< HEAD
 // Copyright (c), Firelight Technologies Pty, Ltd. 2012-2025.
 
 #include "FMODSnapshotReverb.h"
@@ -16,4 +17,24 @@ bool UFMODSnapshotReverb::IsAsset() const
 void UFMODSnapshotReverb::PostEditChangeProperty(FPropertyChangedEvent &PropertyChangedEvent)
 {
 }
+=======
+// Copyright (c), Firelight Technologies Pty, Ltd. 2012-2025.
+
+#include "FMODSnapshotReverb.h"
+
+UFMODSnapshotReverb::UFMODSnapshotReverb(const FObjectInitializer &ObjectInitializer)
+    : Super(ObjectInitializer)
+{
+}
+
+bool UFMODSnapshotReverb::IsAsset() const
+{
+    return this != GetClass()->GetDefaultObject();
+}
+
+#if WITH_EDITORONLY_DATA
+void UFMODSnapshotReverb::PostEditChangeProperty(FPropertyChangedEvent &PropertyChangedEvent)
+{
+}
+>>>>>>> e5e329b (fmod)
 #endif // EDITORONLY_DATA

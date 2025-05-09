@@ -1,3 +1,4 @@
+<<<<<<< HEAD
 {
     "FileVersion": 3,
 
@@ -29,4 +30,37 @@
             "Enabled": true
         }
     ]
+=======
+{
+    "FileVersion": 3,
+
+    "FriendlyName": "FMOD Studio Niagara Integration",
+    "Version" : 20307,
+    "VersionName" : "2.03.07",
+    "CreatedBy": "Firelight Technologies",
+    "CreatedByURL" : "http://fmod.com",
+    "Description" : "FMOD Studio with Niagara Integration.",
+    "Category": "Audio",
+
+    "CanContainContent": true,
+    "Installed": true,
+
+    "Modules": [
+        {
+            "Name": "FMODStudioNiagara",
+            "Type": "Runtime",
+            "LoadingPhase": "Default"
+        }
+    ],
+    "Plugins": [
+        {
+            "Name": "FMODStudio",
+            "Enabled": true
+        },
+        {
+            "Name": "Niagara",
+            "Enabled": true
+        }
+    ]
+>>>>>>> e5e329b (fmod)
 }

@@ -1,3 +1,4 @@
+<<<<<<< HEAD
 // Copyright (c), Firelight Technologies Pty, Ltd. 2012-2025.
 
 #pragma once
@@ -17,3 +18,24 @@ private:
     /** Descriptive name */
     virtual FString GetDesc() override;
 };
+=======
+// Copyright (c), Firelight Technologies Pty, Ltd. 2012-2025.
+
+#pragma once
+
+#include "FMODEvent.h"
+#include "FMODSnapshot.generated.h"
+
+/**
+ * FMOD Snapshot Asset.
+ */
+UCLASS()
+class FMODSTUDIO_API UFMODSnapshot : public UFMODEvent
+{
+    GENERATED_UCLASS_BODY()
+
+private:
+    /** Descriptive name */
+    virtual FString GetDesc() override;
+};
+>>>>>>> e5e329b (fmod)

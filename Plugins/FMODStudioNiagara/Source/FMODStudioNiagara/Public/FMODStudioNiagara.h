@@ -1,3 +1,4 @@
+<<<<<<< HEAD
 // Copyright Epic Games, Inc. All Rights Reserved.
 
 #pragma once
@@ -13,3 +14,20 @@ public:
 	virtual void StartupModule() override;
 	virtual void ShutdownModule() override;
 };
+=======
+// Copyright Epic Games, Inc. All Rights Reserved.
+
+#pragma once
+
+#include "CoreMinimal.h"
+#include "Modules/ModuleManager.h"
+
+class FFMODStudioNiagaraModule : public IModuleInterface
+{
+public:
+
+	/** IModuleInterface implementation */
+	virtual void StartupModule() override;
+	virtual void ShutdownModule() override;
+};
+>>>>>>> e5e329b (fmod)

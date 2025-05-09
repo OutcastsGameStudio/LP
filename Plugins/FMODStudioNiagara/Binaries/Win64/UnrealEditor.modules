@@ -1,7 +1,16 @@
+<<<<<<< HEAD
 {
 	"BuildId": "33043543",
 	"Modules": 
 	{
 		"FMODStudioNiagara": "UnrealEditor-FMODStudioNiagara.dll"
 	}
+=======
+{
+	"BuildId": "33043543",
+	"Modules": 
+	{
+		"FMODStudioNiagara": "UnrealEditor-FMODStudioNiagara.dll"
+	}
+>>>>>>> e5e329b (fmod)
 }
