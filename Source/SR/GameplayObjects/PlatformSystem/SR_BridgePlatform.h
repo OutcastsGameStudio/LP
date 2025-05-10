@@ -40,6 +40,9 @@ protected:
 
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Movement", meta = (EditCondition = "bShouldRotate"))
 	FRotator EndRotation;
+
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Sound")
+	class USoundBase* ActivationSound;
     
 	float Alpha;
 

@@ -7,15 +7,16 @@
 #include "Components/ContextState/SR_ContextStateComponent.h"
 #include "GameFramework/Character.h"
 #include "Logging/LogMacros.h"
-#include "Components/Debug/SR_DebugComponent.h"
 #include "Components/Interaction/SR_InteractionComponent.h"
 #include "Motion/SR_MotionController.h"
+#include "SR/GameplayObjects/PanelControlSystem/SR_PanelControl.h"
 #include "SR_Character.generated.h"
 
 class USpringArmComponent;
 class UCameraComponent;
 class UInputMappingContext;
 class UInputAction;
+class ASR_PanelControl;
 struct FInputActionValue;
 
 DECLARE_LOG_CATEGORY_EXTERN(LogTemplateCharacter, Log, All);
@@ -70,6 +71,9 @@ class SR_API ASR_Character : public ACharacter
 	/** Slide Input Action */
 	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = Input, meta = (AllowPrivateAccess = "true"))
 	UInputAction* SlideAction;
+
+	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = Input, meta = (AllowPrivateAccess = "true"))
+	UInputAction* UInteractAction;
 
 public:
 
@@ -175,6 +179,13 @@ public:
 
 	UPROPERTY(VisibleInstanceOnly, BlueprintReadOnly, Category = "Acceleration")
 	USR_CharacterMovementComponent* m_CharacterMovementComponent;
+
+	UFUNCTION(BlueprintCallable, Category = "Character")
+	void ActivatePanel();
+
+	// Référence au panneau de contrôle le plus proche
+	UPROPERTY()
+	ASR_PanelControl* NearestPanel;
 
 private:
 	/*
