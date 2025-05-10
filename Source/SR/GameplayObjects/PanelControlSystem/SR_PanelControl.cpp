@@ -45,11 +45,6 @@ void ASR_PanelControl::BeginPlay()
 void ASR_PanelControl::Tick(float DeltaTime)
 {
     Super::Tick(DeltaTime);
-
-    if (!bPlayerInRange)
-    {
-        WantActivatePanel();
-    }
 }
 
 void ASR_PanelControl::TogglePanel()
