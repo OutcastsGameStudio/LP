@@ -20,6 +20,8 @@ void ASR_BridgePlatform::BeginPlay()
 	Super::BeginPlay();
 	OriginLocation = GetActorLocation();
 	OriginRotation = GetActorRotation();
+
+	bIsMoving = false;
 }
 
 void ASR_BridgePlatform::Tick(float DeltaTime)
@@ -94,4 +96,9 @@ void ASR_BridgePlatform::ResetPlatform()
 {
 	SetActorLocation(OriginLocation);
 	SetActorRotation(OriginRotation);
+}
+
+bool ASR_BridgePlatform::IsMoving() const
+{
+	return bIsMoving;
 }

@@ -41,14 +41,21 @@ public:
     void OnOverlapEnd(UPrimitiveComponent* OverlappedComp, AActor* OtherActor, 
                  UPrimitiveComponent* OtherComp, int32 OtherBodyIndex);
 
+    // Fonction pour vérifier si le joueur peut activer le panneau
     UFUNCTION(BlueprintCallable, Category = "Panel Control")
     void WantActivatePanel();
 
+    // Fonction pour tenter d'activer le panneau
     UFUNCTION(BlueprintCallable, Category = "Panel Control")
     void TryActivatePanel();
 
+    // Distance maximale pour l'activation du panneau
     UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Panel Control")
     float ActivationDistance = 200.0f;
+    
+    // Vérifie si toutes les plateformes contrôlées ont terminé leur mouvement
+    UFUNCTION(BlueprintPure, Category = "Panel Control")
+    bool ArePlatformsIdle() const;
 
 protected:
     virtual void BeginPlay() override;
@@ -67,6 +74,16 @@ protected:
 
     UPROPERTY(BlueprintReadOnly, Category = "Panel Control")
     bool bPlayerInRange;
+    
+    UPROPERTY(BlueprintReadOnly, Category = "Panel Control")
+    bool bIsBusy;
+    
+    UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Panel Control")
+    float CooldownTime = 1.5f;
+    
+    FTimerHandle CooldownTimerHandle;
+    
+    void OnCooldownEnd();
 
 public:
     virtual void Tick(float DeltaTime) override;
