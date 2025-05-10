@@ -18,6 +18,8 @@ ASR_BridgePlatform::ASR_BridgePlatform()
 void ASR_BridgePlatform::BeginPlay()
 {
 	Super::BeginPlay();
+	OriginLocation = GetActorLocation();
+	OriginRotation = GetActorRotation();
 
 	bIsMoving = false;
 }
@@ -88,6 +90,12 @@ void ASR_BridgePlatform::ActivateMovement(bool bShouldActivate)
 	{
 		UGameplayStatics::PlaySoundAtLocation(this, ActivationSound, GetActorLocation());
 	}
+}
+
+void ASR_BridgePlatform::ResetPlatform()
+{
+	SetActorLocation(OriginLocation);
+	SetActorRotation(OriginRotation);
 }
 
 bool ASR_BridgePlatform::IsMoving() const
