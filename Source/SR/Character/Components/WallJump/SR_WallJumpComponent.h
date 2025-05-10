@@ -103,4 +103,6 @@ private:
 	int32 m_WallRunMainMotionId = 0;
 
 	FVector m_WallNormal;
+
+	bool bIsActive = false;
 };

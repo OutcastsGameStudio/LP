@@ -164,7 +164,7 @@ void USR_DashComponent::EnterState(void* data)
 
 void USR_DashComponent::LeaveState(int32 rootMotionId, bool bForced)
 {
-    if(rootMotionId != m_CurrentRootMotionID) return;
+    if(!bForced && rootMotionId != m_CurrentRootMotionID) return;
     
     if(!ContextStateComponent)
         UE_LOG(LogTemp, Error, TEXT("Failed to load ContextState in USR_DashComponent::LeaveState()"));

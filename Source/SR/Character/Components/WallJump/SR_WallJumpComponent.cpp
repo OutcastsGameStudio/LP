@@ -59,6 +59,7 @@ void USR_WallJumpComponent::EnterState(void* data)
 	{
 		UE_LOG(LogTemp, Warning, TEXT("Failed to cast data to FWallJumpData"));
 	}
+	bIsActive = true;
     
 	// Appliquer le wall jump
 	UpdateState();
@@ -66,7 +67,8 @@ void USR_WallJumpComponent::EnterState(void* data)
 
 void USR_WallJumpComponent::LeaveState(int32 rootMotionId, bool bForced)
 {
-	if(rootMotionId != m_WallRunMainMotionId) return;
+	if(!bForced && rootMotionId != m_WallRunMainMotionId) return;
+	bIsActive = false;
 	ContextStateComponent->TransitionState(MotionState::NONE, bForced);
 }
 
@@ -105,7 +107,7 @@ int32 USR_WallJumpComponent::GetStatePriority() const
 
 bool USR_WallJumpComponent::IsStateActive() const
 {
-	return false;
+	return bIsActive;
 }
 
 void USR_WallJumpComponent::OnJumpButtonPressed()

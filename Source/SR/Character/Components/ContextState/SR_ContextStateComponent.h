@@ -41,9 +41,9 @@ public:
 	                           FActorComponentTickFunction* ThisTickFunction) override;
 
 
-	void TransitionState(MotionState NewStateName, bool bForced = false);
+	void TransitionState(MotionState NewStateName, bool bForced = true);
 
-	void TransitionState(MotionState NewStateName, void* data, bool bForced = false);
+	void TransitionState(MotionState NewStateName, void* data, bool bForced = true);
 
 
 	UFUNCTION(BlueprintCallable, Category = "Movement")
@@ -68,7 +68,7 @@ private:
 	UPROPERTY()
 	ASR_Character* m_Character = nullptr;
 
-	void TransitionGuard(MotionState newState);
+	void TransitionGuard(MotionState newState, bool bForced);
 
 	void DebugState(MotionState newState);
 

@@ -53,19 +53,19 @@ void USR_WallRunComponent::TickComponent(float DeltaTime, ELevelTick TickType,
 	ResetCameraRotation(DeltaTime);
 
 	auto velocity = FVector(CharacterMovement->Velocity.X, CharacterMovement->Velocity.Y, 0).Size();
-	GEngine->AddOnScreenDebugMessage(-1, 0.0f, FColor::Red, FString::Printf(TEXT("Velocity: %f"), velocity));
 	if (bIsStateActive)
 	{
+		GEngine->AddOnScreenDebugMessage(-1, 0.0f, FColor::Red, TEXT("TICK"));
 		if(CharacterMovement->IsMovingOnGround())
 		{
-			StopWallRun();
+			LeaveState(-1, true);
 			return;
 		}
 		FHitResult Hit;
 		// if no wall is detected, stop the wall run
 		if (!DetectNextWall(Hit))
 		{
-			StopWallRun();
+			LeaveState(-1, true);
 		}
 		else
 		{
@@ -74,7 +74,7 @@ void USR_WallRunComponent::TickComponent(float DeltaTime, ELevelTick TickType,
 			auto angle = FMath::RadiansToDegrees(FMath::Acos(DotProduct));
 			if (angle > MaxAngleBeforeStop)
 			{
-				StopWallRun();
+				LeaveState(-1, true);
 			}
 		}
 	}
@@ -207,7 +207,7 @@ void USR_WallRunComponent::EnterState(void* data)
 
 void USR_WallRunComponent::LeaveState(int32 rootMotionId, bool bForced)
 {
-	bIsStateActive = false;
+	if(!bForced && rootMotionId != m_rootMotionId) return;
 	StopWallRun();
 	ContextStateComponent->TransitionState(MotionState::NONE, bForced);
 }
@@ -347,9 +347,10 @@ void USR_WallRunComponent::UpdateState(float deltaTime)
     }
     else if (!DetectNextWall(Hit))
     {
-        bIsStateActive = false;
-        CharacterMovement->SetMovementMode(MOVE_Falling);
-        CharacterMovement->SafeMoveUpdatedComponent(Delta, CharacterMovement->UpdatedComponent->GetComponentRotation(), true, Hit);
+    	LeaveState(-1, true);
+        // bIsStateActive = false;
+        // CharacterMovement->SetMovementMode(MOVE_Falling);
+        // CharacterMovement->SafeMoveUpdatedComponent(Delta, CharacterMovement->UpdatedComponent->GetComponentRotation(), true, Hit); // ?? what is it for ??
     }
     
     auto CharacterForwardVector = OwnerCharacter->GetActorForwardVector();
@@ -357,16 +358,14 @@ void USR_WallRunComponent::UpdateState(float deltaTime)
     auto angle = FMath::RadiansToDegrees(FMath::Acos(DotProduct));
     if(angle > MaxAngleBeforeStop)
     {
-        bIsStateActive = false;
-        CharacterMovement->SetMovementMode(MOVE_Falling);
+    	LeaveState(-1, true);
     }
 }
 
 void USR_WallRunComponent::OnJumpButtonPressed()
 {
 	if(!bIsStateActive) return;
-	WallRunFallingSpeed = 0;
-	bIsStateActive = false;
+	LeaveState(-1); 
 	FWallJumpData WallJumpData;
 	WallJumpData.WallRunDirection = m_WallRunDirection;
 	WallJumpData.WallNormal = m_WallNormal;

@@ -139,4 +139,6 @@ private:
 	void UpdateCameraRotation(float DeltaTime);
 	bool HasDetectedPlayerMouseRotation(float DeltaTime);
 	void ResetCameraRotation(float DeltaTime);
+
+	int m_rootMotionId = -1;
 };

@@ -35,7 +35,7 @@ void USR_ContextStateComponent::TickComponent(float DeltaTime, ELevelTick TickTy
 void USR_ContextStateComponent::TransitionState(MotionState NewStateName, bool bForced)
 {
 	// DebugState(NewStateName);
-	TransitionGuard(NewStateName);
+	TransitionGuard(NewStateName, bForced);
 	m_CurrentMotionState = NewStateName;
 	if(NewStateName == MotionState::NONE)
 	{
@@ -44,7 +44,7 @@ void USR_ContextStateComponent::TransitionState(MotionState NewStateName, bool b
 		m_Character->SetCurrentState(NewStateName);
 		return;
 	}
-	m_CurrentState = m_States[NewStateName]; // needed ?
+	m_CurrentState = m_States[NewStateName];
 	if(m_CurrentState == nullptr)
 	{
 		return;
@@ -56,7 +56,7 @@ void USR_ContextStateComponent::TransitionState(MotionState NewStateName, bool b
 void USR_ContextStateComponent::TransitionState(MotionState NewStateName, void* data, bool bForced)
 {
 	// DebugState(NewStateName);
-	TransitionGuard(NewStateName);
+	TransitionGuard(NewStateName, bForced);
 	m_CurrentMotionState = NewStateName;
 	if(NewStateName == MotionState::NONE)
 	{
@@ -64,7 +64,7 @@ void USR_ContextStateComponent::TransitionState(MotionState NewStateName, void* 
 		m_Character->SetCurrentState(NewStateName);
 		return;
 	}
-	m_CurrentState = m_States[NewStateName]; // needed ?
+	m_CurrentState = m_States[NewStateName];
 	if(m_CurrentState == NULL)
 	{
 		return;
@@ -77,7 +77,11 @@ void USR_ContextStateComponent::TransitionState(MotionState NewStateName, void* 
 //@TODO: do know why it not getting updated when trying to display the name of the state from the outside
 FName USR_ContextStateComponent::GetCurrentStateName()
 {
-	return m_CurrentStateName;
+	if(m_CurrentState == nullptr)
+	{
+		return "None";
+	}
+	return m_CurrentState->GetStateName();
 }
 
 void USR_ContextStateComponent::RegisterStates()
@@ -94,15 +98,16 @@ void USR_ContextStateComponent::RegisterStates()
 	m_CurrentState = m_States[MotionState::NONE];
 }
 
-void USR_ContextStateComponent::TransitionGuard(MotionState newState)
+void USR_ContextStateComponent::TransitionGuard(MotionState newState, bool bForced = false)
 {
 	if(m_CurrentState == nullptr)
 	{
 		return;
 	}
+
 	if(m_CurrentState->IsStateActive())
 	{
-		GEngine->AddOnScreenDebugMessage(-1, 5.f, FColor::Black, TEXT("State is already active: ") + m_CurrentState->GetStateName().ToString() + "Override by: " + GetNameMyMotionState(newState).ToString());
+		m_CurrentState->LeaveState(0, bForced);
 	}
 }
 
