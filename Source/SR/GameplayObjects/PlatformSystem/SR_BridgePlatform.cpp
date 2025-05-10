@@ -1,5 +1,7 @@
 #include "SR_BridgePlatform.h"
 
+#include "Kismet/GameplayStatics.h"
+
 
 ASR_BridgePlatform::ASR_BridgePlatform()
 {
@@ -79,5 +81,9 @@ void ASR_BridgePlatform::ActivateMovement(bool bShouldActivate)
 			TargetPosition = StartPosition;
 			StartPosition = GetActorLocation();
 		}
+	}
+	if (ActivationSound)
+	{
+		UGameplayStatics::PlaySoundAtLocation(this, ActivationSound, GetActorLocation());
 	}
 }

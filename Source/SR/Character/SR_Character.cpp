@@ -18,25 +18,23 @@
 #include "Components/Slide/SR_SlideComponent.h"
 #include "Components/WallJump/SR_WallJumpComponent.h"
 #include "Components/WallRun/SR_WallRunComponent.h"
+#include "Kismet/GameplayStatics.h"
+#include "SR/GameplayObjects/PanelControlSystem/SR_PanelControl.h"
 
 DEFINE_LOG_CATEGORY(LogTemplateCharacter);
 
 
 ASR_Character::ASR_Character()
 {
-	// Set this character to call Tick() every frame
 	PrimaryActorTick.bCanEverTick = true;
 	
-	// Set size for collision capsule
 	GetCapsuleComponent()->InitCapsuleSize(42.f, 96.0f);
 		
-	// Don't rotate when the controller rotates. Let that just affect the camera.
 	bUseControllerRotationPitch = false;
 	bUseControllerRotationYaw = false;
 	bUseControllerRotationRoll = false;
 
-	// Configure character movement
-	GetCharacterMovement()->bOrientRotationToMovement = true; // Character moves in the direction of input...	
+	GetCharacterMovement()->bOrientRotationToMovement = true;
 	GetCharacterMovement()->RotationRate = FRotator(0.0f, 500.0f, 0.0f); // ...at this rotation rate
 
 	// Note: For faster iteration times these variables, and many more, can be tweaked in the Character Blueprint
@@ -84,14 +82,11 @@ void ASR_Character::Tick(float DeltaTime)
 
 	if (bRotateCharacterWithCamera && Controller)
 	{
-		// Obtenir la rotation du contrôleur (caméra)
 		FRotator ControlRotation = Controller->GetControlRotation();
         
-		// Nous voulons seulement la rotation Yaw (horizontale)
 		ControlRotation.Pitch = 0.0f;
 		ControlRotation.Roll = 0.0f;
         
-		// Faire tourner le personnage pour qu'il s'aligne avec la caméra
 		SetActorRotation(ControlRotation);
 	}
 }
@@ -108,10 +103,8 @@ float ASR_Character::GetLedgeGrabHeight() const
 
 void ASR_Character::BeginPlay()
 {
-	// Call the base class  
 	Super::BeginPlay();
 
-	// Add Input Mapping Context
 	if (APlayerController* PlayerController = Cast<APlayerController>(Controller))
 	{
 		if (UEnhancedInputLocalPlayerSubsystem* Subsystem = ULocalPlayer::GetSubsystem<UEnhancedInputLocalPlayerSubsystem>(PlayerController->GetLocalPlayer()))
@@ -190,6 +183,10 @@ void ASR_Character::SetupPlayerInputComponent(UInputComponent* PlayerInputCompon
 		// Slide
 		EnhancedInputComponent->BindAction(SlideAction, ETriggerEvent::Started, this, &ASR_Character::OnSlidePressed);
 		EnhancedInputComponent->BindAction(SlideAction, ETriggerEvent::Completed, this, &ASR_Character::OnSlideReleased);
+
+		// interact
+		EnhancedInputComponent->BindAction(UInteractAction, ETriggerEvent::Started, this, &ASR_Character::ActivatePanel);
+
 	}
 	else
 	{
@@ -290,4 +287,32 @@ void ASR_Character::OnDashPressed(const FInputActionValue& Value)
 void ASR_Character::OnDashReleased(const FInputActionValue& Value)
 {
 	OnDashInputReleased.Broadcast();
+}
+
+void ASR_Character::ActivatePanel()
+{
+	TArray<AActor*> FoundPanels;
+	UGameplayStatics::GetAllActorsOfClass(GetWorld(), ASR_PanelControl::StaticClass(), FoundPanels);
+    
+	float ClosestDistance = MAX_FLT;
+	NearestPanel = nullptr;
+    
+	for (AActor* Panel : FoundPanels)
+	{
+		ASR_PanelControl* PanelControl = Cast<ASR_PanelControl>(Panel);
+		if (PanelControl)
+		{
+			float Distance = FVector::Dist(GetActorLocation(), PanelControl->GetActorLocation());
+			if (Distance < ClosestDistance && Distance <= PanelControl->ActivationDistance)
+			{
+				ClosestDistance = Distance;
+				NearestPanel = PanelControl;
+			}
+		}
+	}
+    
+	if (NearestPanel)
+	{
+		NearestPanel->TryActivatePanel();
+	}
 }
