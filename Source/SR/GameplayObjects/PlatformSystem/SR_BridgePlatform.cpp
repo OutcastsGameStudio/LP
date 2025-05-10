@@ -18,6 +18,8 @@ ASR_BridgePlatform::ASR_BridgePlatform()
 void ASR_BridgePlatform::BeginPlay()
 {
 	Super::BeginPlay();
+
+	bIsMoving = false;
 }
 
 void ASR_BridgePlatform::Tick(float DeltaTime)
@@ -86,4 +88,9 @@ void ASR_BridgePlatform::ActivateMovement(bool bShouldActivate)
 	{
 		UGameplayStatics::PlaySoundAtLocation(this, ActivationSound, GetActorLocation());
 	}
+}
+
+bool ASR_BridgePlatform::IsMoving() const
+{
+	return bIsMoving;
 }

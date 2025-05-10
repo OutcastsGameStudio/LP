@@ -1,5 +1,4 @@
 #include "SR_PanelControl.h"
-
 #include "Components/BoxComponent.h"
 #include "Components/StaticMeshComponent.h"
 #include "GameFramework/Character.h"
@@ -26,6 +25,7 @@ ASR_PanelControl::ASR_PanelControl()
     
     bIsActivated = false;
     bPlayerInRange = false;
+    bIsBusy = false;
 }
 
 void ASR_PanelControl::BeginPlay()
@@ -45,11 +45,30 @@ void ASR_PanelControl::BeginPlay()
 void ASR_PanelControl::Tick(float DeltaTime)
 {
     Super::Tick(DeltaTime);
+
+    if (!bPlayerInRange)
+    {
+        WantActivatePanel();
+    }
+    
+    if (bIsBusy && ArePlatformsIdle())
+    {
+        if (!GetWorldTimerManager().IsTimerActive(CooldownTimerHandle))
+        {
+            GetWorldTimerManager().SetTimer(CooldownTimerHandle, this, &ASR_PanelControl::OnCooldownEnd, CooldownTime, false);
+        }
+    }
 }
 
 void ASR_PanelControl::TogglePanel()
 {
+    if (bIsBusy)
+    {
+        return;
+    }
+    
     bIsActivated = !bIsActivated;
+    bIsBusy = true;
 
     if (bIsActivated && ActiveMaterial)
     {
@@ -124,8 +143,31 @@ void ASR_PanelControl::WantActivatePanel()
 
 void ASR_PanelControl::TryActivatePanel()
 {
+    if (bIsBusy || GetWorldTimerManager().IsTimerActive(CooldownTimerHandle))
+    {
+        return;
+    }
+    
     if (bPlayerInRange && Character && Character->IsPlayerControlled())
     {
         TogglePanel();
     }
+}
+
+void ASR_PanelControl::OnCooldownEnd()
+{
+    bIsBusy = false;
+}
+
+bool ASR_PanelControl::ArePlatformsIdle() const
+{
+    for (ASR_BridgePlatform* Platform : ControlledPlatforms)
+    {
+        if (Platform && Platform->IsMoving())
+        {
+            return false;
+        }
+    }
+    
+    return true;
 }

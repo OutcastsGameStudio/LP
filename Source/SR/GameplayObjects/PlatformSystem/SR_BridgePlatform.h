@@ -23,7 +23,7 @@ protected:
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Components")
 	UStaticMeshComponent* PlatformMesh;
     
-	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Movement")
+	UPROPERTY(VisibleAnywhere, BlueprintReadWrite, Category = "Movement")
 	bool bIsMoving;
 
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Movement")
@@ -47,6 +47,10 @@ protected:
 	float Alpha;
 
 public:
+
+	UFUNCTION(BlueprintPure, Category = "Platform")
+	bool IsMoving() const;
+	
 	virtual void Tick(float DeltaTime) override;
 
 	FVector StartPosition;
