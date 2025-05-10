@@ -22,7 +22,7 @@ void USR_DebugComponent::BeginPlay()
 {
 	Super::BeginPlay();
 	CharacterMovementComponent = Cast<USR_CharacterMovementComponent>(CharacterOwner->GetCharacterMovement());
-	LoadDataTable();
+	//LoadDataTable();
 	// ...
 	
 }

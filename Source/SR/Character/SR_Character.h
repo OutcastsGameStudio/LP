@@ -8,6 +8,7 @@
 #include "GameFramework/Character.h"
 #include "Logging/LogMacros.h"
 #include "Components/Interaction/SR_InteractionComponent.h"
+#include "Components/Debug/SR_DebugComponent.h"
 #include "Motion/SR_MotionController.h"
 #include "SR/GameplayObjects/PanelControlSystem/SR_PanelControl.h"
 #include "SR_Character.generated.h"
@@ -135,7 +136,7 @@ public:
 	 */
 	void SetCharacterMovementCustomMode(USR_CharacterMovementComponent::CustomMode NewCustomMode);
 
-	// USR_DebugComponent* GetDebugComponent() const { return DebugComponent; }
+	 USR_DebugComponent* GetDebugComponent() const { return DebugComponent; }
 protected:
 	FVector LedgeLocation;
 
@@ -166,8 +167,8 @@ protected:
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Interaction")
 	USR_InteractionComponent* InteractionComponent;
 	
-	/*UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Debug")
-	USR_DebugComponent* DebugComponent;*/
+	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Debug")
+	USR_DebugComponent* DebugComponent;
 
 	virtual void SetupPlayerInputComponent(class UInputComponent* PlayerInputComponent) override;
 	

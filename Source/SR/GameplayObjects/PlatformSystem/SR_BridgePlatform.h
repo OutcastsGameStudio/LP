@@ -17,6 +17,9 @@ public:
 	UFUNCTION(BlueprintCallable, Category = "Movement")
 	void ActivateMovement(bool bShouldActivate);
 
+	UFUNCTION(BlueprintCallable, Category = "Movement")
+	void ResetPlatform();
+
 protected:
 	virtual void BeginPlay() override;
 	
@@ -54,4 +57,8 @@ public:
 	bool bIsReverse = false;
 	FVector TargetPosition;
 	FRotator TargetRotation;
+
+private:
+	FVector OriginLocation;
+	FRotator OriginRotation;
 };
