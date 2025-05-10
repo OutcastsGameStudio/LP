@@ -291,28 +291,31 @@ void ASR_Character::OnDashReleased(const FInputActionValue& Value)
 
 void ASR_Character::ActivatePanel()
 {
-	TArray<AActor*> FoundPanels;
-	UGameplayStatics::GetAllActorsOfClass(GetWorld(), ASR_PanelControl::StaticClass(), FoundPanels);
-    
-	float ClosestDistance = MAX_FLT;
-	NearestPanel = nullptr;
-    
-	for (AActor* Panel : FoundPanels)
+	if (!bPlatformMoving)
 	{
-		ASR_PanelControl* PanelControl = Cast<ASR_PanelControl>(Panel);
-		if (PanelControl)
+		TArray<AActor*> FoundPanels;
+		UGameplayStatics::GetAllActorsOfClass(GetWorld(), ASR_PanelControl::StaticClass(), FoundPanels);
+	    
+		float ClosestDistance = MAX_FLT;
+		NearestPanel = nullptr;
+	    
+		for (AActor* Panel : FoundPanels)
 		{
-			float Distance = FVector::Dist(GetActorLocation(), PanelControl->GetActorLocation());
-			if (Distance < ClosestDistance && Distance <= PanelControl->ActivationDistance)
+			ASR_PanelControl* PanelControl = Cast<ASR_PanelControl>(Panel);
+			if (PanelControl)
 			{
-				ClosestDistance = Distance;
-				NearestPanel = PanelControl;
+				float Distance = FVector::Dist(GetActorLocation(), PanelControl->GetActorLocation());
+				if (Distance < ClosestDistance && Distance <= PanelControl->ActivationDistance)
+				{
+					ClosestDistance = Distance;
+					NearestPanel = PanelControl;
+				}
 			}
 		}
-	}
-    
-	if (NearestPanel)
-	{
-		NearestPanel->TryActivatePanel();
+	    
+		if (NearestPanel)
+		{
+			NearestPanel->TryActivatePanel();
+		}
 	}
 }

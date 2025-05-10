@@ -9,7 +9,6 @@
 #include "Logging/LogMacros.h"
 #include "Components/Interaction/SR_InteractionComponent.h"
 #include "Motion/SR_MotionController.h"
-#include "SR/GameplayObjects/PanelControlSystem/SR_PanelControl.h"
 #include "SR_Character.generated.h"
 
 class USpringArmComponent;
@@ -183,9 +182,10 @@ public:
 	UFUNCTION(BlueprintCallable, Category = "Character")
 	void ActivatePanel();
 
-	// Référence au panneau de contrôle le plus proche
 	UPROPERTY()
 	ASR_PanelControl* NearestPanel;
+
+	bool bPlatformMoving = false;
 
 private:
 	/*
