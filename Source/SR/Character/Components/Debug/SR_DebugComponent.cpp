@@ -233,7 +233,7 @@ FString USR_DebugComponent::GetGameVersion()
 {
 	FString GameVersion;
 	GConfig->GetString(TEXT("UserSettings"), TEXT("GameVersion"), GameVersion, GGameIni);
-	return GameVersion;
+	return "Version: " + GameVersion;
 }
 
 void USR_DebugComponent::LoadDataTable()
