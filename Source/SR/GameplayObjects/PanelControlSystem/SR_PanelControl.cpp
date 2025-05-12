@@ -171,3 +171,8 @@ bool ASR_PanelControl::ArePlatformsIdle() const
     
     return true;
 }
+
+void ASR_PanelControl::ResetPanel()
+{
+    bIsActivated = false;
+}
