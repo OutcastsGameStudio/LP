@@ -229,6 +229,13 @@ void USR_DebugComponent::UpdateTable(FName RowName, float NewValue)
 	}
 }
 
+FString USR_DebugComponent::GetGameVersion()
+{
+	FString GameVersion;
+	GConfig->GetString(TEXT("UserSettings"), TEXT("GameVersion"), GameVersion, GGameIni);
+	return GameVersion;
+}
+
 void USR_DebugComponent::LoadDataTable()
 {
 	if(DebugDataTable->GetRowNames().Num() == 0)

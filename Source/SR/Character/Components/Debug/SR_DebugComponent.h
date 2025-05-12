@@ -78,6 +78,10 @@ public:
 	void SetValuesFromDataTable();
 
 	void UpdateTable(FName RowName, float NewValue);
+
+
+	UFUNCTION(BlueprintCallable, Category = "Game Version")
+	FString GetGameVersion();
 public:
 	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly)
 	UDataTable* DebugDataTable;
