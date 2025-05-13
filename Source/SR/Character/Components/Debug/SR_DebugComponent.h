@@ -51,7 +51,6 @@ public:
 	UFUNCTION(BlueprintCallable, Category = "Ledge Grab Height")
 	float GetWallJumpSpeed();
 
-
 	UFUNCTION(BlueprintCallable, Category = "Ledge Grab Height")
 	void SetWallJumpSpeed(float NewWallJumpSpeed);
 
@@ -74,7 +73,6 @@ public:
 	void SetWallRunFallingAcceleration(float NewWallRunFallingAcceleration);
 
 	TArray<FName> DebugProps = { "CharacterLedgeGrabReachDistance", "LedgeGrabHeight", "ClimbUpSpeed", "WallJumpSpeed", "MaxAngleWallRun", "MaxAngleBeforeStop", "WallRunFallingAcceleration" };
-	
 
 	void InitDataTable();
 	void SetValuesFromDataTable();
@@ -82,21 +80,17 @@ public:
 	void UpdateTable(FName RowName, float NewValue);
 
 
-
-
-// Show variables
-	UFUNCTION(BlueprintCallable, Category = "Is Wall RUn")
-	bool GetIsCharacterWallRunning();
-
-
-	UFUNCTION(BlueprintCallable, Category = "Is Wall Hanging")
-	bool GetIsCharacterClimbing();
+	UFUNCTION(BlueprintCallable, Category = "Game Version")
+	FString GetGameVersion();
 public:
 	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly)
 	UDataTable* DebugDataTable;
 
 	void LoadDataTable();
 private:
+	UPROPERTY()
 	ASR_Character* CharacterOwner;
+
+	UPROPERTY()
 	USR_CharacterMovementComponent* CharacterMovementComponent;
 };

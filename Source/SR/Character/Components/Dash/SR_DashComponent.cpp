@@ -1,8 +1,13 @@
-﻿// Fill out your copyright notice in the Description page of Project Settings.
+// Fill out your copyright notice in the Description page of Project Settings.
 
 #include "SR_DashComponent.h"
+
+#include "Camera/CameraComponent.h"
 #include "GameFramework/Character.h"
 #include "GameFramework/CharacterMovementComponent.h"
+#include "SR/Character/SR_Character.h"
+#include "SR/Character/Motion/SR_MotionController.h"
+
 
 USR_DashComponent::USR_DashComponent()
 {
@@ -12,122 +17,207 @@ USR_DashComponent::USR_DashComponent()
 void USR_DashComponent::BeginPlay()
 {
     Super::BeginPlay();
-
     // Get the character movement component and the owner character
-    CharacterMovement = GetOwner()->FindComponentByClass<UCharacterMovementComponent>();
-    OwnerCharacter = Cast<ACharacter>(GetOwner());
-
-    if (!CharacterMovement || !OwnerCharacter)
+    OwnerCharacter = Cast<ASR_Character>(GetOwner());
+    CharacterMovement = OwnerCharacter->FindComponentByClass<UCharacterMovementComponent>();
+    ContextStateComponent = OwnerCharacter->FindComponentByClass<USR_ContextStateComponent>();
+    MotionController = GetOwner()->FindComponentByClass<USR_MotionController>();
+    
+    if (!CharacterMovement || !OwnerCharacter || !MotionController || !ContextStateComponent)
     {
-        UE_LOG(LogTemp, Error, TEXT("Dash Component: Failed to get Character or CharacterMovement"));
+        UE_LOG(LogTemp, Error, TEXT("Failed to load components in USR_DashComponent::BeginPlay()"));
+        return;
     }
+   
+    OwnerCharacter->OnDashInputPressed.AddDynamic(this, &USR_DashComponent::Dash);
+    MotionController->OnRootMotionCompleted.AddDynamic(this, &USR_DashComponent::LeaveState);
+
+    bOriginalGroundFriction = CharacterMovement->GroundFriction;
+    
+    PreviousMotionState = ContextStateComponent->GetCurrentMotionState();
+    PreviousGroundState = CharacterMovement->IsMovingOnGround();
 }
 
 void USR_DashComponent::TickComponent(float DeltaTime, ELevelTick TickType, FActorComponentTickFunction* ThisTickFunction)
 {
     Super::TickComponent(DeltaTime, TickType, ThisTickFunction);
 
-    // dash update
-    if (bIsDashing)
+    bool bIsInAir = CharacterMovement ? !CharacterMovement->IsMovingOnGround() : false;
+    
+    const MotionState CurrentMotionState = ContextStateComponent->GetCurrentMotionState();
+    
+    if (CurrentMotionState != PreviousMotionState)
     {
-        UpdateDash(DeltaTime);
-    }
-
-    // cooldown update
-    if (!bCanDash)
-    {
-        CurrentCooldownTime += DeltaTime;
-        if (CurrentCooldownTime >= DashCooldown)
+        if (CurrentMotionState == MotionState::WALL_RUN)
         {
-            bCanDash = true;
-            CurrentCooldownTime = 0.0f;
+            ResetAllCooldowns();
+        }
+        PreviousMotionState = CurrentMotionState;
+    }
+    
+    const bool bIsOnGround = !bIsInAir;
+    if (bIsOnGround && !PreviousGroundState)
+    {
+        ResetAllCooldowns();
+    }
+    PreviousGroundState = bIsOnGround;
+    
+    // Cooldown update for air dash
+    if (!bCanDashInAir)
+    {
+        CurrentCooldownTimeInAir += DeltaTime;
+        if (CurrentCooldownTimeInAir >= DashCooldownInAir)
+        {
+            bCanDashInAir = true;
+            CurrentCooldownTimeInAir = 0.0f;
+        }
+    }
+    
+    // Cooldown update for ground dash
+    if (!bCanDashOnGround)
+    {
+        CurrentCooldownTimeOnGround += DeltaTime;
+        if (CurrentCooldownTimeOnGround >= DashCooldownOnGround)
+        {
+            bCanDashOnGround = true;
+            CurrentCooldownTimeOnGround = 0.0f;
         }
     }
 }
 
-void USR_DashComponent::Dash()
-{   
-    // check if the dash is available
-    if (!bCanDash || !CharacterMovement || !OwnerCharacter) return;
-
-    // Disable the dash
-    bCanDash = false;
-    bIsDashing = true;
-
-    // Normalize the dash direction
-    DashDirection.Normalize();
-
-    // Stock the start location of the dash
-    DashStartLocation = OwnerCharacter->GetActorLocation();
-
-    // Reset the dash time
-    CurrentDashTime = 0.0f;
-
-    CurveValue = 0.0f;
+void USR_DashComponent::ResetAllCooldowns()
+{
+    bCanDashInAir = true;
+    CurrentCooldownTimeInAir = 0.0f;
     
-    // Desactivate gravity
-    CharacterMovement->GravityScale = 0.0f;
-    CharacterMovement->BrakingDecelerationFalling = 0.0f;
-
-    // Optional: Add a visual/sound effect at the start of the dash
-    UE_LOG(LogTemp, Warning, TEXT("Dash Started!"));
+    bCanDashOnGround = true;
+    CurrentCooldownTimeOnGround = 0.0f;
 }
 
-void USR_DashComponent::UpdateDash(float DeltaTime)
+void USR_DashComponent::Dash()
 {
-    if (!bIsDashing || !OwnerCharacter) return;
-
-    // Increment the dash time
-    CurrentDashTime += DeltaTime;
-
-    // Calculate the time progress (between 0 and 1)
-    float TimeProgress = FMath::Clamp(CurrentDashTime / DashDuration, 0.0f, 1.0f);
-
-    // Get the Y value from the curve based on time progress
-    CurveValue = DashCurve ? DashCurve->GetFloatValue(TimeProgress) : TimeProgress;
+    if (!CharacterMovement || !OwnerCharacter)
+        return;
+        
+    bool bIsInAir = !CharacterMovement->IsMovingOnGround();
     
-    /**
-    *   Calculate the new location
-    *   
-    *   Speed
-    *   ^
-    *   |      /‾‾‾‾‾‾‾
-    *   |    /´
-    *   |  /
-    *   | /
-    *   |/
-    *   +--------------------> Time
-    *   This is a curve of acceleration/deceleration which will give a better feeling to the dash
-    *   exemple :
-    *   at 25% of the time (alpha = 0.25) : 1.0f - FMath::Pow(1.0f - 0.75, 3) = 0.421875
-    *   at 50% of the time (alpha = 0.50) : 1.0f - FMath::Pow(1.0f - 0.50, 3) = 0.875
-    *   at 75% of the time (alpha = 0.75) : 1.0f - FMath::Pow(1.0f - 0.25, 3) = 0.984375
-    */
-    FVector NewLocation = DashStartLocation + (DashDirection * DashDistance * CurveValue);
-    
-    // Move the character
-    OwnerCharacter->SetActorLocation(NewLocation, true);
-
-    // check if the dash is finished
-    if (CurveValue >= 1.0f)
+    // Check the appropriate cooldown based on whether the character is in the air or on the ground
+    if (bIsInAir && !bCanDashInAir)
     {
-        EndDash();
+        // Cannot dash in air during cooldown
+        return;
+    }
+    else if (!bIsInAir && !bCanDashOnGround)
+    {
+        // Cannot dash on ground during cooldown
+        return;
+    }
+    
+    // Transition to dash state
+    ContextStateComponent->TransitionState(MotionState::DASH);
+}
+
+void USR_DashComponent::UpdateState()
+{
+    bool bIsInAir = !CharacterMovement->IsMovingOnGround();
+    
+    FRootMotionRequest Request;
+    Request.MovementName = FName("Dash");
+    if(bIsInAir)
+    {
+        Request.Strength = DashSpeedInAir;
+    }
+    else
+    {
+        Request.Strength = DashSpeedOnGround;
+    }
+    Request.Duration = 0.1f;
+    Request.Direction = OwnerCharacter->GetActorForwardVector();
+    Request.bIsAdditive = false;
+    Request.Priority = RootMotionPriority::High;
+    Request.bEnableGravity = false;
+    Request.VelocityOnFinish = ERootMotionFinishVelocityMode::MaintainLastRootMotionVelocity;
+    
+    m_CurrentRootMotionID = MotionController->ApplyRootMotion(Request);
+
+    // disable ground friction
+    if (!bIsInAir)
+    {
+        CharacterMovement->GroundFriction = 0.0f;
     }
 }
 
-void USR_DashComponent::EndDash()
+
+void USR_DashComponent::EnterState(void* data)
 {
-    if (!CharacterMovement) return;
-
-    // reset the character movement
-    CharacterMovement->GravityScale = 1.0f;
-    CharacterMovement->BrakingDecelerationFalling = 960.0f; // Valeur par défaut
-
-    CharacterMovement->SetMovementMode(MOVE_Walking);
+    if (bIsStateActive)
+    {
+        UE_LOG(LogTemp, Warning, TEXT("USR_DashComponent::EnterState() - State is already active"));
+        return;
+    }
     
-    // Reset the flags
-    bIsDashing = false;
+    UpdateState();
+    bIsStateActive = true;
+    OnDashStarted.Broadcast();
+    
+}
 
-    // Optional: Add a visual/sound effect at the end of the dash
-    UE_LOG(LogTemp, Warning, TEXT("Dash Ended!"));
+void USR_DashComponent::LeaveState(int32 rootMotionId, bool bForced)
+{
+    if(!bForced && rootMotionId != m_CurrentRootMotionID) return;
+    
+    if(!ContextStateComponent)
+        UE_LOG(LogTemp, Error, TEXT("Failed to load ContextState in USR_DashComponent::LeaveState()"));
+
+    // Apply the appropriate cooldown based on whether the character is in the air or on the ground
+    bool bIsInAir = !CharacterMovement->IsMovingOnGround();
+    if (bIsInAir)
+    {
+        bCanDashInAir = false;
+        CurrentCooldownTimeInAir = 0.0f;
+    }
+    else
+    {
+        bCanDashOnGround = false;
+        CurrentCooldownTimeOnGround = 0.0f;
+    }
+
+    // enable ground friction
+    if (CharacterMovement)
+    {
+        CharacterMovement->GroundFriction = bOriginalGroundFriction;
+    }
+
+    bIsStateActive = false;
+    ContextStateComponent->TransitionState(MotionState::NONE, bForced);
+
+    OnDashEnded.Broadcast();
+}
+
+
+// used to check if the state can be activated 
+bool USR_DashComponent::LookAheadQuery()
+{
+    if (bIsStateActive)
+        return false;
+        
+    bool bIsInAir = !CharacterMovement->IsMovingOnGround();
+    
+    // Return true only if the appropriate cooldown allows dashing
+    return bIsInAir ? bCanDashInAir : bCanDashOnGround;
+}
+
+FName USR_DashComponent::GetStateName() const
+{
+    return FName("Dash");
+}
+
+int32 USR_DashComponent::GetStatePriority() const
+{
+    return 0; // max priority
+}
+
+bool USR_DashComponent::IsStateActive() const
+{
+    return bIsStateActive;
 }
