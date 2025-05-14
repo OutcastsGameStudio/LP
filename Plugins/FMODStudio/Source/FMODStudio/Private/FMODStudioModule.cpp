@@ -719,7 +719,8 @@ void FFMODStudioModule::CreateStudioSystem(EFMODSystemContext::Type Type)
 
     if (!Settings.StudioBankKey.IsEmpty())
     {
-        advStudioSettings.encryptionkey = TCHAR_TO_UTF8(*Settings.StudioBankKey);
+        FTCHARToUTF8 Utf8Key(*Settings.StudioBankKey);
+        advStudioSettings.encryptionkey = Utf8Key.Get();
     }
 
     verifyfmod(StudioSystem[Type]->setAdvancedSettings(&advStudioSettings));
