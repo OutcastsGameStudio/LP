@@ -10,88 +10,79 @@
 #include "SR_ClimbComponent.generated.h"
 
 UCLASS(ClassGroup = (Custom), meta = (BlueprintSpawnableComponent))
-class SR_API USR_ClimbComponent : public UActorComponent, public ISR_State {
-  GENERATED_BODY()
+class SR_API USR_ClimbComponent : public UActorComponent, public ISR_State
+{
+	GENERATED_BODY()
 
 public:
-  // Sets default values for this component's properties
-  USR_ClimbComponent();
+	// Sets default values for this component's properties
+	USR_ClimbComponent();
 
 protected:
-  // Called when the game starts
-  virtual void BeginPlay() override;
+	// Called when the game starts
+	virtual void BeginPlay() override;
 
 public:
-  // Called every frame
-  virtual void
-  TickComponent(float DeltaTime, ELevelTick TickType,
-                FActorComponentTickFunction *ThisTickFunction) override;
+	// Called every frame
+	virtual void TickComponent(float DeltaTime, ELevelTick TickType,
+							   FActorComponentTickFunction *ThisTickFunction) override;
 
-  UFUNCTION(BlueprintCallable, Category = "Movement")
-  virtual void LeaveState(int32 RootMotionId, bool bForced = false) override;
+	UFUNCTION(BlueprintCallable, Category = "Movement")
+	virtual void LeaveState(int32 RootMotionId, bool bForced = false) override;
 
-  virtual void EnterState(void *Data) override;
-  virtual bool LookAheadQuery() override;
-  virtual void UpdateState() override;
-  virtual FName GetStateName() const override;
-  virtual int32 GetStatePriority() const override;
-  virtual bool IsStateActive() const override;
+	virtual void EnterState(void *Data) override;
+	virtual bool LookAheadQuery() override;
+	virtual void UpdateState() override;
+	virtual FName GetStateName() const override;
+	virtual int32 GetStatePriority() const override;
+	virtual bool IsStateActive() const override;
 
-  UPROPERTY(
-      EditAnywhere, BlueprintReadWrite, Category = "WallRun",
-      meta =
-          (ExposeOnSpawn = true,
-           ToolTip =
-               "Maximum distance at which character can reach for a surface"))
-  float ReachDistance = 20.f;
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "WallRun",
+			  meta = (ExposeOnSpawn = true, ToolTip = "Maximum distance at which character can reach for a surface"))
+	float ReachDistance = 20.f;
 
-  UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Climb",
-            meta = (ExposeOnSpawn = true,
-                    ToolTip = "Strength of forward impulse when climbing"))
-  float ForwardImpulseStrength = 300.0f;
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Climb",
+			  meta = (ExposeOnSpawn = true, ToolTip = "Strength of forward impulse when climbing"))
+	float ForwardImpulseStrength = 300.0f;
 
-  UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Climb",
-            meta = (ExposeOnSpawn = true,
-                    ToolTip = "Upward component of climbing movement"))
-  float UpwardValue = 0.2f;
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Climb",
+			  meta = (ExposeOnSpawn = true, ToolTip = "Upward component of climbing movement"))
+	float UpwardValue = 0.2f;
 
-  UFUNCTION()
-  void OnMoveForwardInputPressed();
-  UFUNCTION()
-  void OnMoveForwardInputReleased();
+	UFUNCTION()
+	void OnMoveForwardInputPressed();
+	UFUNCTION()
+	void OnMoveForwardInputReleased();
 
 private:
-  UPROPERTY()
-  UCharacterMovementComponent *CharacterMovement;
+	UPROPERTY()
+	UCharacterMovementComponent *CharacterMovement;
 
-  UPROPERTY()
-  ASR_Character *OwnerCharacter;
+	UPROPERTY()
+	ASR_Character *OwnerCharacter;
 
-  UPROPERTY()
-  USR_MotionController *MotionController;
+	UPROPERTY()
+	USR_MotionController *MotionController;
 
-  UPROPERTY()
-  USR_ContextStateComponent *ContextStateComponent;
+	UPROPERTY()
+	USR_ContextStateComponent *ContextStateComponent;
 
-  FVector StartLocation = FVector::ZeroVector;
+	FVector StartLocation = FVector::ZeroVector;
 
-  bool bIsActive = false;
+	bool bIsActive = false;
 
-  void CheckForLedgeGrab();
+	void CheckForLedgeGrab();
 
-  UPROPERTY(EditDefaultsOnly, Category = "Climb",
-            meta = (ToolTip = "Maximum distance for ledge grab detection"))
-  float LedgeGrabReachDistance = 70.0f;
+	UPROPERTY(EditDefaultsOnly, Category = "Climb", meta = (ToolTip = "Maximum distance for ledge grab detection"))
+	float LedgeGrabReachDistance = 70.0f;
 
-  UPROPERTY(EditDefaultsOnly, Category = "Climb",
-            meta = (ToolTip = "Vertical grab height for ledge detection"))
-  float LedgeGrabHeight = 150.0f;
+	UPROPERTY(EditDefaultsOnly, Category = "Climb", meta = (ToolTip = "Vertical grab height for ledge detection"))
+	float LedgeGrabHeight = 150.0f;
 
-  UPROPERTY(EditDefaultsOnly, Category = "Climb",
-            meta = (ToolTip = "Speed at which character climbs upward"))
-  float ClimbUpSpeed = 20.0f;
+	UPROPERTY(EditDefaultsOnly, Category = "Climb", meta = (ToolTip = "Speed at which character climbs upward"))
+	float ClimbUpSpeed = 20.0f;
 
-  FVector LedgeLocation;
+	FVector LedgeLocation;
 
-  bool bIsMovingForward = false;
+	bool bIsMovingForward = false;
 };

@@ -7,32 +7,30 @@
 #include "SR_CharacterMovementComponent.generated.h"
 
 UCLASS(ClassGroup = (Custom), meta = (BlueprintSpawnableComponent))
-class SR_API USR_CharacterMovementComponent
-    : public UCharacterMovementComponent {
-  GENERATED_BODY()
+class SR_API USR_CharacterMovementComponent : public UCharacterMovementComponent
+{
+	GENERATED_BODY()
 
 public:
-  USR_CharacterMovementComponent();
+	USR_CharacterMovementComponent();
 
 protected:
-  virtual void BeginPlay() override;
+	virtual void BeginPlay() override;
 
 public:
-  virtual void
-  TickComponent(float DeltaTime, ELevelTick TickType,
-                FActorComponentTickFunction *ThisTickFunction) override;
+	virtual void TickComponent(float DeltaTime, ELevelTick TickType,
+							   FActorComponentTickFunction *ThisTickFunction) override;
 
 public:
-  enum CustomMode {
-    CUSTOM_None = 0,
-    CUSTOM_WallRun = 1,
-    CUSTOM_DASH = 2,
-  };
-  void SetCustomMode(int32 NewCustomMode) {
-    CustomMovementMode = (CustomMode)NewCustomMode;
-  }
+	enum CustomMode
+	{
+		CUSTOM_None = 0,
+		CUSTOM_WallRun = 1,
+		CUSTOM_DASH = 2,
+	};
+	void SetCustomMode(int32 NewCustomMode) { CustomMovementMode = (CustomMode)NewCustomMode; }
 
 private:
-  CustomMode CustomMovementMode;
-  bool bIsMovingForward;
+	CustomMode CustomMovementMode;
+	bool bIsMovingForward;
 };
