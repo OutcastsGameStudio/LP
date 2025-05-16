@@ -2,30 +2,29 @@
 
 #pragma once
 
-#include "CoreMinimal.h"
 #include "Components/ActorComponent.h"
+#include "CoreMinimal.h"
 #include "GameFramework/CharacterMovementComponent.h"
-#include "SR/Character/SR_Character.h"
 #include "SR/Character/Components/ContextState/SR_ContextStateComponent.h"
 #include "SR/Character/Components/ContextState/SR_State.h"
+#include "SR/Character/SR_Character.h"
 #include "SR_WallJumpComponent.generated.h"
-
 
 class USR_MotionController;
 
-USTRUCT()
+USTRUCT(BlueprintType)
 struct FWallJumpData
 {
 	GENERATED_BODY()
 
-	UPROPERTY()
+	UPROPERTY(BlueprintReadWrite, Category = "Wall Jump")
 	FVector WallRunDirection;
 
-	UPROPERTY()
+	UPROPERTY(BlueprintReadWrite, Category = "Wall Jump")
 	FVector WallNormal;
 };
 
-UCLASS(ClassGroup=(Custom), meta=(BlueprintSpawnableComponent))
+UCLASS(ClassGroup = (Custom), meta = (BlueprintSpawnableComponent))
 class SR_API USR_WallJumpComponent : public UActorComponent, public ISR_State
 {
 	GENERATED_BODY()
@@ -41,68 +40,79 @@ protected:
 public:
 	// Called every frame
 	virtual void TickComponent(float DeltaTime, ELevelTick TickType,
-	                           FActorComponentTickFunction* ThisTickFunction) override;
+							   FActorComponentTickFunction *ThisTickFunction) override;
 
+	virtual void EnterState(void *Data) override;
 
-public:
-	virtual void EnterState(void* data) override;
-	
 	UFUNCTION(BlueprintCallable, Category = "Movement")
-	virtual void LeaveState(int32 rootMotionId, bool bForced = false) override;
+	virtual void LeaveState(int32 RootMotionId, bool bForced = false) override;
+
 	virtual bool LookAheadQuery() override;
 	virtual void UpdateState() override;
 	virtual FName GetStateName() const override;
 	virtual int32 GetStatePriority() const override;
 	virtual bool IsStateActive() const override;
 
-	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "WallRun", meta = (ExposeOnSpawn = true))
-	UCurveFloat* WallJumpStrengthCurve = nullptr;
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Wall Jump",
+			  meta = (ExposeOnSpawn = true, ToolTip = "Curve that determines wall jump strength over time"))
+	UCurveFloat *WallJumpStrengthCurve = nullptr;
 
-	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "WallRun",meta = (ToolTip = "Durée maximale du wall run en secondes. Au-delà, le personnage tombe"))
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Wall Jump",
+			  meta = (ToolTip = "Force applied when wall jumping"))
 	float WallJumpForce = 3.f;
-	
-	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "WallRun",meta = (ToolTip = "Durée maximale du wall run en secondes. Au-delà, le personnage tombe"))
+
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Wall Jump",
+			  meta = (ToolTip = "Maximum duration of wall jump in seconds"))
 	float Duration = 3.f;
 
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Wall Jump", meta = (ToolTip = "Speed of wall jump"))
+	float WallJumpSpeed = 10.f;
 
-	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "WallRun",meta = (ToolTip = "Durée maximale du wall run en secondes. Au-delà, le personnage tombe"))
-    float WallJumpSpeed = 10.f;
-
-	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "WallRun", 
-	meta = (ToolTip = "Multiplicateur de la composante vers l'avant lors du saut depuis un wall run. Valeurs élevées = saut plus loin dans la direction de course. Valeur par défaut : 1.0"))
+	UPROPERTY(
+		EditAnywhere, BlueprintReadWrite, Category = "Wall Jump",
+		meta =
+			(ToolTip =
+				 "Multiplier for forward component when jumping from wall run. Higher values = jump farther in run direction. Default: 1.0"))
 	float WallRunDirectionRatio = 1.0f;
 
-	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "WallRun", 
-		meta = (ToolTip = "Multiplicateur de la composante perpendiculaire au mur lors du saut depuis un wall run. Valeurs élevées = saut plus loin du mur. Valeur par défaut : 1.0"))
+	UPROPERTY(
+		EditAnywhere, BlueprintReadWrite, Category = "Wall Jump",
+		meta =
+			(ToolTip =
+				 "Multiplier for perpendicular component when jumping from wall run. Higher values = jump farther from wall. Default: 1.0"))
 	float WallRunNormalRatio = 1.0f;
 
-	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "WallRun", 
-		meta = (ToolTip = "Multiplicateur de la composante verticale lors du saut depuis un wall run. Valeurs élevées = saut plus haut. Valeur par défaut : 1.0"))
+	UPROPERTY(
+		EditAnywhere, BlueprintReadWrite, Category = "Wall Jump",
+		meta =
+			(ToolTip =
+				 "Multiplier for vertical component when jumping from wall run. Higher values = jump higher. Default: 1.0"))
 	float WallRunUpRatio = 1.0f;
+
 private:
 	UPROPERTY()
-	UCharacterMovementComponent* CharacterMovement;
-	UPROPERTY()
-	ASR_Character* OwnerCharacter;
-	UPROPERTY()
-	USR_MotionController* MotionController;
-	UPROPERTY()
-	USR_ContextStateComponent* ContextStateComponent;
+	UCharacterMovementComponent *CharacterMovement;
 
+	UPROPERTY()
+	ASR_Character *OwnerCharacter;
+
+	UPROPERTY()
+	USR_MotionController *MotionController;
+
+	UPROPERTY()
+	USR_ContextStateComponent *ContextStateComponent;
 
 	UFUNCTION()
 	void OnJumpButtonPressed();
 
-
 	UFUNCTION()
 	void OnJumpButtonReleased();
 
+	FVector WallRunDirection;
 
-	FVector m_WallRunDirection;
+	int32 WallRunMainMotionId = 0;
 
-	int32 m_WallRunMainMotionId = 0;
-
-	FVector m_WallNormal;
+	FVector WallNormal;
 
 	bool bIsActive = false;
 };

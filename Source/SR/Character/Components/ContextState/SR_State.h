@@ -11,17 +11,16 @@ UINTERFACE()
 class USR_State : public UInterface
 {
 	GENERATED_BODY()
-
 };
 
 /**
- * 
+ *
  */
 class SR_API ISR_State
 {
 	GENERATED_BODY()
 public:
-	virtual void EnterState(void* data) = 0;
+	virtual void EnterState(void *data) = 0;
 	virtual void LeaveState(int32 rootMotionId, bool bForced = false) = 0;
 	virtual bool LookAheadQuery() = 0;
 	virtual void UpdateState() = 0;
