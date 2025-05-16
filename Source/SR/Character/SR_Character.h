@@ -2,13 +2,13 @@
 
 #pragma once
 
-#include "CoreMinimal.h"
-#include "Components/SR_CharacterMovementComponent.h"
 #include "Components/ContextState/SR_ContextStateComponent.h"
+#include "Components/Debug/SR_DebugComponent.h"
+#include "Components/Interaction/SR_InteractionComponent.h"
+#include "Components/SR_CharacterMovementComponent.h"
+#include "CoreMinimal.h"
 #include "GameFramework/Character.h"
 #include "Logging/LogMacros.h"
-#include "Components/Interaction/SR_InteractionComponent.h"
-#include "Components/Debug/SR_DebugComponent.h"
 #include "Motion/SR_MotionController.h"
 #include "SR_Character.generated.h"
 
@@ -33,197 +33,218 @@ DECLARE_DYNAMIC_MULTICAST_DELEGATE(FOnJumpInputReleased);
 DECLARE_DYNAMIC_MULTICAST_DELEGATE(FOnSlideInputPressed);
 DECLARE_DYNAMIC_MULTICAST_DELEGATE(FOnSlideInputReleased);
 
-DECLARE_DYNAMIC_MULTICAST_DELEGATE_OneParam(FOnMoveInputChanged, FVector2D, Value);
+DECLARE_DYNAMIC_MULTICAST_DELEGATE_OneParam(FOnMoveInputChanged, FVector2D,
+                                            Value);
 
 UCLASS()
-class SR_API ASR_Character : public ACharacter
-{
-	GENERATED_BODY()
+class SR_API ASR_Character : public ACharacter {
+  GENERATED_BODY()
 
-	/** Follow camera */
-	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = Camera, meta = (AllowPrivateAccess = "true"))
-	UCameraComponent* FollowCamera;
-	
-	/** MappingContext */
-	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = Input, meta = (AllowPrivateAccess = "true"))
-	UInputMappingContext* DefaultMappingContext;
+  /** Follow camera */
+  UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = Camera,
+            meta = (AllowPrivateAccess = "true"))
+  UCameraComponent *FollowCamera;
 
-	/** Jump Input Action */
-	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = Input, meta = (AllowPrivateAccess = "true"))
-	UInputAction* JumpAction;
+  /** MappingContext */
+  UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = Input,
+            meta = (AllowPrivateAccess = "true"))
+  UInputMappingContext *DefaultMappingContext;
 
-	/** Move Input Action */
-	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = Input, meta = (AllowPrivateAccess = "true"))
-	UInputAction* MoveAction;
+  /** Jump Input Action */
+  UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = Input,
+            meta = (AllowPrivateAccess = "true"))
+  UInputAction *JumpAction;
 
-	/** ForwardAction Input Action */
-	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = Input, meta = (AllowPrivateAccess = "true"))
-	UInputAction* ForwardAction;
+  /** Move Input Action */
+  UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = Input,
+            meta = (AllowPrivateAccess = "true"))
+  UInputAction *MoveAction;
 
-	/** Look Input Action */
-	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = Input, meta = (AllowPrivateAccess = "true"))
-	UInputAction* LookAction;
+  /** ForwardAction Input Action */
+  UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = Input,
+            meta = (AllowPrivateAccess = "true"))
+  UInputAction *ForwardAction;
 
-	/** Dash Input Action */
-	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = Input, meta = (AllowPrivateAccess = "true"))
-	UInputAction* DashAction;
+  /** Look Input Action */
+  UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = Input,
+            meta = (AllowPrivateAccess = "true"))
+  UInputAction *LookAction;
 
-	/** Slide Input Action */
-	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = Input, meta = (AllowPrivateAccess = "true"))
-	UInputAction* SlideAction;
+  /** Dash Input Action */
+  UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = Input,
+            meta = (AllowPrivateAccess = "true"))
+  UInputAction *DashAction;
 
-	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = Input, meta = (AllowPrivateAccess = "true"))
-	UInputAction* UInteractAction;
+  /** Slide Input Action */
+  UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = Input,
+            meta = (AllowPrivateAccess = "true"))
+  UInputAction *SlideAction;
+
+  UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = Input,
+            meta = (AllowPrivateAccess = "true"))
+  UInputAction *UInteractAction;
 
 public:
+  UPROPERTY(BlueprintAssignable, Category = "Input")
+  FOnDashInputPressed OnDashInputPressed;
 
-	UPROPERTY(BlueprintAssignable, Category = "Input")
-	FOnDashInputPressed OnDashInputPressed;
-    
-	UPROPERTY(BlueprintAssignable, Category = "Input")
-	FOnDashInputReleased OnDashInputReleased;
+  UPROPERTY(BlueprintAssignable, Category = "Input")
+  FOnDashInputReleased OnDashInputReleased;
 
-	UPROPERTY(BlueprintAssignable, Category = "Input")
-	FOnMoveForwardInputPressed OnMoveForwardInputPressed;
-    
-	UPROPERTY(BlueprintAssignable, Category = "Input")
-	FOnMoveForwardInputReleased OnMoveForwardInputReleased;
+  UPROPERTY(BlueprintAssignable, Category = "Input")
+  FOnMoveForwardInputPressed OnMoveForwardInputPressed;
 
-	UPROPERTY(BlueprintAssignable, Category = "Input")
-	FOnMoveForwardInputPressed FOnJumpInputPressed;
-    
-	UPROPERTY(BlueprintAssignable, Category = "Input")
-	FOnMoveForwardInputReleased FOnJumpInputReleased;
+  UPROPERTY(BlueprintAssignable, Category = "Input")
+  FOnMoveForwardInputReleased OnMoveForwardInputReleased;
 
-	UPROPERTY(BlueprintAssignable, Category = "Input")
-	FOnSlideInputReleased FOnSlideInputReleased;
+  UPROPERTY(BlueprintAssignable, Category = "Input")
+  FOnMoveForwardInputPressed FOnJumpInputPressed;
 
-	UPROPERTY(BlueprintAssignable, Category = "Input")
-	FOnSlideInputPressed FOnSlideInputPressed;
+  UPROPERTY(BlueprintAssignable, Category = "Input")
+  FOnMoveForwardInputReleased FOnJumpInputReleased;
 
-	UPROPERTY(BlueprintAssignable, Category = "Input")
-	FOnMoveInputChanged FOnMoveInputChanged;
+  UPROPERTY(BlueprintAssignable, Category = "Input")
+  FOnSlideInputReleased FOnSlideInputReleased;
 
-	ASR_Character();
-	
-	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Camera")
-	bool bRotateCharacterWithCamera = true;
-	
-	void Tick(float DeltaTime);
+  UPROPERTY(BlueprintAssignable, Category = "Input")
+  FOnSlideInputPressed FOnSlideInputPressed;
 
-	void SetCharacterLedgeGrabReachDistance(float NewReachDistance) { LedgeGrabReachDistance = NewReachDistance; }
+  UPROPERTY(BlueprintAssignable, Category = "Input")
+  FOnMoveInputChanged FOnMoveInputChanged;
 
-	float GetCharacterLedgeGrabReachDistance() const { return LedgeGrabReachDistance; }
+  ASR_Character();
 
-	void SetLedgeGrabHeight(float NewLedgeGrabHeight);
+  UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Camera")
+  bool bRotateCharacterWithCamera = true;
 
-	float GetLedgeGrabHeight() const;
+  virtual void Tick(float DeltaTime) override;
 
-	void SetClimbUpSpeed(float NewClimbUpSpeed) { ClimbUpSpeed = NewClimbUpSpeed; }
+  void SetCharacterLedgeGrabReachDistance(float NewReachDistance) {
+    LedgeGrabReachDistance = NewReachDistance;
+  }
 
-	float GetClimbUpSpeed() const { return ClimbUpSpeed; }
-	
-	virtual void Jump() override;
+  float GetCharacterLedgeGrabReachDistance() const {
+    return LedgeGrabReachDistance;
+  }
 
-	void MoveForward();
+  void SetLedgeGrabHeight(float NewLedgeGrabHeight);
 
-	void StopMoveForward();
-	
-	/**
-	 * @description : Set the custom movement mode of the character
-	 * @param NewCustomMode 
-	 */
-	void SetCharacterMovementCustomMode(USR_CharacterMovementComponent::CustomMode NewCustomMode);
+  float GetLedgeGrabHeight() const;
 
-	 USR_DebugComponent* GetDebugComponent() const { return DebugComponent; }
+  void SetClimbUpSpeed(float NewClimbUpSpeed) {
+    ClimbUpSpeed = NewClimbUpSpeed;
+  }
+
+  float GetClimbUpSpeed() const { return ClimbUpSpeed; }
+
+  virtual void Jump() override;
+
+  void MoveForward();
+
+  void StopMoveForward();
+
+  /**
+   * @description : Set the custom movement mode of the character
+   * @param NewCustomMode
+   */
+  void SetCharacterMovementCustomMode(
+      USR_CharacterMovementComponent::CustomMode NewCustomMode);
+
+  USR_DebugComponent *GetDebugComponent() const { return DebugComponent; }
+
 protected:
-	FVector LedgeLocation;
+  FVector LedgeLocation;
 
-	/** Called for movement input */
-	void Move(const FInputActionValue& Value);
+  /** Called for movement input */
+  void Move(const FInputActionValue &Value);
 
-	/** Called for looking input */
-	void Look(const FInputActionValue& Value);
+  /** Called for looking input */
+  void Look(const FInputActionValue &Value);
 
-	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Dash")
-	class USR_DashComponent* DashComponent;
+  UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Dash")
+  class USR_DashComponent *DashComponent;
 
-	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Dash")
-	class USR_WallRunComponent* WallRunComponent;
+  UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Dash")
+  class USR_WallRunComponent *WallRunComponent;
 
-	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Dash")
-	class USR_WallJumpComponent* WallJumpComponent;
-	
-	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Dash")
-	class USR_ClimbComponent* ClimbComponent;
+  UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Dash")
+  class USR_WallJumpComponent *WallJumpComponent;
 
-	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Acceleration")
-	class USR_SlideComponent* SlideComponent;
+  UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Dash")
+  class USR_ClimbComponent *ClimbComponent;
 
-	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Energy")
-	class USR_EnergyComponent* EnergyComponent;
+  UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Acceleration")
+  class USR_SlideComponent *SlideComponent;
 
-	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Interaction")
-	USR_InteractionComponent* InteractionComponent;
-	
-	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Debug")
-	USR_DebugComponent* DebugComponent;
+  UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Energy")
+  class USR_EnergyComponent *EnergyComponent;
 
-	virtual void SetupPlayerInputComponent(class UInputComponent* PlayerInputComponent) override;
-	
-	virtual void BeginPlay();
+  UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Interaction")
+  USR_InteractionComponent *InteractionComponent;
 
-public:
-	/** Returns FollowCamera subobject **/
-	FORCEINLINE class UCameraComponent* GetFollowCamera() const { return FollowCamera; }
+  UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Debug")
+  USR_DebugComponent *DebugComponent;
 
-	UPROPERTY(VisibleInstanceOnly, BlueprintReadOnly, Category = "Acceleration")
-	USR_CharacterMovementComponent* m_CharacterMovementComponent;
+  virtual void SetupPlayerInputComponent(
+      class UInputComponent *PlayerInputComponent) override;
 
-	UFUNCTION(BlueprintCallable, Category = "Character")
-	void ActivatePanel();
-
-	UPROPERTY()
-	ASR_PanelControl* NearestPanel;
-
-	bool bPlatformMoving = false;
-
-private:
-	/*
-	 * Dash Section
-	 */
-	void OnDashPressed(const FInputActionValue& Value);
-	void OnDashReleased(const FInputActionValue& Value);
-	
-	/*
-	 * WallMovement Section
-	 */
-	void StopWallJump();
-
-	/*
-	 * Slide Section
-	 */
-	void OnSlidePressed();
-	void OnSlideReleased();
-
-	UPROPERTY()
-	USR_ContextStateComponent* ContextStateComponent;
-
-	UPROPERTY()
-	USR_MotionController* MotionController;
-	
-	float LedgeGrabReachDistance = 70.0f;
-	float LedgeGrabHeight = 150.0f;
-	float ClimbUpSpeed = 20.0f;
+  virtual void BeginPlay() override;
 
 public:
+  /** Returns FollowCamera subobject **/
+  FORCEINLINE class UCameraComponent *GetFollowCamera() const {
+    return FollowCamera;
+  }
 
-	ISR_State* GetState(MotionState StateName) const;
+  UPROPERTY(VisibleInstanceOnly, BlueprintReadOnly, Category = "Acceleration")
+  USR_CharacterMovementComponent *m_CharacterMovementComponent;
 
-//@TODO: workaround for the retrieving of the current State
-	UFUNCTION(BlueprintCallable, Category = "State")
-	FName GetCurrentStateName();
-	void SetCurrentState(MotionState NewStateName) { b_CurrentState = NewStateName; }
+  UFUNCTION(BlueprintCallable, Category = "Character")
+  void ActivatePanel();
+
+  UPROPERTY()
+  ASR_PanelControl *NearestPanel;
+
+  bool bPlatformMoving = false;
+
 private:
-	MotionState b_CurrentState = MotionState::NONE;
+  /*
+   * Dash Section
+   */
+  void OnDashPressed(const FInputActionValue &Value);
+  void OnDashReleased(const FInputActionValue &Value);
+
+  /*
+   * WallMovement Section
+   */
+  void StopWallJump();
+
+  /*
+   * Slide Section
+   */
+  void OnSlidePressed();
+  void OnSlideReleased();
+
+  UPROPERTY()
+  USR_ContextStateComponent *ContextStateComponent;
+
+  UPROPERTY()
+  USR_MotionController *MotionController;
+
+  float LedgeGrabReachDistance = 70.0f;
+  float LedgeGrabHeight = 150.0f;
+  float ClimbUpSpeed = 20.0f;
+
+public:
+  ISR_State *GetState(MotionState StateName) const;
+
+  //@TODO: workaround for the retrieving of the current State
+  UFUNCTION(BlueprintCallable, Category = "State")
+  FName GetCurrentStateName();
+  void SetCurrentState(MotionState NewStateName) {
+    CurrentState = NewStateName;
+  }
+
+private:
+  MotionState CurrentState = MotionState::NONE;
 };

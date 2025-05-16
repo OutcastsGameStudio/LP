@@ -9,20 +9,18 @@
 class UInputMappingContext;
 
 /**
- * 
+ *
  */
 UCLASS()
-class SR_API ASR_PlayerController : public APlayerController
-{
-	GENERATED_BODY()
-	
+class SR_API ASR_PlayerController : public APlayerController {
+  GENERATED_BODY()
+
 protected:
+  /** Input Mapping Context to be used for player input */
+  UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = Input)
+  UInputMappingContext *InputMappingContext;
 
-	/** Input Mapping Context to be used for player input */
-	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = Input)
-	UInputMappingContext* InputMappingContext;
+  virtual void BeginPlay() override;
 
-	virtual void BeginPlay() override;
-
-	// End Actor interface
+  // End Actor interface
 };

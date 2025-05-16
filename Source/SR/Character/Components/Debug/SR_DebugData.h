@@ -2,15 +2,13 @@
 
 #pragma once
 
-
 #include "SR_DebugData.generated.h"
 
 USTRUCT(BlueprintType)
-struct SR_API FSR_DebugData : public FTableRowBase
-{
-	GENERATED_BODY()
+struct SR_API FSR_DebugData : public FTableRowBase {
+  GENERATED_BODY()
 
-	/** Id of the row */
-	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = Example)
-	float Value;
+  /** Id of the row */
+  UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = Example)
+  float Value;
 };
