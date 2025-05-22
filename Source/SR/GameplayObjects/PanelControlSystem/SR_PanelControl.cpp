@@ -167,4 +167,19 @@ bool ASR_PanelControl::ArePlatformsIdle() const
 	return true;
 }
 
-void ASR_PanelControl::ResetPanel() { bIsActivated = false; }
+void ASR_PanelControl::ResetPanel()
+{
+	if (bIsLocked == true)
+	{
+		return;
+	}
+	bIsActivated = false;
+}
+
+void ASR_PanelControl::LockPanel()
+{
+	if (bIsActivated)
+	{
+		bIsLocked = true;
+	}
+}

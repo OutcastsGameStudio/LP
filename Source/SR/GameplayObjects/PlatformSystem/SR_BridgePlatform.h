@@ -20,6 +20,9 @@ public:
 	UFUNCTION(BlueprintCallable, Category = "Movement")
 	void ResetPlatform();
 
+	UFUNCTION(BlueprintCallable, Category = "Movement")
+	void LockPlatform();
+
 protected:
 	virtual void BeginPlay() override;
 
@@ -28,6 +31,12 @@ protected:
 
 	UPROPERTY(VisibleAnywhere, BlueprintReadWrite, Category = "Movement")
 	bool bIsMoving;
+
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Movement")
+	bool bIsActivated;
+
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Movement")
+	bool bIsLocked;
 
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Movement")
 	bool bShouldRotate;
@@ -47,7 +56,7 @@ protected:
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Sound")
 	class USoundBase *ActivationSound;
 
-	float Alpha;
+	float Alpha = 0;
 
 public:
 	UFUNCTION(BlueprintPure, Category = "Platform")

@@ -70,6 +70,7 @@ void ASR_BridgePlatform::ActivateMovement(bool bShouldActivate)
 			StartRotation = GetActorRotation();
 			TargetRotation = StartRotation + EndRotation;
 		}
+
 		else
 		{
 			StartPosition = GetActorLocation();
@@ -93,12 +94,32 @@ void ASR_BridgePlatform::ActivateMovement(bool bShouldActivate)
 	{
 		UGameplayStatics::PlaySoundAtLocation(this, ActivationSound, GetActorLocation());
 	}
+	if (bIsActivated)
+	{
+		bIsActivated = false;
+	}
+	else
+	{
+		bIsActivated = true;
+	}
 }
 
 void ASR_BridgePlatform::ResetPlatform()
 {
+	if (bIsLocked == true)
+	{
+		return;
+	}
 	SetActorLocation(OriginLocation);
 	SetActorRotation(OriginRotation);
 }
 
 bool ASR_BridgePlatform::IsMoving() const { return bIsMoving; }
+
+void ASR_BridgePlatform::LockPlatform()
+{
+	if (bIsActivated)
+	{
+		bIsLocked = true;
+	}
+}

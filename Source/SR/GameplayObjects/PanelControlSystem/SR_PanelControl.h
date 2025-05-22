@@ -55,6 +55,9 @@ public:
 	UFUNCTION(BlueprintCallable, Category = "Panel Control")
 	void ResetPanel();
 
+	UFUNCTION(BlueprintCallable, Category = "Panel Control")
+	void LockPanel();
+
 protected:
 	virtual void BeginPlay() override;
 
@@ -63,6 +66,9 @@ protected:
 
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Panel Control")
 	bool bIsActivated;
+
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Panel Control")
+	bool bIsLocked;
 
 	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Panel Control")
 	UMaterialInterface *ActiveMaterial;
