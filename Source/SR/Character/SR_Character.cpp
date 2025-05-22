@@ -77,8 +77,6 @@ ASR_Character::ASR_Character()
 void ASR_Character::Tick(float DeltaTime)
 {
 	Super::Tick(DeltaTime);
-
-	GEngine->AddOnScreenDebugMessage(-1, 0.0f, FColor::Red, TEXT("Current State: ") + GetCurrentStateName().ToString());
 }
 
 void ASR_Character::SetLedgeGrabHeight(float NewLedgeGrabHeight) { LedgeGrabHeight = NewLedgeGrabHeight; }
