@@ -78,15 +78,7 @@ void ASR_Character::Tick(float DeltaTime)
 {
 	Super::Tick(DeltaTime);
 
-	if (bRotateCharacterWithCamera && Controller)
-	{
-		FRotator ControlRotation = Controller->GetControlRotation();
-
-		ControlRotation.Pitch = 0.0f;
-		ControlRotation.Roll = 0.0f;
-
-		SetActorRotation(ControlRotation);
-	}
+	GEngine->AddOnScreenDebugMessage(-1, 0.0f, FColor::Red, TEXT("Current State: ") + GetCurrentStateName().ToString());
 }
 
 void ASR_Character::SetLedgeGrabHeight(float NewLedgeGrabHeight) { LedgeGrabHeight = NewLedgeGrabHeight; }
@@ -100,7 +92,7 @@ void ASR_Character::BeginPlay()
 	if (APlayerController *PlayerController = Cast<APlayerController>(Controller))
 	{
 		if (UEnhancedInputLocalPlayerSubsystem *Subsystem =
-				ULocalPlayer::GetSubsystem<UEnhancedInputLocalPlayerSubsystem>(PlayerController->GetLocalPlayer()))
+			ULocalPlayer::GetSubsystem<UEnhancedInputLocalPlayerSubsystem>(PlayerController->GetLocalPlayer()))
 		{
 			Subsystem->AddMappingContext(DefaultMappingContext, 0);
 		}
@@ -166,7 +158,7 @@ void ASR_Character::SetupPlayerInputComponent(UInputComponent *PlayerInputCompon
 
 		EnhancedInputComponent->BindAction(ForwardAction, ETriggerEvent::Started, this, &ASR_Character::MoveForward);
 		EnhancedInputComponent->BindAction(ForwardAction, ETriggerEvent::Completed, this,
-										   &ASR_Character::StopMoveForward);
+		                                   &ASR_Character::StopMoveForward);
 
 		// Looking
 		EnhancedInputComponent->BindAction(LookAction, ETriggerEvent::Triggered, this, &ASR_Character::Look);
@@ -178,40 +170,40 @@ void ASR_Character::SetupPlayerInputComponent(UInputComponent *PlayerInputCompon
 		// Slide
 		EnhancedInputComponent->BindAction(SlideAction, ETriggerEvent::Started, this, &ASR_Character::OnSlidePressed);
 		EnhancedInputComponent->BindAction(SlideAction, ETriggerEvent::Completed, this,
-										   &ASR_Character::OnSlideReleased);
+		                                   &ASR_Character::OnSlideReleased);
 
 		// interact
 		EnhancedInputComponent->BindAction(UInteractAction, ETriggerEvent::Started, this,
-										   &ASR_Character::ActivatePanel);
+		                                   &ASR_Character::ActivatePanel);
 	}
 	else
 	{
 		UE_LOG(LogTemplateCharacter, Error,
-			   TEXT("'%s' Failed to find an Enhanced Input Component! This template "
-					"is built to use the Enhanced Input system. If you intend to use "
-					"the legacy system, then you will need to update this C++ file."),
-			   *GetNameSafe(this));
+		       TEXT("'%s' Failed to find an Enhanced Input Component! This template "
+			       "is built to use the Enhanced Input system. If you intend to use "
+			       "the legacy system, then you will need to update this C++ file."),
+		       *GetNameSafe(this));
 	}
 }
 
 void ASR_Character::Move(const FInputActionValue &Value)
 {
-	// input is a Vector2D
+	if (bBlockMovementInput)
+	{
+		return;
+	}
+
 	FVector2D MovementVector = Value.Get<FVector2D>();
 
 	if (Controller != nullptr)
 	{
-		// find out which way is forward
 		const FRotator Rotation = Controller->GetControlRotation();
 		const FRotator YawRotation(0, Rotation.Yaw, 0);
 
-		// get forward vector
 		const FVector ForwardDirection = FRotationMatrix(YawRotation).GetUnitAxis(EAxis::X);
 
-		// get right vector
 		const FVector RightDirection = FRotationMatrix(YawRotation).GetUnitAxis(EAxis::Y);
 
-		// add movement
 		AddMovementInput(ForwardDirection, MovementVector.Y);
 		AddMovementInput(RightDirection, MovementVector.X);
 	}
