@@ -124,22 +124,6 @@ void USR_SlideComponent::AdjustCharacterCollision()
 	}
 }
 
-void USR_SlideComponent::HandleCrouchFallback()
-{
-	if (CharacterMovement->Velocity.IsNearlyZero() && !bIsCrouching && !CharacterMovement->IsFalling())
-	{
-		bIsCrouching = true;
-		CharacterMovement->bWantsToCrouch = true;
-		CharacterMovement->Crouch();
-	}
-	else if (CharacterMovement->Velocity.IsNearlyZero() && bIsCrouching && !CharacterMovement->IsFalling())
-	{
-		bIsCrouching = false;
-		CharacterMovement->bWantsToCrouch = false;
-		CharacterMovement->UnCrouch();
-	}
-}
-
 void USR_SlideComponent::ProcessSlide(float DeltaTime)
 {
 	SlideSpeed = CalculateSlideSpeed(DeltaTime);
@@ -293,7 +277,6 @@ void USR_SlideComponent::Slide()
 
 	if (!CanInitiateSlide())
 	{
-		HandleCrouchFallback();
 		return;
 	}
 
