@@ -6,7 +6,17 @@
 #include "SR/Character/SR_Character.h"
 
 // Sets default values for this component's properties
-USR_SlideComponent::USR_SlideComponent() { PrimaryComponentTick.bCanEverTick = true; }
+USR_SlideComponent::USR_SlideComponent()
+{
+	PrimaryComponentTick.bCanEverTick = true;
+
+	OwnerCharacter = nullptr;
+	MotionController = nullptr;
+	ContextStateComponent = nullptr;
+	CapsuleComponent = nullptr;
+	MeshComponent = nullptr;
+	CharacterMovement = nullptr;
+}
 
 // Called when the game starts
 void USR_SlideComponent::BeginPlay()
@@ -38,7 +48,7 @@ void USR_SlideComponent::BeginPlay()
 
 // Called every frame
 void USR_SlideComponent::TickComponent(float DeltaTime, ELevelTick TickType,
-									   FActorComponentTickFunction *ThisTickFunction)
+                                       FActorComponentTickFunction *ThisTickFunction)
 {
 	Super::TickComponent(DeltaTime, TickType, ThisTickFunction);
 
@@ -68,7 +78,7 @@ bool USR_SlideComponent::CanInitiateSlide() const
 void USR_SlideComponent::InitializeSlideState()
 {
 	bIsSliding = true;
-	OwnerCharacter->DisableInput(Cast<APlayerController>(OwnerCharacter->GetController()));
+	OwnerCharacter->SetMoveInputBlocked(true);
 	SlideStartLocation = GetOwner()->GetActorLocation();
 	SlideDirection = GetOwner()->GetActorForwardVector();
 	SlideSpeed = 950.0f;
@@ -109,24 +119,8 @@ void USR_SlideComponent::AdjustCharacterCollision()
 	else
 	{
 		UE_LOG(LogTemp, Error,
-			   TEXT("Failed to load CapsuleComponent or MeshComponent in "
-					"USR_SlideComponent::AdjustCharacterCollision()"));
-	}
-}
-
-void USR_SlideComponent::HandleCrouchFallback()
-{
-	if (CharacterMovement->Velocity.IsNearlyZero() && !bIsCrouching && !CharacterMovement->IsFalling())
-	{
-		bIsCrouching = true;
-		CharacterMovement->bWantsToCrouch = true;
-		CharacterMovement->Crouch();
-	}
-	else if (CharacterMovement->Velocity.IsNearlyZero() && bIsCrouching && !CharacterMovement->IsFalling())
-	{
-		bIsCrouching = false;
-		CharacterMovement->bWantsToCrouch = false;
-		CharacterMovement->UnCrouch();
+		       TEXT("Failed to load CapsuleComponent or MeshComponent in "
+			       "USR_SlideComponent::AdjustCharacterCollision()"));
 	}
 }
 
@@ -153,12 +147,19 @@ bool USR_SlideComponent::CheckCollisionAtNewPosition(const FVector &NewLocation)
 	CollisionParams.AddIgnoredActor(GetOwner());
 
 	return GetWorld()->LineTraceSingleByChannel(HitResult, GetOwner()->GetActorLocation(), NewLocation, ECC_Visibility,
-												CollisionParams);
+	                                            CollisionParams);
 }
 
 void USR_SlideComponent::StopSlide()
 {
+	UE_LOG(LogTemp, Warning, TEXT("StopSlide() called - bIsSliding: %s, bIsStateActive: %s"),
+	       bIsSliding ? TEXT("true") : TEXT("false"),
+	       bIsStateActive ? TEXT("true") : TEXT("false"));
+
 	bIsSliding = false;
+	bIsStateActive = false;
+	CurrentSlideDistance = 0.0f;
+	SlideSpeed = 0.0f;
 
 	FCollisionQueryParams QueryParams;
 	QueryParams.AddIgnoredActor(GetOwner());
@@ -174,14 +175,28 @@ void USR_SlideComponent::StopSlide()
 		bIsCrouching = true;
 		CharacterMovement->bWantsToCrouch = true;
 		CharacterMovement->Crouch();
+		UE_LOG(LogTemp, Warning, TEXT("StopSlide() - Forced crouch due to ceiling"));
 	}
 	else
 	{
-		CapsuleComponent->SetCapsuleHalfHeight(InitialCapsuleHalfHeight);
-		MeshComponent->SetRelativeLocation(FVector(0.0f, 0.0f, -90.0f));
+		bIsCrouching = false;
+		CharacterMovement->bWantsToCrouch = false;
+		CharacterMovement->UnCrouch();
+		if (CapsuleComponent && MeshComponent)
+		{
+			CapsuleComponent->SetCapsuleHalfHeight(InitialCapsuleHalfHeight);
+			MeshComponent->SetRelativeLocation(FVector(0.0f, 0.0f, -90.0f));
+		}
+		UE_LOG(LogTemp, Warning, TEXT("StopSlide() - Restored normal dimensions"));
 	}
 
-	LeaveState(CurrentRootMotionID);
+	if (CharacterMovement)
+	{
+		CharacterMovement->SetMovementMode(MOVE_Walking);
+		UE_LOG(LogTemp, Warning, TEXT("StopSlide() - Reset movement mode to Walking"));
+	}
+
+	LeaveState(CurrentRootMotionID, true);
 }
 
 float USR_SlideComponent::GetCurrentFloorAngle()
@@ -234,9 +249,8 @@ float USR_SlideComponent::CalculateSlideSpeed(float DeltaTime)
 	/*
    * If the player is sliding down a slope, we want to increase the slide speed.
    * If the player is sliding up a slope, we want to decrease the slide speed by
-   * 100.0 for simulate ground friction and gravity.
    */
-	float AngleMultiplier = (CurrentFloorAngle > 0.0f) ? 100.0f : 1.0f;
+	float AngleMultiplier = (CurrentFloorAngle > 0.0f) ? Friction : 1.0f;
 
 	float NewSlideSpeed = SlideSpeed + resultGravityForce * DeltaTime * AngleMultiplier;
 
@@ -263,7 +277,6 @@ void USR_SlideComponent::Slide()
 
 	if (!CanInitiateSlide())
 	{
-		HandleCrouchFallback();
 		return;
 	}
 
@@ -295,7 +308,7 @@ void USR_SlideComponent::LeaveState(int32 rootMotionId, bool bForced)
 
 	if (OwnerCharacter)
 	{
-		OwnerCharacter->EnableInput(Cast<APlayerController>(OwnerCharacter->GetController()));
+		OwnerCharacter->SetMoveInputBlocked(false);
 	}
 
 	bIsStateActive = false;

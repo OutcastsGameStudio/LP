@@ -41,7 +41,7 @@ public:
 	void StopSlide();
 
 	virtual void TickComponent(float DeltaTime, ELevelTick TickType,
-							   FActorComponentTickFunction *ThisTickFunction) override;
+	                           FActorComponentTickFunction *ThisTickFunction) override;
 
 	virtual void EnterState(void *Data) override;
 
@@ -58,22 +58,22 @@ protected:
 	virtual void BeginPlay() override;
 
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Slide Settings",
-			  meta = (ToolTip = "Maximum distance the character can slide"))
+		meta = (ToolTip = "Maximum distance the character can slide"))
 	float MaxSlideDistance = 800.0f;
 
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Slide Movement", meta = (ToolTip = "Speed when sliding"))
 	float SlideSpeed = 0.0f;
 
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Slide Movement",
-			  meta = (ToolTip = "Capsule half height when sliding"))
+		meta = (ToolTip = "Capsule half height when sliding"))
 	float CapsuleHalfHeightSliding = 40.0f;
 
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Slide Movement",
-			  meta = (ToolTip = "Z offset for mesh when sliding"))
+		meta = (ToolTip = "Z offset for mesh when sliding"))
 	float MeshLocationZ = -90.0f;
 
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Slide Movement",
-			  meta = (ToolTip = "Whether the character is currently sliding"))
+		meta = (ToolTip = "Whether the character is currently sliding"))
 	bool bIsSliding = false;
 
 private:
@@ -108,13 +108,6 @@ private:
    * @name : AdjustCharacterCollision
    */
 	void AdjustCharacterCollision();
-
-	/**
-   * @description : When stop the slide and velocity is null, crouch the
-   * character
-   * @name : HandleCrouchFallback
-   */
-	void HandleCrouchFallback();
 
 	/**
    * @description : Physics custom for slide movement

@@ -22,15 +22,19 @@ struct FInputActionValue;
 DECLARE_LOG_CATEGORY_EXTERN(LogTemplateCharacter, Log, All);
 
 DECLARE_DYNAMIC_MULTICAST_DELEGATE(FOnDashInputPressed);
+
 DECLARE_DYNAMIC_MULTICAST_DELEGATE(FOnDashInputReleased);
 
 DECLARE_DYNAMIC_MULTICAST_DELEGATE(FOnMoveForwardInputPressed);
+
 DECLARE_DYNAMIC_MULTICAST_DELEGATE(FOnMoveForwardInputReleased);
 
 DECLARE_DYNAMIC_MULTICAST_DELEGATE(FOnJumpInputPressed);
+
 DECLARE_DYNAMIC_MULTICAST_DELEGATE(FOnJumpInputReleased);
 
 DECLARE_DYNAMIC_MULTICAST_DELEGATE(FOnSlideInputPressed);
+
 DECLARE_DYNAMIC_MULTICAST_DELEGATE(FOnSlideInputReleased);
 
 DECLARE_DYNAMIC_MULTICAST_DELEGATE_OneParam(FOnMoveInputChanged, FVector2D, Value);
@@ -76,6 +80,10 @@ class SR_API ASR_Character : public ACharacter
 	UInputAction *UInteractAction;
 
 public:
+	ASR_Character();
+
+	virtual void Tick(float DeltaTime) override;
+
 	UPROPERTY(BlueprintAssignable, Category = "Input")
 	FOnDashInputPressed OnDashInputPressed;
 
@@ -103,12 +111,8 @@ public:
 	UPROPERTY(BlueprintAssignable, Category = "Input")
 	FOnMoveInputChanged FOnMoveInputChanged;
 
-	ASR_Character();
-
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Camera")
 	bool bRotateCharacterWithCamera = true;
-
-	virtual void Tick(float DeltaTime) override;
 
 	void SetCharacterLedgeGrabReachDistance(float NewReachDistance) { LedgeGrabReachDistance = NewReachDistance; }
 
@@ -188,6 +192,15 @@ public:
 
 	bool bPlatformMoving = false;
 
+	/*
+   * Slide Section.
+   * Disables movement input when sliding but can use camera rotation.
+   */
+	UFUNCTION(BlueprintCallable, Category = "Character")
+	bool IsMoveInputBlocked() const { return bBlockMovementInput; }
+
+	void SetMoveInputBlocked(bool bBlocked) { bBlockMovementInput = bBlocked; };
+
 private:
 	/*
    * Dash Section
@@ -205,6 +218,7 @@ private:
    */
 	void OnSlidePressed();
 	void OnSlideReleased();
+	bool bBlockMovementInput = false;
 
 	UPROPERTY()
 	USR_ContextStateComponent *ContextStateComponent;
