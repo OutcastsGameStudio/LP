@@ -31,7 +31,7 @@ void USR_DashComponent::BeginPlay()
 	OriginalGroundFriction = CharacterMovement->GroundFriction;
 
 	PreviousMotionState = ContextStateComponent->GetCurrentMotionState();
-	OriginalGroundFriction = CharacterMovement->IsMovingOnGround();
+	bPreviousGroundState = CharacterMovement->IsMovingOnGround();
 }
 
 void USR_DashComponent::TickComponent(float DeltaTime, ELevelTick TickType,
