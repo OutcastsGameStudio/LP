@@ -63,6 +63,11 @@ void USR_SlideComponent::StartSlide()
 	InitializeSlideState();
 	UpdateSlideDirection();
 	AdjustCharacterCollision();
+
+	if (StartedSlideAnimMontage)
+	{
+		OwnerCharacter->PlayAnimMontage(StartedSlideAnimMontage);
+	}
 }
 
 bool USR_SlideComponent::CanInitiateSlide() const
@@ -309,6 +314,11 @@ void USR_SlideComponent::LeaveState(int32 rootMotionId, bool bForced)
 	if (OwnerCharacter)
 	{
 		OwnerCharacter->SetMoveInputBlocked(false);
+	}
+
+	if (StartedSlideAnimMontage)
+	{
+		OwnerCharacter->PlayAnimMontage(StoppedSlideAnimMontage);
 	}
 
 	bIsStateActive = false;
