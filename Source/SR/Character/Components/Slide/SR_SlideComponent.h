@@ -76,6 +76,14 @@ protected:
 		meta = (ToolTip = "Whether the character is currently sliding"))
 	bool bIsSliding = false;
 
+	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Slide Movement",
+		meta = (ToolTip = "Animation when character is sliding"))
+	UAnimMontage *StartedSlideAnimMontage = nullptr;
+
+	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Slide Movement",
+		meta = (ToolTip = "Animation when character stops sliding"))
+	UAnimMontage *StoppedSlideAnimMontage = nullptr;
+
 private:
 	/**
    * @description : Check if different conditions are met to start the slide
