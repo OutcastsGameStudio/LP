@@ -316,7 +316,7 @@ void USR_SlideComponent::LeaveState(int32 rootMotionId, bool bForced)
 		OwnerCharacter->SetMoveInputBlocked(false);
 	}
 
-	if (StartedSlideAnimMontage)
+	if (StoppedSlideAnimMontage)
 	{
 		OwnerCharacter->PlayAnimMontage(StoppedSlideAnimMontage);
 	}
