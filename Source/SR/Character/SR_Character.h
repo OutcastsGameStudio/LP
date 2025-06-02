@@ -1,5 +1,3 @@
-// Fill out your copyright notice in the Description page of Project Settings.
-
 #pragma once
 
 #include "Components/ContextState/SR_ContextStateComponent.h"
@@ -12,11 +10,13 @@
 #include "Motion/SR_MotionController.h"
 #include "SR_Character.generated.h"
 
+// Forward declarations
 class USpringArmComponent;
 class UCameraComponent;
 class UInputMappingContext;
 class UInputAction;
 class ASR_PanelControl;
+class USR_GrapplingHookComponent;
 struct FInputActionValue;
 
 DECLARE_LOG_CATEGORY_EXTERN(LogTemplateCharacter, Log, All);
@@ -32,6 +32,9 @@ DECLARE_DYNAMIC_MULTICAST_DELEGATE(FOnJumpInputReleased);
 
 DECLARE_DYNAMIC_MULTICAST_DELEGATE(FOnSlideInputPressed);
 DECLARE_DYNAMIC_MULTICAST_DELEGATE(FOnSlideInputReleased);
+
+DECLARE_DYNAMIC_MULTICAST_DELEGATE(FOnGrappleInputPressed);
+DECLARE_DYNAMIC_MULTICAST_DELEGATE(FOnGrappleInputReleased);
 
 DECLARE_DYNAMIC_MULTICAST_DELEGATE_OneParam(FOnMoveInputChanged, FVector2D, Value);
 
@@ -75,6 +78,10 @@ class SR_API ASR_Character : public ACharacter
 	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = Input, meta = (AllowPrivateAccess = "true"))
 	UInputAction *UInteractAction;
 
+	/** Grapple Input Action */
+	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = Input, meta = (AllowPrivateAccess = "true"))
+	UInputAction* GrappleAction;
+
 public:
 	UPROPERTY(BlueprintAssignable, Category = "Input")
 	FOnDashInputPressed OnDashInputPressed;
@@ -102,6 +109,12 @@ public:
 
 	UPROPERTY(BlueprintAssignable, Category = "Input")
 	FOnMoveInputChanged FOnMoveInputChanged;
+
+	UPROPERTY(BlueprintAssignable, Category = "Input")
+	FOnGrappleInputPressed OnGrappleInputPressed;
+
+	UPROPERTY(BlueprintAssignable, Category = "Input")
+	FOnGrappleInputReleased OnGrappleInputReleased;
 
 	ASR_Character();
 
@@ -169,6 +182,9 @@ protected:
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Debug")
 	USR_DebugComponent *DebugComponent;
 
+	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Grappling")
+	USR_GrapplingHookComponent* GrapplingHookComponent;
+
 	virtual void SetupPlayerInputComponent(class UInputComponent *PlayerInputComponent) override;
 
 	virtual void BeginPlay() override;
@@ -205,6 +221,12 @@ private:
    */
 	void OnSlidePressed();
 	void OnSlideReleased();
+
+	/*
+   * Grappling Section
+   */
+	void OnGrapplePressed(const FInputActionValue& Value);
+	void OnGrappleReleased(const FInputActionValue& Value);
 
 	UPROPERTY()
 	USR_ContextStateComponent *ContextStateComponent;

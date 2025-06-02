@@ -19,6 +19,7 @@
 #include "InputActionValue.h"
 #include "Kismet/GameplayStatics.h"
 #include "SR/GameplayObjects/PanelControlSystem/SR_PanelControl.h"
+#include "Components/Grappling/SR_GrapplingHookComponent.h"
 
 DEFINE_LOG_CATEGORY(LogTemplateCharacter);
 
@@ -68,6 +69,7 @@ ASR_Character::ASR_Character()
 	WallJumpComponent = CreateDefaultSubobject<USR_WallJumpComponent>(TEXT("WallJumpComponent"));
 	ClimbComponent = CreateDefaultSubobject<USR_ClimbComponent>(TEXT("ClimbComponent"));
 	SlideComponent = CreateDefaultSubobject<USR_SlideComponent>(TEXT("SlideComponent"));
+	GrapplingHookComponent = CreateDefaultSubobject<USR_GrapplingHookComponent>(TEXT("GrapplingHookComponent"));
 
 	// Note: The skeletal mesh and anim blueprint references on the Mesh component
 	// (inherited from Character) are set in the derived blueprint asset named
@@ -124,6 +126,8 @@ ISR_State *ASR_Character::GetState(MotionState StateName) const
 		return Cast<ISR_State>(ClimbComponent);
 	case MotionState::SLIDE:
 		return Cast<ISR_State>(SlideComponent);
+	case MotionState::GRAPPLING_HOOK:
+		return Cast<ISR_State>(GrapplingHookComponent);
 	default:
 		return nullptr;
 	}
@@ -143,6 +147,8 @@ FName ASR_Character::GetCurrentStateName()
 		return ClimbComponent->GetStateName();
 	case MotionState::SLIDE:
 		return SlideComponent->GetStateName();
+	case MotionState::GRAPPLING_HOOK:
+		return GrapplingHookComponent->GetStateName();
 	default:
 		return FName("None");
 	}
@@ -183,6 +189,10 @@ void ASR_Character::SetupPlayerInputComponent(UInputComponent *PlayerInputCompon
 		// interact
 		EnhancedInputComponent->BindAction(UInteractAction, ETriggerEvent::Started, this,
 										   &ASR_Character::ActivatePanel);
+
+		// Grappling Hook
+		EnhancedInputComponent->BindAction(GrappleAction, ETriggerEvent::Started, this, &ASR_Character::OnGrapplePressed);
+		EnhancedInputComponent->BindAction(GrappleAction, ETriggerEvent::Completed, this, &ASR_Character::OnGrappleReleased);
 	}
 	else
 	{
@@ -298,4 +308,14 @@ void ASR_Character::ActivatePanel()
 			NearestPanel->TryActivatePanel();
 		}
 	}
+}
+
+void ASR_Character::OnGrapplePressed(const FInputActionValue& Value)
+{
+	OnGrappleInputPressed.Broadcast();
+}
+
+void ASR_Character::OnGrappleReleased(const FInputActionValue& Value)
+{
+	OnGrappleInputReleased.Broadcast();
 }

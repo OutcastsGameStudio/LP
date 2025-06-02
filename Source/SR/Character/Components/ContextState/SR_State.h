@@ -3,8 +3,8 @@
 #pragma once
 
 #include "CoreMinimal.h"
-#include "SR_State.generated.h"
 #include "UObject/Interface.h"
+#include "SR_State.generated.h"
 
 // This class does not need to be modified.
 UINTERFACE()

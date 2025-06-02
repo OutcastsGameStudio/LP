@@ -89,6 +89,7 @@ void USR_ContextStateComponent::RegisterStates()
 	States[MotionState::WALL_JUMP] = Character->GetState(MotionState::WALL_JUMP);
 	States[MotionState::CLIMB] = Character->GetState(MotionState::CLIMB);
 	States[MotionState::SLIDE] = Character->GetState(MotionState::SLIDE);
+	States[MotionState::GRAPPLING_HOOK] = Character->GetState(MotionState::GRAPPLING_HOOK);
 
 	// set NONE state as default state
 	CurrentState = States[MotionState::NONE];

@@ -18,6 +18,7 @@ enum class MotionState
 	SLIDE,
 	DASH,
 	CLIMB,
+	GRAPPLING_HOOK,
 };
 
 UCLASS(ClassGroup = (Custom), meta = (BlueprintSpawnableComponent))
@@ -57,7 +58,8 @@ private:
 
 	TMap<MotionState, ISR_State *> States = {{MotionState::NONE, nullptr},		{MotionState::WALL_RUN, nullptr},
 											 {MotionState::WALL_JUMP, nullptr}, {MotionState::SLIDE, nullptr},
-											 {MotionState::DASH, nullptr},		{MotionState::CLIMB, nullptr}};
+											 {MotionState::DASH, nullptr},		{MotionState::CLIMB, nullptr},
+												{MotionState::GRAPPLING_HOOK, nullptr}};
 
 	FName CurrentStateName = "None";
 
@@ -86,6 +88,8 @@ private:
 			return "Dash";
 		case MotionState::CLIMB:
 			return "Climb";
+		case MotionState::GRAPPLING_HOOK:
+			return "GrapplingHook";
 		default:
 			return "Unknown";
 		}
