@@ -11,6 +11,9 @@
 
 #include "SR_SlideComponent.generated.h"
 
+DECLARE_DYNAMIC_MULTICAST_DELEGATE(FOnSlideStarted);
+DECLARE_DYNAMIC_MULTICAST_DELEGATE(FOnSlideEnded);
+
 UCLASS(ClassGroup = (Custom), meta = (BlueprintSpawnableComponent))
 class SR_API USR_SlideComponent : public UActorComponent, public ISR_State
 {
@@ -53,6 +56,12 @@ public:
 	virtual FName GetStateName() const override;
 	virtual int32 GetStatePriority() const override;
 	virtual bool IsStateActive() const override;
+
+	UPROPERTY(BlueprintCallable, Category = "Movement|Events")
+	FOnSlideStarted OnSlideStarted;
+
+	UPROPERTY(BlueprintCallable, Category = "Movement|Events")
+	FOnSlideEnded OnSlideEnded;
 
 protected:
 	virtual void BeginPlay() override;

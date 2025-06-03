@@ -10,6 +10,8 @@
 #include "SR/Character/SR_Character.h"
 #include "SR_WallJumpComponent.generated.h"
 
+DECLARE_DYNAMIC_MULTICAST_DELEGATE(FOnWallJumpStarted);
+
 class USR_MotionController;
 
 USTRUCT(BlueprintType)
@@ -32,6 +34,9 @@ class SR_API USR_WallJumpComponent : public UActorComponent, public ISR_State
 public:
 	// Sets default values for this component's properties
 	USR_WallJumpComponent();
+
+	UPROPERTY(BlueprintCallable, Category = "Movement|Events")
+	FOnWallJumpStarted OnWallJumpStarted;
 
 protected:
 	// Called when the game starts

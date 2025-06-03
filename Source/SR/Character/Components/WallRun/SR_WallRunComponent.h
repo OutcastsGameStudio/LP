@@ -9,6 +9,8 @@
 #include "SR/Character/SR_Character.h"
 #include "SR_WallRunComponent.generated.h"
 
+DECLARE_DYNAMIC_MULTICAST_DELEGATE(FOnWallRunLeftStarted);
+DECLARE_DYNAMIC_MULTICAST_DELEGATE(FOnWallRunRightStarted);
 
 UCLASS(ClassGroup = (Custom), meta = (BlueprintSpawnableComponent))
 class SR_API USR_WallRunComponent : public UActorComponent, public ISR_State
@@ -16,21 +18,24 @@ class SR_API USR_WallRunComponent : public UActorComponent, public ISR_State
 	GENERATED_BODY()
 
 public:
-	// Sets default values for this component's properties
 	USR_WallRunComponent();
 
 protected:
-	// Called when the game starts
 	virtual void BeginPlay() override;
 
 public:
-	// Called every frame
 	virtual void TickComponent(float DeltaTime, ELevelTick TickType,
 							   FActorComponentTickFunction *ThisTickFunction) override;
 
 	UFUNCTION()
 	void OnHit(UPrimitiveComponent *HitComponent, AActor *OtherActor, UPrimitiveComponent *OtherComp,
 			   FVector NormalImpulse, const FHitResult &Hit);
+
+	UPROPERTY(BlueprintCallable, Category = "Movement|Events")
+	FOnWallRunLeftStarted OnWallRunLeftStarted;
+
+	UPROPERTY(BlueprintCallable, Category = "Movement|Events")
+	FOnWallRunRightStarted OnWallRunRightStarted;
 
 public:
 	virtual void EnterState(void *Data) override;
