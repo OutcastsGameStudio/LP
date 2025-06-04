@@ -9,6 +9,8 @@
 #include "SR/Character/SR_Character.h"
 #include "SR_ClimbComponent.generated.h"
 
+DECLARE_DYNAMIC_MULTICAST_DELEGATE(FOnClimbStarted);
+
 UCLASS(ClassGroup = (Custom), meta = (BlueprintSpawnableComponent))
 class SR_API USR_ClimbComponent : public UActorComponent, public ISR_State
 {
@@ -53,6 +55,9 @@ public:
 	void OnMoveForwardInputPressed();
 	UFUNCTION()
 	void OnMoveForwardInputReleased();
+
+	UPROPERTY(BlueprintAssignable, Category = "Climb Events")
+	FOnClimbStarted OnClimbStarted;
 
 private:
 	UPROPERTY()

@@ -5,9 +5,6 @@
 // Sets default values for this component's properties
 USR_WallJumpComponent::USR_WallJumpComponent()
 {
-	// Set this component to be initialized when the game starts, and to be ticked
-	// every frame.  You can turn these features off to improve performance if you
-	// don't need them.
 	PrimaryComponentTick.bCanEverTick = true;
 
 	// ...
@@ -41,11 +38,9 @@ void USR_WallJumpComponent::TickComponent(float DeltaTime, ELevelTick TickType,
 
 void USR_WallJumpComponent::EnterState(void *data)
 {
-	// Réinitialiser les variables à chaque entrée d'état
 	WallRunDirection = FVector::ZeroVector;
 	WallNormal = FVector::ZeroVector;
 
-	// Récupérer les données de wall run
 	FWallJumpData *wallJumpData = static_cast<FWallJumpData *>(data);
 	if (wallJumpData)
 	{
@@ -58,7 +53,8 @@ void USR_WallJumpComponent::EnterState(void *data)
 	}
 	bIsActive = true;
 
-	// Appliquer le wall jump
+	OnWallJumpStarted.Broadcast();
+
 	UpdateState();
 }
 

@@ -4,7 +4,6 @@
 
 #include "Components/ActorComponent.h"
 #include "CoreMinimal.h"
-#include "GameFramework/CharacterMovementComponent.h"
 #include "SR/Character/Components/ContextState/SR_State.h"
 #include "SR/Character/Motion/SR_MotionController.h"
 #include "SR/Character/SR_Character.h"
