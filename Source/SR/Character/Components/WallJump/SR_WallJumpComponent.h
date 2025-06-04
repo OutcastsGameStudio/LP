@@ -35,7 +35,7 @@ public:
 	// Sets default values for this component's properties
 	USR_WallJumpComponent();
 
-	UPROPERTY(BlueprintCallable, Category = "Movement|Events")
+	UPROPERTY(BlueprintAssignable, Category = "Movement|Events")
 	FOnWallJumpStarted OnWallJumpStarted;
 
 protected:
