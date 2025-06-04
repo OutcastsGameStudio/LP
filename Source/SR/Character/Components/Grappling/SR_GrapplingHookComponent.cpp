@@ -411,7 +411,7 @@ bool USR_GrapplingHookComponent::ShouldReleaseGrapple()
 
 void USR_GrapplingHookComponent::LeaveState(int32 RootMotionId, bool bForced)
 {
-    if (!bForced && RootMotionId != CurrentRootMotionID)
+    if (!bForced || RootMotionId == CurrentRootMotionID)
     {
         return;
     }

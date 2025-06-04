@@ -102,10 +102,10 @@ void USR_ContextStateComponent::TransitionGuard(MotionState newState, bool bForc
 		return;
 	}
 
-	if (CurrentState->IsStateActive())
+	/*if (CurrentState->IsStateActive())
 	{
 		CurrentState->LeaveState(0, bForced);
-	}
+	}*/
 }
 
 void USR_ContextStateComponent::DebugState(MotionState newState)
