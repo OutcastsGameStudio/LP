@@ -9,8 +9,8 @@
 #include "SR/Character/SR_Character.h"
 #include "SR_WallRunComponent.generated.h"
 
-DECLARE_DYNAMIC_MULTICAST_DELEGATE(FOnWallRunLeftStarted);
-DECLARE_DYNAMIC_MULTICAST_DELEGATE(FOnWallRunRightStarted);
+DECLARE_DYNAMIC_MULTICAST_DELEGATE(FOnWallRunStarted);
+DECLARE_DYNAMIC_MULTICAST_DELEGATE(FOnWallRunEnded);
 
 UCLASS(ClassGroup = (Custom), meta = (BlueprintSpawnableComponent))
 class SR_API USR_WallRunComponent : public UActorComponent, public ISR_State
@@ -31,11 +31,14 @@ public:
 	void OnHit(UPrimitiveComponent *HitComponent, AActor *OtherActor, UPrimitiveComponent *OtherComp,
 			   FVector NormalImpulse, const FHitResult &Hit);
 
-	UPROPERTY(BlueprintCallable, Category = "Movement|Events")
-	FOnWallRunLeftStarted OnWallRunLeftStarted;
+	UPROPERTY(BlueprintAssignable, Category = "Movement|Events")
+	FOnWallRunStarted OnWallRunStarted;
 
-	UPROPERTY(BlueprintCallable, Category = "Movement|Events")
-	FOnWallRunRightStarted OnWallRunRightStarted;
+	UPROPERTY(BlueprintAssignable, Category = "Movement|Events")
+	FOnWallRunEnded OnWallRunEnded;
+
+	UPROPERTY(BlueprintReadOnly, Category = "Movement")
+	bool bIsWallRunningLeft = false;
 
 public:
 	virtual void EnterState(void *Data) override;
@@ -125,7 +128,7 @@ private:
 	void DebugLineTrace(FHitResult HitResult, bool bHit, FColor Color, FVector VectorStart, FVector VectorEnd);
 
 private:
-	UPROPERTY(EditAnywhere, Category = "Wall Run | Camera",
+	/*UPROPERTY(EditAnywhere, Category = "Wall Run | Camera",
 			  meta = (ClampMin = "0.0", ClampMax = "45.0",
 					  ToolTip = "Camera roll angle during wall run. Higher values tilt the camera more"))
 	float WallRunCameraRollAngle = 15.0f;
@@ -151,16 +154,16 @@ private:
 					  ToolTip = "Duration of camera transition back to normal after wall run"))
 	float CameraResetDuration = 0.3f;
 
-	FRotator LastCameraRotation;
+	FRotator LastCameraRotation;*/
 
 	float MousePosXAtWallRunStart = 0.0f;
 	float MousePosYAtWallRunStart = 0.0f;
 
 	int32 WallRunSide = 0;
 
-	void UpdateCameraRotation(float DeltaTime);
+	//void UpdateCameraRotation(float DeltaTime);
 	bool HasDetectedPlayerMouseRotation(float DeltaTime);
-	void ResetCameraRotation(float DeltaTime);
+	//void ResetCameraRotation(float DeltaTime);
 
 	int32 RootMotionId = -1;
 };

@@ -38,20 +38,17 @@ void USR_WallRunComponent::BeginPlay()
 	OwnerCharacter->OnMoveForwardInputReleased.AddDynamic(this, &USR_WallRunComponent::OnMoveForwardInputReleased);
 
 	OwnerCharacter->FOnJumpInputPressed.AddDynamic(this, &USR_WallRunComponent::OnJumpButtonPressed);
-
-	MotionController->OnRootMotionCompleted.AddDynamic(this, &USR_WallRunComponent::LeaveState);
 }
 
 void USR_WallRunComponent::TickComponent(float DeltaTime, ELevelTick TickType,
 										 FActorComponentTickFunction *ThisTickFunction)
 {
 	Super::TickComponent(DeltaTime, TickType, ThisTickFunction);
-	ResetCameraRotation(DeltaTime);
+	//ResetCameraRotation(DeltaTime);
 
 	auto velocity = FVector(CharacterMovement->Velocity.X, CharacterMovement->Velocity.Y, 0).Size();
 	if (bIsStateActive)
 	{
-		GEngine->AddOnScreenDebugMessage(-1, 0.0f, FColor::Red, TEXT("TICK"));
 		if (CharacterMovement->IsMovingOnGround())
 		{
 			LeaveState(-1, true);
@@ -98,7 +95,7 @@ bool USR_WallRunComponent::HasDetectedPlayerMouseRotation(float DeltaTime)
 	return false;
 }
 
-void USR_WallRunComponent::UpdateCameraRotation(float DeltaTime)
+/*void USR_WallRunComponent::UpdateCameraRotation(float DeltaTime)
 {
 	bool hasDetectedPlayerMouseRotation = HasDetectedPlayerMouseRotation(DeltaTime);
 	if (hasDetectedPlayerMouseRotation)
@@ -128,9 +125,9 @@ void USR_WallRunComponent::UpdateCameraRotation(float DeltaTime)
 	float NewYaw = FMath::FInterpTo(CurrentYaw, NewTargetYaw, DeltaTime, CameraRollSpeed);
 
 	PlayerController->SetControlRotation(FRotator(CurrentRotation.Pitch, NewYaw, CurrentCameraRoll));
-}
+}*/
 
-void USR_WallRunComponent::ResetCameraRotation(float DeltaTime)
+/*void USR_WallRunComponent::ResetCameraRotation(float DeltaTime)
 {
 	if (!bResettingCamera)
 	{
@@ -151,7 +148,7 @@ void USR_WallRunComponent::ResetCameraRotation(float DeltaTime)
 		bResettingCamera = false;
 		CurrentCameraRoll = 0.0f;
 	}
-}
+}*/
 
 bool USR_WallRunComponent::DetectNextWall(FHitResult &Hit)
 {
@@ -183,7 +180,8 @@ void USR_WallRunComponent::OnHit(UPrimitiveComponent *HitComponent, AActor *Othe
 		};
 		WallNormal = Hit.Normal;
 		FVector WallDirection = FVector::CrossProduct(FVector::UpVector, Hit.Normal);
-		WallRunSide = FVector::DotProduct(WallDirection, OwnerCharacter->GetActorForwardVector()) > 0.f ? 1 : -1;
+		WallRunSide = FVector::DotProduct(WallDirection, OwnerCharacter->GetActorForwardVector()) > 0.f ? 1 : -1; // 1 => right wall, -1 => left wall
+		bIsWallRunningLeft = WallRunSide < 0;
 		WallRunDirection = (WallDirection * WallRunSide).GetSafeNormal();
 
 		// enter the wall run state
@@ -205,6 +203,9 @@ void USR_WallRunComponent::EnterState(void *data)
 		return;
 	}
 	bIsStateActive = true;
+
+	OnWallRunStarted.Broadcast();
+	
 	CharacterMovement->SetMovementMode(MOVE_Custom);
 }
 
@@ -214,7 +215,9 @@ void USR_WallRunComponent::LeaveState(int32 rootMotionId, bool bForced)
 	{
 		return;
 	}
+	OnWallRunEnded.Broadcast();
 	StopWallRun();
+
 	ContextStateComponent->TransitionState(MotionState::NONE, bForced);
 }
 
@@ -295,10 +298,11 @@ void USR_WallRunComponent::StopWallRun()
 	bIsStateActive = false;
 	WallRunFallingSpeed = 0;
 	WallRunSide = 0;
+	bIsWallRunningLeft = false;
 
-	StartCameraRoll = CurrentCameraRoll;
+	/*StartCameraRoll = CurrentCameraRoll;
 	CameraResetTimer = 0.0f;
-	bResettingCamera = true;
+	bResettingCamera = true;*/
 
 	OwnerCharacter->GetCharacterMovement()->SetMovementMode(MOVE_Falling);
 	ContextStateComponent->TransitionState(MotionState::NONE, true);
@@ -322,7 +326,7 @@ void USR_WallRunComponent::UpdateState(float deltaTime)
 	CharacterMovement->SafeMoveUpdatedComponent(Delta, CharacterMovement->UpdatedComponent->GetComponentRotation(),
 												true, Hit);
 
-	UpdateCameraRotation(deltaTime);
+	//UpdateCameraRotation(deltaTime);
 
 	if (Hit.IsValidBlockingHit() && Hit.Normal.Z > 0.f)
 	{
