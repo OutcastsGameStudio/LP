@@ -40,6 +40,8 @@ void USR_ClimbComponent::TickComponent(float DeltaTime, ELevelTick TickType,
 void USR_ClimbComponent::LeaveState(int32 rootMotionId, bool bForced)
 {
 	bIsActive = false;
+	elapsedTime = 0.f;
+	bIsLedgeGrabbed = false;
 
 	if (OwnerCharacter->GetCharacterMovement()->IsMovingOnGround())
 	{
@@ -63,6 +65,14 @@ void USR_ClimbComponent::EnterState(void *data)
 {
 	bIsActive = true;
 	StartLocation = OwnerCharacter->GetActorLocation();
+	if(!bIsLedgeGrabbed)
+	{
+		OnLedgeGrabStarted.Broadcast();
+		bIsLedgeGrabbed = true;
+	} else
+	{
+		elapsedTime += GetWorld()->GetDeltaSeconds();
+	}
 }
 
 bool USR_ClimbComponent::LookAheadQuery()
@@ -91,6 +101,8 @@ void USR_ClimbComponent::UpdateState()
 	if (bIsOnGround && CurrentLocation.Z > StartLocation.Z + 50.0f)
 	{
 		bIsActive = false;
+		bIsLedgeGrabbed = false;
+		elapsedTime = 0.f;
 
 		// prevent glitching
 		MovementComp->Velocity = FVector::ZeroVector;
@@ -112,32 +124,50 @@ void USR_ClimbComponent::UpdateState()
 	if (bIsAboveLedge && bIsCloseHorizontally)
 	{
 		bIsActive = false;
+		elapsedTime = 0.f;
 
 		// add an impulse to the character to get him off the ledge
 		FVector ForwardImpulse = OwnerCharacter->GetActorForwardVector() * ForwardImpulseStrength;
 		OwnerCharacter->LaunchCharacter(ForwardImpulse, true, false);
 		MovementComp->SetMovementMode(MOVE_Falling);
-
+		bIsLedgeGrabbed = false;
 		ContextStateComponent->TransitionState(MotionState::NONE);
 		return;
 	}
 
 	FVector Direction;
-
+	float Speed = ClimbUpSpeed;
 	// STEP 1: Go UP while we are below the ledge
-	if (CurrentLocation.Z < LedgeLocation.Z + 150)
+	if (CurrentLocation.Z < LedgeLocation.Z - 10.f)
 	{
 		Direction = FVector(0, 0, 1);
 	}
+	else if (bIsLedgeGrabbed && elapsedTime <= 0.5f)
+	{
+		// If we are above the ledge and still in the ledge grab state, we can
+		// just wait for a bit before moving forward
+		Direction = FVector(0, 0, 0);
+	}
+	// else if (bIsLedgeGrabbed && elapsedTime > 0.5f && elapsedTime <= 2.f)
+	// {
+	// 	// If we are above the ledge and still in the ledge grab state, we can
+	// 	// just wait for a bit before moving forward
+	// 	Direction = FVector(0, 0, 1);
+	// 	Speed = Speed * 0.5f; // slow down the climb speed to make it
+	// 	GEngine->AddOnScreenDebugMessage(-1, 0.1f, FColor::Yellow,
+	// 							 TEXT("Waiting before climbing forward!"));
+	// }
 	// STEP 2: Go FORWARD as we are above the ledge (with a slight upward
 	// component to maintain height)
 	else
 	{
+
+		GEngine->AddOnScreenDebugMessage(-1, 0.1f, FColor::Green,
+								 TEXT("Climbing forward!"));
 		Direction = FVector(LedgeLocation.X - CurrentLocation.X, LedgeLocation.Y - CurrentLocation.Y, UpwardValue)
 						.GetSafeNormal();
 	}
 
-	float Speed = ClimbUpSpeed;
 	FVector DesiredMovement = Direction * Speed;
 
 	// Prevent strange glitching by preventing the character to move and other

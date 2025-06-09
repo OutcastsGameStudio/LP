@@ -57,14 +57,21 @@ public:
 	void OnMoveForwardInputReleased();
 
 	UPROPERTY(BlueprintAssignable, Category = "Climb Events")
-	FOnClimbStarted OnClimbStarted;
+	FOnClimbStarted OnLedgeGrabStarted;
 
 	UFUNCTION(BlueprintCallable, Category = "Climb")
 	bool IsClimbActive() const { return bIsActive; }
 
+	UPROPERTY(EditAnywhere, Category = "Climb Animation")
+	UAnimMontage* ClimbMontage;
+
+	// UFUNCTION()
+	// void OnClimbAnimationFinished();
 private:
 	UPROPERTY()
 	UCharacterMovementComponent *CharacterMovement;
+
+	// void PlayClimbAnimation();
 
 	UPROPERTY()
 	ASR_Character *OwnerCharacter;
@@ -93,4 +100,10 @@ private:
 	FVector LedgeLocation;
 
 	bool bIsMovingForward = false;
+
+	bool bIsLedgeGrabbed = false;
+
+	bool bIsAnimationEnded = false;
+
+	float elapsedTime = 0.f;
 };
