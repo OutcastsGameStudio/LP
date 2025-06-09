@@ -40,6 +40,9 @@ public:
 	UPROPERTY(BlueprintReadOnly, Category = "Movement")
 	bool bIsWallRunningLeft = false;
 
+	UFUNCTION()
+	bool GetIsWallRunningLeft() { return bIsWallRunningLeft; }
+
 public:
 	virtual void EnterState(void *Data) override;
 
@@ -74,6 +77,9 @@ public:
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Wall Run",
 			  meta = (ToolTip = "Minimum speed required to trigger wall run", ClampMin = "1.0", ClampMax = "10000.0"))
 	float MinWallRunSpeed = 100.0f;
+
+	UFUNCTION(BlueprintCallable, Category = "Wall Run")
+	bool IsWallRunActive() const { return bIsStateActive; }
 
 private:
 	UPROPERTY()
@@ -128,7 +134,7 @@ private:
 	void DebugLineTrace(FHitResult HitResult, bool bHit, FColor Color, FVector VectorStart, FVector VectorEnd);
 
 private:
-	/*UPROPERTY(EditAnywhere, Category = "Wall Run | Camera",
+	UPROPERTY(EditAnywhere, Category = "Wall Run | Camera",
 			  meta = (ClampMin = "0.0", ClampMax = "45.0",
 					  ToolTip = "Camera roll angle during wall run. Higher values tilt the camera more"))
 	float WallRunCameraRollAngle = 15.0f;
@@ -154,16 +160,18 @@ private:
 					  ToolTip = "Duration of camera transition back to normal after wall run"))
 	float CameraResetDuration = 0.3f;
 
-	FRotator LastCameraRotation;*/
+	FRotator LastCameraRotation;
 
 	float MousePosXAtWallRunStart = 0.0f;
 	float MousePosYAtWallRunStart = 0.0f;
 
 	int32 WallRunSide = 0;
 
-	//void UpdateCameraRotation(float DeltaTime);
+	void UpdateCameraRotation(float DeltaTime);
 	bool HasDetectedPlayerMouseRotation(float DeltaTime);
-	//void ResetCameraRotation(float DeltaTime);
+	void ResetCameraRotation(float DeltaTime);
 
 	int32 RootMotionId = -1;
+
+	FRotator LockedRotation = FRotator::ZeroRotator;
 };

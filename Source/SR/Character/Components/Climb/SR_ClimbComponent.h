@@ -59,6 +59,9 @@ public:
 	UPROPERTY(BlueprintAssignable, Category = "Climb Events")
 	FOnClimbStarted OnClimbStarted;
 
+	UFUNCTION(BlueprintCallable, Category = "Climb")
+	bool IsClimbActive() const { return bIsActive; }
+
 private:
 	UPROPERTY()
 	UCharacterMovementComponent *CharacterMovement;

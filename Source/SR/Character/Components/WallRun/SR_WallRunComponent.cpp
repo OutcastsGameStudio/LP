@@ -4,6 +4,7 @@
 
 #include "Components/CapsuleComponent.h"
 #include "DrawDebugHelpers.h"
+#include "Kismet/KismetMathLibrary.h"
 #include "SR/Character/Components/WallJump/SR_WallJumpComponent.h"
 #include "SR/Character/SR_Character.h"
 
@@ -44,9 +45,7 @@ void USR_WallRunComponent::TickComponent(float DeltaTime, ELevelTick TickType,
 										 FActorComponentTickFunction *ThisTickFunction)
 {
 	Super::TickComponent(DeltaTime, TickType, ThisTickFunction);
-	//ResetCameraRotation(DeltaTime);
-
-	auto velocity = FVector(CharacterMovement->Velocity.X, CharacterMovement->Velocity.Y, 0).Size();
+	ResetCameraRotation(DeltaTime);
 	if (bIsStateActive)
 	{
 		if (CharacterMovement->IsMovingOnGround())
@@ -95,7 +94,7 @@ bool USR_WallRunComponent::HasDetectedPlayerMouseRotation(float DeltaTime)
 	return false;
 }
 
-/*void USR_WallRunComponent::UpdateCameraRotation(float DeltaTime)
+void USR_WallRunComponent::UpdateCameraRotation(float DeltaTime)
 {
 	bool hasDetectedPlayerMouseRotation = HasDetectedPlayerMouseRotation(DeltaTime);
 	if (hasDetectedPlayerMouseRotation)
@@ -125,9 +124,9 @@ bool USR_WallRunComponent::HasDetectedPlayerMouseRotation(float DeltaTime)
 	float NewYaw = FMath::FInterpTo(CurrentYaw, NewTargetYaw, DeltaTime, CameraRollSpeed);
 
 	PlayerController->SetControlRotation(FRotator(CurrentRotation.Pitch, NewYaw, CurrentCameraRoll));
-}*/
+}
 
-/*void USR_WallRunComponent::ResetCameraRotation(float DeltaTime)
+void USR_WallRunComponent::ResetCameraRotation(float DeltaTime)
 {
 	if (!bResettingCamera)
 	{
@@ -148,7 +147,7 @@ bool USR_WallRunComponent::HasDetectedPlayerMouseRotation(float DeltaTime)
 		bResettingCamera = false;
 		CurrentCameraRoll = 0.0f;
 	}
-}*/
+}
 
 bool USR_WallRunComponent::DetectNextWall(FHitResult &Hit)
 {
@@ -168,8 +167,7 @@ void USR_WallRunComponent::OnHit(UPrimitiveComponent *HitComponent, AActor *Othe
 {
 	if (!bIsStateActive && bIsMovingForward && FMath::Abs(Hit.Normal.Z) < MaxZThreshold && CheckIfNotInCorner() &&
 		CharacterMovement->MovementMode == MOVE_Falling &&
-		FVector(CharacterMovement->Velocity.X, CharacterMovement->Velocity.Y, 0).Size() > MinWallRunSpeed &&
-		OtherActor->ActorHasTag("WALL_RUN"))
+		FVector(CharacterMovement->Velocity.X, CharacterMovement->Velocity.Y, 0).Size() > MinWallRunSpeed)
 	{
 		auto CharacterForwardVector = OwnerCharacter->GetActorForwardVector();
 		auto DotProduct = FVector::DotProduct(CharacterForwardVector, -Hit.Normal);
@@ -181,9 +179,16 @@ void USR_WallRunComponent::OnHit(UPrimitiveComponent *HitComponent, AActor *Othe
 		};
 		WallNormal = Hit.Normal;
 		FVector WallDirection = FVector::CrossProduct(FVector::UpVector, Hit.Normal);
-		WallRunSide = FVector::DotProduct(WallDirection, OwnerCharacter->GetActorForwardVector()) > 0.f ? 1 : -1; // 1 => right wall, -1 => left wall
+		WallRunSide = FVector::DotProduct(WallDirection, OwnerCharacter->GetActorForwardVector()) > 0.f
+			? 1
+			: -1; // 1 => right wall, -1 => left wall
 		bIsWallRunningLeft = WallRunSide < 0;
 		WallRunDirection = (WallDirection * WallRunSide).GetSafeNormal();
+
+		LockedRotation = UKismetMathLibrary::FindLookAtRotation(
+			OwnerCharacter->GetActorLocation(), 
+			OwnerCharacter->GetActorLocation() + WallRunDirection
+		);
 
 		// enter the wall run state
 		USR_ContextStateComponent *ContextState = OwnerCharacter->FindComponentByClass<USR_ContextStateComponent>();
@@ -206,7 +211,7 @@ void USR_WallRunComponent::EnterState(void *data)
 	bIsStateActive = true;
 
 	OnWallRunStarted.Broadcast();
-	
+
 	CharacterMovement->SetMovementMode(MOVE_Custom);
 }
 
@@ -301,9 +306,9 @@ void USR_WallRunComponent::StopWallRun()
 	WallRunSide = 0;
 	bIsWallRunningLeft = false;
 
-	/*StartCameraRoll = CurrentCameraRoll;
+	StartCameraRoll = CurrentCameraRoll;
 	CameraResetTimer = 0.0f;
-	bResettingCamera = true;*/
+	bResettingCamera = true;
 
 	OwnerCharacter->GetCharacterMovement()->SetMovementMode(MOVE_Falling);
 	ContextStateComponent->TransitionState(MotionState::NONE, true);
@@ -324,10 +329,10 @@ void USR_WallRunComponent::UpdateState(float deltaTime)
 	FVector Delta = CharacterMovement->Velocity * deltaTime;
 	FHitResult Hit(1.f);
 
-	CharacterMovement->SafeMoveUpdatedComponent(Delta, CharacterMovement->UpdatedComponent->GetComponentRotation(),
+	CharacterMovement->SafeMoveUpdatedComponent(Delta, LockedRotation,
 												true, Hit);
 
-	//UpdateCameraRotation(deltaTime);
+	UpdateCameraRotation(deltaTime);
 
 	if (Hit.IsValidBlockingHit() && Hit.Normal.Z > 0.f)
 	{
