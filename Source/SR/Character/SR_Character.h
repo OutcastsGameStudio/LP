@@ -192,6 +192,14 @@ public:
 
 	bool bPlatformMoving = false;
 
+	float CameraSensitivity = 1.0f;
+
+	UFUNCTION(BlueprintCallable, Category = "Character")
+	void SetCameraSensitivity(float NewCameraSensitivity) { CameraSensitivity = NewCameraSensitivity; }
+
+	UFUNCTION(BlueprintCallable, Category = "Character")
+	float GetCameraSensitivity() const { return CameraSensitivity; }
+
 	/*
    * Slide Section.
    * Disables movement input when sliding but can use camera rotation.
