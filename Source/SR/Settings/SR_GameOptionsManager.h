@@ -14,10 +14,10 @@ class SR_API USR_GameOptionsManager : public UObject
 public:
 	// Fonctions de sauvegarde et chargement
 	UFUNCTION(BlueprintCallable, Category = "Game Options")
-	static void SaveGameOptions(float Sensitivity, FIntPoint Resolution, TEnumAsByte<EWindowMode::Type> WindowMode, float Volume);
+	static void SaveGameOptions(float Sensitivity, FIntPoint Resolution, TEnumAsByte<EWindowMode::Type> WindowMode, float GeneralVolume, float MusicVolume, float GameplayVolume, float AmbienceVolume);
     
 	UFUNCTION(BlueprintCallable, Category = "Game Options")
-	static void LoadGameOptions(float& Sensitivity, FIntPoint& Resolution, TEnumAsByte<EWindowMode::Type>& WindowMode, float& Volume);
+	static void LoadGameOptions(float& Sensitivity, FIntPoint& Resolution, TEnumAsByte<EWindowMode::Type>& WindowMode, float& GeneralVolume, float& MusicVolume, float& GameplayVolume, float& AmbienceVolume);
     
 	// Fonction pour sauvegarder les contrôles
 	UFUNCTION(BlueprintCallable, Category = "Game Options")

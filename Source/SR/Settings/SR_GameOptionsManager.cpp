@@ -4,7 +4,7 @@
 #include "SR_GameOptionsManager.h"
 #include "Kismet/GameplayStatics.h"
 
-void USR_GameOptionsManager::SaveGameOptions(float Sensitivity, FIntPoint Resolution, TEnumAsByte<EWindowMode::Type> WindowMode, float Volume)
+void USR_GameOptionsManager::SaveGameOptions(float Sensitivity, FIntPoint Resolution, TEnumAsByte<EWindowMode::Type> WindowMode, float GeneralVolume, float MusicVolume, float GameplayVolume, float AmbienceVolume)
 {
     // Sauvegarder la sensibilité
     GConfig->SetFloat(TEXT("UserOptions"), TEXT("MouseSensitivity"), Sensitivity, GGameUserSettingsIni);
@@ -18,7 +18,10 @@ void USR_GameOptionsManager::SaveGameOptions(float Sensitivity, FIntPoint Resolu
     GConfig->SetInt(TEXT("UserOptions"), TEXT("WindowMode"), WindowModeInt, GGameUserSettingsIni);
     
     // Sauvegarder le volume
-    GConfig->SetFloat(TEXT("UserOptions"), TEXT("MasterVolume"), Volume, GGameUserSettingsIni);
+    GConfig->SetFloat(TEXT("UserOptions"), TEXT("GeneralVolume"), GeneralVolume, GGameUserSettingsIni);
+	GConfig->SetFloat(TEXT("UserOptions"), TEXT("MusicVolume"), MusicVolume, GGameUserSettingsIni);
+	GConfig->SetFloat(TEXT("UserOptions"), TEXT("GameplayVolume"), GameplayVolume, GGameUserSettingsIni);
+	GConfig->SetFloat(TEXT("UserOptions"), TEXT("AmbienceVolume"), AmbienceVolume, GGameUserSettingsIni);
     
     // Appliquer les changements au fichier
     GConfig->Flush(false, GGameUserSettingsIni);
@@ -26,7 +29,7 @@ void USR_GameOptionsManager::SaveGameOptions(float Sensitivity, FIntPoint Resolu
     UE_LOG(LogTemp, Log, TEXT("Options sauvegardées"));
 }
 
-void USR_GameOptionsManager::LoadGameOptions(float& Sensitivity, FIntPoint& Resolution, TEnumAsByte<EWindowMode::Type>& WindowMode, float& Volume)
+void USR_GameOptionsManager::LoadGameOptions(float& Sensitivity, FIntPoint& Resolution, TEnumAsByte<EWindowMode::Type>& WindowMode, float& GeneralVolume, float& MusicVolume, float& GameplayVolume, float& AmbienceVolume)
 {
     // Charger la sensibilité (valeur par défaut : 1.0)
     if (!GConfig->GetFloat(TEXT("UserOptions"), TEXT("MouseSensitivity"), Sensitivity, GGameUserSettingsIni))
@@ -55,13 +58,27 @@ void USR_GameOptionsManager::LoadGameOptions(float& Sensitivity, FIntPoint& Reso
     WindowMode = static_cast<EWindowMode::Type>(WindowModeInt);
     
     // Charger le volume (valeur par défaut : 1.0)
-    if (!GConfig->GetFloat(TEXT("UserOptions"), TEXT("MasterVolume"), Volume, GGameUserSettingsIni))
+    if (!GConfig->GetFloat(TEXT("UserOptions"), TEXT("GeneralVolume"), GeneralVolume, GGameUserSettingsIni))
     {
-        Volume = 1.0f;
+        GeneralVolume = 1.0f;
     }
+	if (!GConfig->GetFloat(TEXT("UserOptions"), TEXT("MusicVolume"), MusicVolume, GGameUserSettingsIni))
+	{
+		MusicVolume = 1.0f;
+	}
+	if (!GConfig->GetFloat(TEXT("UserOptions"), TEXT("GameplayVolume"), GameplayVolume, GGameUserSettingsIni))
+	{
+		GameplayVolume = 1.0f;
+	}
+	if (!GConfig->GetFloat(TEXT("UserOptions"), TEXT("AmbienceVolume"), AmbienceVolume, GGameUserSettingsIni))
+	{
+		AmbienceVolume = 1.0f;
+	}
+
+		
     
-    UE_LOG(LogTemp, Log, TEXT("Options chargées - Sensibilité: %f, Résolution: %dx%d, Volume: %f"), 
-           Sensitivity, Resolution.X, Resolution.Y, Volume);
+    UE_LOG(LogTemp, Log, TEXT("Options chargées - Sensibilité: %f, Résolution: %dx%d, GeneralVolume: %f, MusicVolume: %f, GameplayVolume: %f, AmbienceVolume: %f"), 
+           Sensitivity, Resolution.X, Resolution.Y, GeneralVolume, MusicVolume, GameplayVolume, AmbienceVolume);
 }
 
 void USR_GameOptionsManager::SaveControlBinding(const FString& ActionName, const FString& KeyName)
