@@ -167,6 +167,7 @@ void USR_WallRunComponent::OnHit(UPrimitiveComponent *HitComponent, AActor *Othe
 {
 	if (!bIsStateActive && bIsMovingForward && FMath::Abs(Hit.Normal.Z) < MaxZThreshold && CheckIfNotInCorner() &&
 		CharacterMovement->MovementMode == MOVE_Falling &&
+		OtherActor->ActorHasTag("WALL_RUN") &&
 		FVector(CharacterMovement->Velocity.X, CharacterMovement->Velocity.Y, 0).Size() > MinWallRunSpeed)
 	{
 		auto CharacterForwardVector = OwnerCharacter->GetActorForwardVector();
