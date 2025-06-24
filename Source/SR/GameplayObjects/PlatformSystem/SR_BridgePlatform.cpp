@@ -2,14 +2,13 @@
 
 #include "Kismet/GameplayStatics.h"
 
-
 ASR_BridgePlatform::ASR_BridgePlatform()
 {
 	PrimaryActorTick.bCanEverTick = true;
 
 	PlatformMesh = CreateDefaultSubobject<UStaticMeshComponent>(TEXT("PlatformMesh"));
 	RootComponent = PlatformMesh;
-    
+
 	bIsMoving = false;
 	bShouldRotate = false;
 	MovementSpeed = 1.0f;
@@ -29,19 +28,21 @@ void ASR_BridgePlatform::Tick(float DeltaTime)
 	Super::Tick(DeltaTime);
 
 	if (!bIsMoving)
+	{
 		return;
-	
+	}
+
 	if (!bHasReachedDestination)
 	{
 		Alpha += MovementSpeed * DeltaTime;
-        
+
 		if (Alpha >= 1.0f)
 		{
 			Alpha = 1.0f;
 			bHasReachedDestination = true;
 			bIsMoving = false;
 		}
-        
+
 		if (bShouldRotate)
 		{
 			FRotator NewRotation = FMath::Lerp(StartRotation, TargetRotation, Alpha);
@@ -68,7 +69,9 @@ void ASR_BridgePlatform::ActivateMovement(bool bShouldActivate)
 		{
 			StartRotation = GetActorRotation();
 			TargetRotation = StartRotation + EndRotation;
-		} else
+		}
+
+		else
 		{
 			StartPosition = GetActorLocation();
 			TargetPosition = StartPosition + EndPosition;
@@ -80,7 +83,8 @@ void ASR_BridgePlatform::ActivateMovement(bool bShouldActivate)
 		{
 			TargetRotation = StartRotation;
 			StartRotation = TargetRotation + EndRotation;
-		} else
+		}
+		else
 		{
 			TargetPosition = StartPosition;
 			StartPosition = GetActorLocation();
@@ -90,15 +94,32 @@ void ASR_BridgePlatform::ActivateMovement(bool bShouldActivate)
 	{
 		UGameplayStatics::PlaySoundAtLocation(this, ActivationSound, GetActorLocation());
 	}
+	if (bIsActivated)
+	{
+		bIsActivated = false;
+	}
+	else
+	{
+		bIsActivated = true;
+	}
 }
 
 void ASR_BridgePlatform::ResetPlatform()
 {
+	if (bIsLocked == true)
+	{
+		return;
+	}
 	SetActorLocation(OriginLocation);
 	SetActorRotation(OriginRotation);
 }
 
-bool ASR_BridgePlatform::IsMoving() const
+bool ASR_BridgePlatform::IsMoving() const { return bIsMoving; }
+
+void ASR_BridgePlatform::LockPlatform()
 {
-	return bIsMoving;
+	if (bIsActivated)
+	{
+		bIsLocked = true;
+	}
 }

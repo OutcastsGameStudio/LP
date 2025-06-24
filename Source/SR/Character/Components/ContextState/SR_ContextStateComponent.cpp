@@ -1,33 +1,30 @@
 ﻿// Fill out your copyright notice in the Description page of Project Settings.
 
-
 #include "SR_ContextStateComponent.h"
 #include "SR/Character/Components/Dash/SR_DashComponent.h"
-
 
 // Sets default values for this component's properties
 USR_ContextStateComponent::USR_ContextStateComponent()
 {
-	// Set this component to be initialized when the game starts, and to be ticked every frame.  You can turn these features
-	// off to improve performance if you don't need them.
+	// Set this component to be initialized when the game starts, and to be ticked
+	// every frame.  You can turn these features off to improve performance if you
+	// don't need them.
 	PrimaryComponentTick.bCanEverTick = true;
 
 	// ...
 }
 
-
 // Called when the game starts
 void USR_ContextStateComponent::BeginPlay()
 {
 	Super::BeginPlay();
+	Character = Cast<ASR_Character>(GetOwner());
 	RegisterStates();
-	m_Character = Cast<ASR_Character>(GetOwner());
 }
-
 
 // Called every frame
 void USR_ContextStateComponent::TickComponent(float DeltaTime, ELevelTick TickType,
-                                              FActorComponentTickFunction* ThisTickFunction)
+											  FActorComponentTickFunction *ThisTickFunction)
 {
 	Super::TickComponent(DeltaTime, TickType, ThisTickFunction);
 }
@@ -36,84 +33,84 @@ void USR_ContextStateComponent::TransitionState(MotionState NewStateName, bool b
 {
 	// DebugState(NewStateName);
 	TransitionGuard(NewStateName, bForced);
-	m_CurrentMotionState = NewStateName;
-	if(NewStateName == MotionState::NONE)
+	CurrentMotionState = NewStateName;
+	if (NewStateName == MotionState::NONE)
 	{
 		// not ideal here, ideally the NONE state should be its own class
-		m_CurrentState = m_States[MotionState::NONE];
-		m_Character->SetCurrentState(NewStateName);
+		CurrentState = States[MotionState::NONE];
+		Character->SetCurrentState(NewStateName);
 		return;
 	}
-	m_CurrentState = m_States[NewStateName];
-	if(m_CurrentState == nullptr)
+	CurrentState = States[NewStateName];
+	if (CurrentState == nullptr)
 	{
 		return;
 	}
-	m_CurrentState->EnterState(nullptr);
-	m_Character->SetCurrentState(NewStateName);
+	CurrentState->EnterState(nullptr);
+	Character->SetCurrentState(NewStateName);
 }
 
-void USR_ContextStateComponent::TransitionState(MotionState NewStateName, void* data, bool bForced)
+void USR_ContextStateComponent::TransitionState(MotionState NewStateName, void *data, bool bForced)
 {
 	// DebugState(NewStateName);
 	TransitionGuard(NewStateName, bForced);
-	m_CurrentMotionState = NewStateName;
-	if(NewStateName == MotionState::NONE)
+	CurrentMotionState = NewStateName;
+	if (NewStateName == MotionState::NONE)
 	{
-		m_CurrentState = m_States[MotionState::NONE];
-		m_Character->SetCurrentState(NewStateName);
+		CurrentState = States[MotionState::NONE];
+		Character->SetCurrentState(NewStateName);
 		return;
 	}
-	m_CurrentState = m_States[NewStateName];
-	if(m_CurrentState == NULL)
+	CurrentState = States[NewStateName];
+	if (CurrentState == nullptr)
 	{
 		return;
 	}
-	m_CurrentState->EnterState(data);
-	m_Character->SetCurrentState(NewStateName);
+	CurrentState->EnterState(data);
+	Character->SetCurrentState(NewStateName);
 }
 
-
-//@TODO: do know why it not getting updated when trying to display the name of the state from the outside
+//@TODO: do know why it not getting updated when trying to display the name of
+// the state from the outside
 FName USR_ContextStateComponent::GetCurrentStateName()
 {
-	if(m_CurrentState == nullptr)
+	if (CurrentState == nullptr)
 	{
 		return "None";
 	}
-	return m_CurrentState->GetStateName();
+	return CurrentState->GetStateName();
 }
 
 void USR_ContextStateComponent::RegisterStates()
 {
-	ASR_Character* owner = Cast<ASR_Character>(GetOwner());
-	m_States[MotionState::NONE] = nullptr;
-	m_States[MotionState::DASH] = owner->GetState(MotionState::DASH);
-	m_States[MotionState::WALL_RUN] = owner->GetState(MotionState::WALL_RUN);
-	m_States[MotionState::WALL_JUMP] = owner->GetState(MotionState::WALL_JUMP);
-	m_States[MotionState::CLIMB] = owner->GetState(MotionState::CLIMB);
-	m_States[MotionState::SLIDE] = owner->GetState(MotionState::SLIDE);
+	States[MotionState::NONE] = nullptr;
+	States[MotionState::DASH] = Character->GetState(MotionState::DASH);
+	States[MotionState::WALL_RUN] = Character->GetState(MotionState::WALL_RUN);
+	States[MotionState::WALL_JUMP] = Character->GetState(MotionState::WALL_JUMP);
+	States[MotionState::CLIMB] = Character->GetState(MotionState::CLIMB);
+	States[MotionState::SLIDE] = Character->GetState(MotionState::SLIDE);
 
-	//set NONE state as default state
-	m_CurrentState = m_States[MotionState::NONE];
+	// set NONE state as default state
+	CurrentState = States[MotionState::NONE];
 }
 
 void USR_ContextStateComponent::TransitionGuard(MotionState newState, bool bForced = false)
 {
-	if(m_CurrentState == nullptr)
+	if (CurrentState == nullptr)
 	{
 		return;
 	}
 
-	if(m_CurrentState->IsStateActive())
+	if (CurrentState->IsStateActive())
 	{
-		m_CurrentState->LeaveState(0, bForced);
+		CurrentState->LeaveState(0, bForced);
 	}
 }
 
 void USR_ContextStateComponent::DebugState(MotionState newState)
 {
-	auto currentStateName = GetNameMyMotionState(m_CurrentMotionState);
-	GEngine->AddOnScreenDebugMessage(-1, 25.f, FColor::Purple, TEXT("Current State: ") + currentStateName.ToString() + " New State: " + GetNameMyMotionState(newState).ToString());
+	auto currentStateName = GetNameFromMotionState(CurrentMotionState);
+	GEngine->AddOnScreenDebugMessage(-1, 25.f, FColor::Purple,
+									 TEXT("Current State: ") + currentStateName.ToString() +
+										 " New State: " + GetNameFromMotionState(newState).ToString());
 }
-

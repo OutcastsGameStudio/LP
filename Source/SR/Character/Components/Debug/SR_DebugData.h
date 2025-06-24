@@ -2,7 +2,6 @@
 
 #pragma once
 
-
 #include "SR_DebugData.generated.h"
 
 USTRUCT(BlueprintType)

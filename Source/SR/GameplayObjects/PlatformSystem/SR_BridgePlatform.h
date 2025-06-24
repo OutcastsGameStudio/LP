@@ -20,24 +20,33 @@ public:
 	UFUNCTION(BlueprintCallable, Category = "Movement")
 	void ResetPlatform();
 
+	UFUNCTION(BlueprintCallable, Category = "Movement")
+	void LockPlatform();
+
 protected:
 	virtual void BeginPlay() override;
-	
+
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Components")
-	UStaticMeshComponent* PlatformMesh;
-    
+	UStaticMeshComponent *PlatformMesh;
+
 	UPROPERTY(VisibleAnywhere, BlueprintReadWrite, Category = "Movement")
 	bool bIsMoving;
+
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Movement")
+	bool bIsActivated;
+
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Movement")
+	bool bIsLocked;
 
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Movement")
 	bool bShouldRotate;
 
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Movement")
 	bool bHasReachedDestination = false;
-    
+
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Movement")
 	float MovementSpeed;
-    
+
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Movement", meta = (EditCondition = "!bShouldRotate"))
 	FVector EndPosition;
 
@@ -45,15 +54,14 @@ protected:
 	FRotator EndRotation;
 
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Sound")
-	class USoundBase* ActivationSound;
-    
-	float Alpha;
+	class USoundBase *ActivationSound;
+
+	float Alpha = 0;
 
 public:
-
 	UFUNCTION(BlueprintPure, Category = "Platform")
 	bool IsMoving() const;
-	
+
 	virtual void Tick(float DeltaTime) override;
 
 	FVector StartPosition;

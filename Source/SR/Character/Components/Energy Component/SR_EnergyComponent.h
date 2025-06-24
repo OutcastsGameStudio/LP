@@ -1,10 +1,10 @@
 ﻿#pragma once
 
-#include "CoreMinimal.h"
 #include "Components/ActorComponent.h"
+#include "CoreMinimal.h"
 #include "SR_EnergyComponent.generated.h"
 
-UCLASS(ClassGroup=(Custom), meta=(BlueprintSpawnableComponent))
+UCLASS(ClassGroup = (Custom), meta = (BlueprintSpawnableComponent))
 class SR_API USR_EnergyComponent : public UActorComponent
 {
 	GENERATED_BODY()
@@ -38,5 +38,5 @@ public:
 	bool IsEnergyFull() const { return CurrentEnergySlots == MaxEnergySlots; }
 
 private:
-	class ACharacter* OwningCharacter;
+	class ACharacter *OwningCharacter;
 };

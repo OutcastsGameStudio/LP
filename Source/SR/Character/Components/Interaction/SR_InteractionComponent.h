@@ -1,22 +1,21 @@
 ﻿#pragma once
 
-#include "CoreMinimal.h"
 #include "Components/ActorComponent.h"
+#include "CoreMinimal.h"
 #include "SR_InteractionComponent.generated.h"
 
-
-
-UCLASS(ClassGroup=(Custom), meta=(BlueprintSpawnableComponent))
+UCLASS(ClassGroup = (Custom), meta = (BlueprintSpawnableComponent))
 class SR_API USR_InteractionComponent : public UActorComponent
 {
 	GENERATED_BODY()
 
 public:
 	USR_InteractionComponent();
-	virtual void TickComponent(float DeltaTime, ELevelTick TickType, FActorComponentTickFunction* ThisTickFunction) override;
+	virtual void TickComponent(float DeltaTime, ELevelTick TickType,
+							   FActorComponentTickFunction *ThisTickFunction) override;
 
 	UFUNCTION(BlueprintCallable, Category = "Interaction")
-	AActor* GetDetectedInteractibleActor() const;
+	AActor *GetDetectedInteractibleActor() const;
 
 protected:
 	virtual void BeginPlay() override;
@@ -33,8 +32,9 @@ protected:
 
 private:
 	UPROPERTY()
-	AActor* DetectedActor;
+	AActor *DetectedActor;
 
 	void FindInteractibleActorInView();
-	bool IsActorInViewAndRange(const AActor* Actor, const FVector& CameraLocation, const FVector& CameraForward, float& OutDistanceFromCenter);
+	bool IsActorInViewAndRange(const AActor *Actor, const FVector &CameraLocation, const FVector &CameraForward,
+							   float &OutDistanceFromCenter);
 };
