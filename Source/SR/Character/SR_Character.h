@@ -82,6 +82,9 @@ class SR_API ASR_Character : public ACharacter
 	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = Input, meta = (AllowPrivateAccess = "true"))
 	UInputAction* GrappleAction;
 
+	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = Input, meta = (AllowPrivateAccess = "true"))
+	UInputAction* GrappleLaunchAction;
+
 public:
 	UPROPERTY(BlueprintAssignable, Category = "Input")
 	FOnDashInputPressed OnDashInputPressed;

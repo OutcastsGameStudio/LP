@@ -193,6 +193,13 @@ void ASR_Character::SetupPlayerInputComponent(UInputComponent *PlayerInputCompon
 		// Grappling Hook
 		EnhancedInputComponent->BindAction(GrappleAction, ETriggerEvent::Started, this, &ASR_Character::OnGrapplePressed);
 		EnhancedInputComponent->BindAction(GrappleAction, ETriggerEvent::Completed, this, &ASR_Character::OnGrappleReleased);
+
+		// Grappling Hook Launch (NOUVEAU)
+		if (GrappleLaunchAction && GrapplingHookComponent)
+		{
+			EnhancedInputComponent->BindAction(GrappleLaunchAction, ETriggerEvent::Started, 
+				GrapplingHookComponent, &USR_GrapplingHookComponent::LaunchFromGrapple);
+		}
 	}
 	else
 	{
