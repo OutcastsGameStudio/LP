@@ -41,6 +41,7 @@ ASR_Character::ASR_Character()
 	GetCharacterMovement()->BrakingFrictionFactor = 200.f;
 	GetCharacterMovement()->BrakingDecelerationWalking = 5000.f;
 	GetCharacterMovement()->BrakingDecelerationFalling = 1500.0f;
+	
 
 	// Create a follow camera
 	FollowCamera = CreateDefaultSubobject<UCameraComponent>(TEXT("FollowCamera"));
