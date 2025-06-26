@@ -4,6 +4,7 @@
 
 #include "Components/CapsuleComponent.h"
 #include "DrawDebugHelpers.h"
+#include "Kismet/KismetMathLibrary.h"
 #include "SR/Character/Components/WallJump/SR_WallJumpComponent.h"
 #include "SR/Character/SR_Character.h"
 
@@ -38,8 +39,6 @@ void USR_WallRunComponent::BeginPlay()
 	OwnerCharacter->OnMoveForwardInputReleased.AddDynamic(this, &USR_WallRunComponent::OnMoveForwardInputReleased);
 
 	OwnerCharacter->FOnJumpInputPressed.AddDynamic(this, &USR_WallRunComponent::OnJumpButtonPressed);
-
-	MotionController->OnRootMotionCompleted.AddDynamic(this, &USR_WallRunComponent::LeaveState);
 }
 
 void USR_WallRunComponent::TickComponent(float DeltaTime, ELevelTick TickType,
@@ -47,11 +46,8 @@ void USR_WallRunComponent::TickComponent(float DeltaTime, ELevelTick TickType,
 {
 	Super::TickComponent(DeltaTime, TickType, ThisTickFunction);
 	ResetCameraRotation(DeltaTime);
-
-	auto velocity = FVector(CharacterMovement->Velocity.X, CharacterMovement->Velocity.Y, 0).Size();
 	if (bIsStateActive)
 	{
-		GEngine->AddOnScreenDebugMessage(-1, 0.0f, FColor::Red, TEXT("TICK"));
 		if (CharacterMovement->IsMovingOnGround())
 		{
 			LeaveState(-1, true);
@@ -171,6 +167,7 @@ void USR_WallRunComponent::OnHit(UPrimitiveComponent *HitComponent, AActor *Othe
 {
 	if (!bIsStateActive && bIsMovingForward && FMath::Abs(Hit.Normal.Z) < MaxZThreshold && CheckIfNotInCorner() &&
 		CharacterMovement->MovementMode == MOVE_Falling &&
+		OtherActor->ActorHasTag("WALL_RUN") &&
 		FVector(CharacterMovement->Velocity.X, CharacterMovement->Velocity.Y, 0).Size() > MinWallRunSpeed)
 	{
 		auto CharacterForwardVector = OwnerCharacter->GetActorForwardVector();
@@ -183,8 +180,16 @@ void USR_WallRunComponent::OnHit(UPrimitiveComponent *HitComponent, AActor *Othe
 		};
 		WallNormal = Hit.Normal;
 		FVector WallDirection = FVector::CrossProduct(FVector::UpVector, Hit.Normal);
-		WallRunSide = FVector::DotProduct(WallDirection, OwnerCharacter->GetActorForwardVector()) > 0.f ? 1 : -1;
+		WallRunSide = FVector::DotProduct(WallDirection, OwnerCharacter->GetActorForwardVector()) > 0.f
+			? 1
+			: -1; // 1 => right wall, -1 => left wall
+		bIsWallRunningLeft = WallRunSide < 0;
 		WallRunDirection = (WallDirection * WallRunSide).GetSafeNormal();
+
+		LockedRotation = UKismetMathLibrary::FindLookAtRotation(
+			OwnerCharacter->GetActorLocation(), 
+			OwnerCharacter->GetActorLocation() + WallRunDirection
+		);
 
 		// enter the wall run state
 		USR_ContextStateComponent *ContextState = OwnerCharacter->FindComponentByClass<USR_ContextStateComponent>();
@@ -205,6 +210,9 @@ void USR_WallRunComponent::EnterState(void *data)
 		return;
 	}
 	bIsStateActive = true;
+
+	OnWallRunStarted.Broadcast();
+
 	CharacterMovement->SetMovementMode(MOVE_Custom);
 }
 
@@ -214,7 +222,9 @@ void USR_WallRunComponent::LeaveState(int32 rootMotionId, bool bForced)
 	{
 		return;
 	}
+	OnWallRunEnded.Broadcast();
 	StopWallRun();
+
 	ContextStateComponent->TransitionState(MotionState::NONE, bForced);
 }
 
@@ -295,6 +305,7 @@ void USR_WallRunComponent::StopWallRun()
 	bIsStateActive = false;
 	WallRunFallingSpeed = 0;
 	WallRunSide = 0;
+	bIsWallRunningLeft = false;
 
 	StartCameraRoll = CurrentCameraRoll;
 	CameraResetTimer = 0.0f;
@@ -319,7 +330,7 @@ void USR_WallRunComponent::UpdateState(float deltaTime)
 	FVector Delta = CharacterMovement->Velocity * deltaTime;
 	FHitResult Hit(1.f);
 
-	CharacterMovement->SafeMoveUpdatedComponent(Delta, CharacterMovement->UpdatedComponent->GetComponentRotation(),
+	CharacterMovement->SafeMoveUpdatedComponent(Delta, LockedRotation,
 												true, Hit);
 
 	UpdateCameraRotation(deltaTime);

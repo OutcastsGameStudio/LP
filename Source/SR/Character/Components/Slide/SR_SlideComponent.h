@@ -11,6 +11,9 @@
 
 #include "SR_SlideComponent.generated.h"
 
+DECLARE_DYNAMIC_MULTICAST_DELEGATE(FOnSlideStarted);
+DECLARE_DYNAMIC_MULTICAST_DELEGATE(FOnSlideEnded);
+
 UCLASS(ClassGroup = (Custom), meta = (BlueprintSpawnableComponent))
 class SR_API USR_SlideComponent : public UActorComponent, public ISR_State
 {
@@ -54,6 +57,12 @@ public:
 	virtual int32 GetStatePriority() const override;
 	virtual bool IsStateActive() const override;
 
+	UPROPERTY(BlueprintAssignable, Category = "Movement|Events")
+	FOnSlideStarted OnSlideStarted;
+
+	UPROPERTY(BlueprintAssignable, Category = "Movement|Events")
+	FOnSlideEnded OnSlideEnded;
+
 protected:
 	virtual void BeginPlay() override;
 
@@ -75,14 +84,6 @@ protected:
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Slide Movement",
 		meta = (ToolTip = "Whether the character is currently sliding"))
 	bool bIsSliding = false;
-
-	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Slide Movement",
-		meta = (ToolTip = "Animation when character is sliding"))
-	UAnimMontage *StartedSlideAnimMontage = nullptr;
-
-	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Slide Movement",
-		meta = (ToolTip = "Animation when character stops sliding"))
-	UAnimMontage *StoppedSlideAnimMontage = nullptr;
 
 private:
 	/**

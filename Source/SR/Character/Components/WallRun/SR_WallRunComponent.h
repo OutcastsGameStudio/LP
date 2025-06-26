@@ -9,6 +9,8 @@
 #include "SR/Character/SR_Character.h"
 #include "SR_WallRunComponent.generated.h"
 
+DECLARE_DYNAMIC_MULTICAST_DELEGATE(FOnWallRunStarted);
+DECLARE_DYNAMIC_MULTICAST_DELEGATE(FOnWallRunEnded);
 
 UCLASS(ClassGroup = (Custom), meta = (BlueprintSpawnableComponent))
 class SR_API USR_WallRunComponent : public UActorComponent, public ISR_State
@@ -16,21 +18,30 @@ class SR_API USR_WallRunComponent : public UActorComponent, public ISR_State
 	GENERATED_BODY()
 
 public:
-	// Sets default values for this component's properties
 	USR_WallRunComponent();
 
 protected:
-	// Called when the game starts
 	virtual void BeginPlay() override;
 
 public:
-	// Called every frame
 	virtual void TickComponent(float DeltaTime, ELevelTick TickType,
 							   FActorComponentTickFunction *ThisTickFunction) override;
 
 	UFUNCTION()
 	void OnHit(UPrimitiveComponent *HitComponent, AActor *OtherActor, UPrimitiveComponent *OtherComp,
 			   FVector NormalImpulse, const FHitResult &Hit);
+
+	UPROPERTY(BlueprintAssignable, Category = "Movement|Events")
+	FOnWallRunStarted OnWallRunStarted;
+
+	UPROPERTY(BlueprintAssignable, Category = "Movement|Events")
+	FOnWallRunEnded OnWallRunEnded;
+
+	UPROPERTY(BlueprintReadOnly, Category = "Movement")
+	bool bIsWallRunningLeft = false;
+
+	UFUNCTION()
+	bool GetIsWallRunningLeft() { return bIsWallRunningLeft; }
 
 public:
 	virtual void EnterState(void *Data) override;
@@ -66,6 +77,9 @@ public:
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Wall Run",
 			  meta = (ToolTip = "Minimum speed required to trigger wall run", ClampMin = "1.0", ClampMax = "10000.0"))
 	float MinWallRunSpeed = 100.0f;
+
+	UFUNCTION(BlueprintCallable, Category = "Wall Run")
+	bool IsWallRunActive() const { return bIsStateActive; }
 
 private:
 	UPROPERTY()
@@ -158,4 +172,6 @@ private:
 	void ResetCameraRotation(float DeltaTime);
 
 	int32 RootMotionId = -1;
+
+	FRotator LockedRotation = FRotator::ZeroRotator;
 };
