@@ -1,4 +1,5 @@
 ﻿#include "SR_InteractibleObject.h"
+
 #include "Components/SphereComponent.h"
 #include "SR/Character/Components/Energy Component/SR_EnergyComponent.h"
 
@@ -10,6 +11,7 @@ ASR_InteractibleObject::ASR_InteractibleObject()
 	RootComponent = TriggerSphere;
 	TriggerSphere->SetSphereRadius(InteractionRadius);
 	TriggerSphere->SetCollisionProfileName(TEXT("Trigger"));
+	
 }
 
 void ASR_InteractibleObject::BeginPlay()
