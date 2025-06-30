@@ -23,7 +23,6 @@ protected:
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Interaction")
 	float MaxDetectionDistance = 1000.0f;
 
-	// Tolérance de distance au centre de l'écran (0-1)
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Interaction", meta = (ClampMin = "0.0", ClampMax = "1.0"))
 	float CenterScreenTolerance = 0.3f;
 
