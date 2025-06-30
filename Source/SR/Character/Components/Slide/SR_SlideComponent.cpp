@@ -69,7 +69,8 @@ void USR_SlideComponent::StartSlide()
 
 bool USR_SlideComponent::CanInitiateSlide() const
 {
-	if (CharacterMovement->GetLastUpdateVelocity().IsNearlyZero() || CharacterMovement->IsFalling() || bIsCrouching)
+	if (CharacterMovement->GetLastUpdateVelocity().IsNearlyZero() || CharacterMovement->IsFalling() || bIsCrouching ||
+	    bIsSliding || !OwnerCharacter->GetCharacterMovement()->IsMovingOnGround())
 	{
 		return false;
 	}
@@ -279,6 +280,7 @@ void USR_SlideComponent::Slide()
 
 	if (!CanInitiateSlide())
 	{
+		LeaveState(CurrentRootMotionID, true);
 		return;
 	}
 
@@ -292,6 +294,7 @@ void USR_SlideComponent::EnterState(void *data)
 	if (bIsStateActive)
 	{
 		UE_LOG(LogTemp, Warning, TEXT("USR_SlideComponent::EnterState() - State is already active"));
+		LeaveState(CurrentRootMotionID, true);
 		return;
 	}
 
