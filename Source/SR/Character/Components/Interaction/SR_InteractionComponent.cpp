@@ -28,14 +28,12 @@ bool USR_InteractionComponent::IsActorInViewAndRange(const AActor *Actor, const 
 		return false;
 	}
 
-	// Vérifier la distance
 	float Distance = FVector::Distance(CameraLocation, Actor->GetActorLocation());
 	if (Distance > MaxDetectionDistance)
 	{
 		return false;
 	}
 
-	// Obtenir la position de l'acteur à l'écran
 	APlayerController *PC = UGameplayStatics::GetPlayerController(this, 0);
 	if (!IsValid(PC))
 	{
@@ -48,20 +46,15 @@ bool USR_InteractionComponent::IsActorInViewAndRange(const AActor *Actor, const 
 		return false;
 	}
 
-	// Obtenir les dimensions de l'écran
 	int32 ViewportSizeX, ViewportSizeY;
 	PC->GetViewportSize(ViewportSizeX, ViewportSizeY);
 
-	// Calculer le centre de l'écran
 	FVector2D ScreenCenter(ViewportSizeX * 0.5f, ViewportSizeY * 0.5f);
 
-	// Normaliser la position sur l'écran (0-1)
 	FVector2D NormalizedScreenLoc(ScreenLocation.X / ViewportSizeX, ScreenLocation.Y / ViewportSizeY);
 
-	// Calculer la distance par rapport au centre de l'écran (0-1)
 	OutDistanceFromCenter = FVector2D::Distance(NormalizedScreenLoc, FVector2D(0.5f, 0.5f));
 
-	// Vérifier si l'acteur est visible (pas obstrué)
 	FHitResult HitResult;
 	FCollisionQueryParams QueryParams;
 	QueryParams.AddIgnoredActor(GetOwner());
@@ -95,14 +88,12 @@ void USR_InteractionComponent::FindInteractibleActorInView()
 	FVector CameraLocation = FollowCamera->GetComponentLocation();
 	FVector CameraForward = FollowCamera->GetForwardVector();
 
-	// Trouver tous les acteurs avec le tag "interactible"
 	TArray<AActor *> InteractibleActors;
 	UGameplayStatics::GetAllActorsWithTag(GetWorld(), FName("interactible"), InteractibleActors);
 
 	AActor *ClosestToCenterActor = nullptr;
 	float ClosestDistanceToCenter = CenterScreenTolerance;
 
-	// Trouver l'acteur le plus proche du centre de l'écran
 	for (AActor *Actor : InteractibleActors)
 	{
 		float DistanceFromCenter;
@@ -116,15 +107,7 @@ void USR_InteractionComponent::FindInteractibleActorInView()
 		}
 	}
 
-	// Simplement mettre à jour l'acteur détecté sans modifier son état
 	DetectedActor = ClosestToCenterActor;
-
-	// Debug
-	if (bShowDebug && IsValid(DetectedActor))
-	{
-		DrawDebugLine(GetWorld(), CameraLocation, DetectedActor->GetActorLocation(), FColor::Green, false, -1.0f, 0,
-					  2.0f);
-	}
 }
 
 AActor *USR_InteractionComponent::GetDetectedInteractibleActor() const { return DetectedActor; }
