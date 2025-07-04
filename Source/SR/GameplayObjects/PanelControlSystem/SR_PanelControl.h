@@ -76,6 +76,9 @@ protected:
 	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Panel Control")
 	UMaterialInterface *InactiveMaterial;
 
+	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Panel Control")
+	class UFMODEvent* SoundEvent;
+
 	UPROPERTY(BlueprintReadOnly, Category = "Panel Control")
 	bool bPlayerInRange;
 
