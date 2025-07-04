@@ -1,4 +1,7 @@
 #include "SR_PanelControl.h"
+
+#include "FMODBlueprintStatics.h"
+#include "FMODEvent.h"
 #include "Components/BoxComponent.h"
 #include "Components/StaticMeshComponent.h"
 #include "GameFramework/Character.h"
@@ -30,15 +33,6 @@ ASR_PanelControl::ASR_PanelControl()
 void ASR_PanelControl::BeginPlay()
 {
 	Super::BeginPlay();
-
-	if (!bIsActivated && InactiveMaterial)
-	{
-		PanelMeshComponent->SetMaterial(0, InactiveMaterial);
-	}
-	else if (bIsActivated && ActiveMaterial)
-	{
-		PanelMeshComponent->SetMaterial(0, ActiveMaterial);
-	}
 }
 
 void ASR_PanelControl::Tick(float DeltaTime)
@@ -72,11 +66,21 @@ void ASR_PanelControl::TogglePanel()
 
 	if (bIsActivated && ActiveMaterial)
 	{
-		PanelMeshComponent->SetMaterial(0, ActiveMaterial);
+		PanelMeshComponent->SetMaterial(1, ActiveMaterial);
 	}
 	else if (!bIsActivated && InactiveMaterial)
 	{
-		PanelMeshComponent->SetMaterial(0, InactiveMaterial);
+		PanelMeshComponent->SetMaterial(1, InactiveMaterial);
+	}
+
+	if (SoundEvent)
+	{
+		UFMODBlueprintStatics::PlayEventAtLocation(
+			GetWorld(), 
+			SoundEvent,
+			GetActorTransform(),
+			true  // Auto destroy when finished
+		);
 	}
 
 	for (ASR_BridgePlatform *Platform : ControlledPlatforms)
