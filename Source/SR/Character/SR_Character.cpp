@@ -45,10 +45,10 @@ ASR_Character::ASR_Character()
 	// Create a follow camera
 	FollowCamera = CreateDefaultSubobject<UCameraComponent>(TEXT("FollowCamera"));
 	FollowCamera->SetupAttachment(GetMesh(), FName("Camera"));
-	FollowCamera->bUsePawnControlRotation = false; // Camera does not rotate relative to arm
+	FollowCamera->bUsePawnControlRotation = false;
 
 	// set the energy component to the character
-	EnergyComponent = CreateDefaultSubobject<USR_EnergyComponent>(TEXT("EnergyComponent"));
+	// EnergyComponent = CreateDefaultSubobject<USR_EnergyComponent>(TEXT("EnergyComponent"));
 
 	InteractionComponent = CreateDefaultSubobject<USR_InteractionComponent>(TEXT("InteractionComponent"));
 
