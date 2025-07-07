@@ -35,17 +35,17 @@ struct FPendulumState
 {
     GENERATED_BODY()
 
-    // Position angulaire (radians depuis la verticale)
-    float Theta = 0.0f;
-    
-    // Angle azimutal (radians dans le plan horizontal)
-    float Phi = 0.0f;
+    // Angle du pendule (radians depuis la verticale)
+    float Angle = 0.0f;
     
     // Vitesse angulaire (rad/s)
-    float ThetaDot = 0.0f;
+    float AngularVelocity = 0.0f;
     
-    // Vitesse angulaire azimutale (rad/s)
-    float PhiDot = 0.0f;
+    // Direction du plan de balancement (normalisée)
+    FVector SwingPlaneNormal = FVector::RightVector;
+    
+    // Vecteur avant du plan de balancement
+    FVector SwingForward = FVector::ForwardVector;
     
     // Position cartésienne relative au point d'ancrage
     FVector RelativePosition = FVector::ZeroVector;
@@ -126,6 +126,24 @@ public:
     UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Grappling Settings")
     bool bHighlightGrapplePoints = true;
 
+    // Nouveau : Distance de balancement (pourcentage de la longueur totale)
+    UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Grappling Settings",
+              meta = (ClampMin = "0.3", ClampMax = "0.9", ToolTip = "Distance at which swinging starts (percentage of total cable length)"))
+    float SwingDistanceRatio = 0.7f;
+
+    // Nouveau : Type de pendule
+    UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Grappling Settings",
+              meta = (ToolTip = "Use 2D pendulum (back and forth only) instead of 3D spherical pendulum"))
+    bool bUse2DPendulum = true;
+
+    UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Grappling Settings",
+              meta = (ToolTip = "Allow slight steering of swing direction with left/right input"))
+    bool bAllowSwingSteer = true;
+
+    UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Grappling Settings",
+              meta = (ToolTip = "Strength of swing steering"))
+    float SwingSteerStrength = 50.0f;
+
     // Paramètres physiques
     UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Physics Settings",
               meta = (ToolTip = "Gravity acceleration in cm/s²"))
@@ -133,19 +151,24 @@ public:
 
     UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Physics Settings",
               meta = (ToolTip = "Air resistance coefficient"))
-    float AirDamping = 0.02f;
+    float AirDamping = 0.005f;
 
     UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Physics Settings",
-              meta = (ToolTip = "Energy loss per swing (0-1)"))
-    float EnergyLoss = 0.02f;
+              meta = (ToolTip = "Minimum swing speed to prevent getting stuck"))
+    float MinimumSwingSpeed = 300.0f;
+
+    // Nouveau : Paramètres d'impulsion
+    UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Physics Settings",
+              meta = (ToolTip = "Impulse strength when pressing forward/backward"))
+    float ImpulseStrength = 800.0f;
 
     UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Physics Settings",
-              meta = (ToolTip = "Player input acceleration strength"))
-    float PlayerInputStrength = 500.0f;
+              meta = (ToolTip = "Cooldown between impulses in seconds"))
+    float ImpulseCooldown = 2.0f;
 
     UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Physics Settings",
-              meta = (ToolTip = "Directional control strength (left/right steering)"))
-    float DirectionalControlStrength = 300.0f;
+              meta = (ToolTip = "Maximum swing amplitude in degrees"))
+    float MaxSwingAmplitude = 60.0f;
 
     UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Physics Settings",
               meta = (ToolTip = "Launch boost multiplier when exiting grapple"))
@@ -154,6 +177,22 @@ public:
     UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Physics Settings",
               meta = (ToolTip = "Additional upward velocity when launching"))
     float LaunchUpwardBoost = 300.0f;
+
+    UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Physics Settings",
+              meta = (ToolTip = "Whether to add extra boost based on swing amplitude"))
+    bool bUseAmplitudeBoost = true;
+
+    UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Physics Settings",
+              meta = (ToolTip = "Maximum amplitude boost percentage (0-1)"))
+    float MaxAmplitudeBoostPercent = 0.5f;
+
+    UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Physics Settings",
+              meta = (ToolTip = "Apply air resistance to launch trajectory prediction"))
+    bool bApplyAirResistanceToLaunch = true;
+
+    UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Physics Settings",
+              meta = (ToolTip = "Air resistance coefficient for launch"))
+    float LaunchAirResistance = 0.001f;
 
     UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Physics Settings",
               meta = (ToolTip = "Maximum angle from vertical (degrees)"))
@@ -169,6 +208,9 @@ public:
 
     UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Debug")
     bool bShowTrajectory = false;
+
+    UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Debug")
+    bool bShowLaunchTrajectory = true;
 
 private:
     UPROPERTY()
@@ -198,7 +240,17 @@ private:
     FPendulumState PendulumState;
     FVector GrapplePoint;
     float CableLength = 0.0f;
+    float SwingCableLength = 0.0f; // Longueur effective pour le balancement
     float PullProgress = 0.0f;
+    
+    // Nouveau : État de l'impulsion
+    float LastImpulseTime = 0.0f;
+    bool bCanApplyImpulse = true;
+    float CurrentSwingAmplitude = 0.0f;
+    
+    // Input tracking
+    bool bIsPressingForward = false;
+    bool bIsPressingBackward = false;
     
     // Stockage de la vélocité avant grappin
     FVector PreGrappleVelocity;
@@ -223,14 +275,10 @@ private:
     // Physique pure
     void InitializePendulumState();
     void UpdatePendulumPhysics(float DeltaTime);
-    void ApplyPlayerInput(float DeltaTime);
+    void ApplyImpulse(bool bForward);
     void IntegrateMotion(float DeltaTime);
     void EnforceCableConstraint();
-    FVector CalculateNewPosition(float Theta, float Phi);
-    
-    // Conversion entre coordonnées
-    void CartesianToSpherical(const FVector& CartesianPos, float& OutTheta, float& OutPhi);
-    FVector SphericalToCartesian(float Theta, float Phi);
+    FVector CalculateNewPosition(float Angle, float Unused);
 
     // Utilitaires
     bool ShouldReleaseGrapple();
@@ -238,4 +286,18 @@ private:
     void SetCharacterVelocity(const FVector& NewVelocity);
     void DrawDebugInfo();
     void DrawTrajectory();
+    void DrawLaunchTrajectory();
+    
+    // Nouvelles méthodes pour gérer les inputs
+    UFUNCTION()
+    void OnMoveForwardInputPressed();
+    
+    UFUNCTION()
+    void OnMoveForwardInputReleased();
+    
+    UFUNCTION()
+    void OnMoveBackwardInputPressed();
+    
+    UFUNCTION()
+    void OnMoveBackwardInputReleased();
 };

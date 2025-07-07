@@ -171,8 +171,7 @@ void ASR_Character::SetupPlayerInputComponent(UInputComponent *PlayerInputCompon
 		EnhancedInputComponent->BindAction(MoveAction, ETriggerEvent::Triggered, this, &ASR_Character::Move);
 
 		EnhancedInputComponent->BindAction(ForwardAction, ETriggerEvent::Started, this, &ASR_Character::MoveForward);
-		EnhancedInputComponent->BindAction(ForwardAction, ETriggerEvent::Completed, this,
-										   &ASR_Character::StopMoveForward);
+		EnhancedInputComponent->BindAction(ForwardAction, ETriggerEvent::Completed, this, &ASR_Character::StopMoveForward);
 
 		// Looking
 		EnhancedInputComponent->BindAction(LookAction, ETriggerEvent::Triggered, this, &ASR_Character::Look);
