@@ -61,6 +61,32 @@ protected:
 	void ResetAllCooldowns();
 
 public:
+	// Méthodes pour la configuration de test
+	UFUNCTION(BlueprintCallable, Category = "Testing")
+	void SetTestConfiguration(float GroundSpeed, float AirSpeed, float GroundCooldown, float AirCooldown);
+
+	UFUNCTION(BlueprintPure, Category = "Testing")
+	float GetDashSpeedOnGround() const { return DashSpeedOnGround; }
+
+	UFUNCTION(BlueprintPure, Category = "Testing")
+	float GetDashSpeedInAir() const { return DashSpeedInAir; }
+
+	UFUNCTION(BlueprintPure, Category = "Testing")
+	float GetDashCooldownOnGround() const { return DashCooldownOnGround; }
+
+	UFUNCTION(BlueprintPure, Category = "Testing")
+	float GetDashCooldownInAir() const { return DashCooldownInAir; }
+
+	UFUNCTION(BlueprintPure, Category = "Testing")
+	bool CanDashOnGround() const { return bCanDashOnGround; }
+
+	UFUNCTION(BlueprintPure, Category = "Testing")
+	bool CanDashInAir() const { return bCanDashInAir; }
+
+	UFUNCTION(BlueprintCallable, Category = "Testing")
+	void ResetAllCooldownsForTesting();	
+
+public:
 	virtual void EnterState(void *Data) override;
 
 	UFUNCTION(BlueprintCallable, Category = "Movement")
