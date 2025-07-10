@@ -218,3 +218,18 @@ int32 USR_DashComponent::GetStatePriority() const
 }
 
 bool USR_DashComponent::IsStateActive() const { return bIsStateActive; }
+
+
+// Test configuration methods
+void USR_DashComponent::SetTestConfiguration(float GroundSpeed, float AirSpeed, float GroundCooldown, float AirCooldown)
+{
+	DashSpeedOnGround = GroundSpeed;
+	DashSpeedInAir = AirSpeed;
+	DashCooldownOnGround = GroundCooldown;
+	DashCooldownInAir = AirCooldown;
+}
+
+void USR_DashComponent::ResetAllCooldownsForTesting()
+{
+	ResetAllCooldowns();
+}
