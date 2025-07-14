@@ -114,3 +114,15 @@ void USR_ContextStateComponent::DebugState(MotionState newState)
 									 TEXT("Current State: ") + currentStateName.ToString() +
 										 " New State: " + GetNameFromMotionState(newState).ToString());
 }
+
+void USR_ContextStateComponent::ClearStates()
+{
+	States.Empty();
+	CurrentState = nullptr;
+	CurrentMotionState = MotionState::NONE;
+}
+
+bool USR_ContextStateComponent::IsValidState(MotionState State)
+{
+	return States.Contains(State);
+}
