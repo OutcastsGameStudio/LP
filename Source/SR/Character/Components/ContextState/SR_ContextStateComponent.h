@@ -18,6 +18,7 @@ enum class MotionState
 	SLIDE,
 	DASH,
 	CLIMB,
+	UNKNOWN
 };
 
 UCLASS(ClassGroup = (Custom), meta = (BlueprintSpawnableComponent))
@@ -34,6 +35,16 @@ protected:
 	virtual void BeginPlay() override;
 
 public:
+
+	bool IsValidState(MotionState State);
+
+	void ClearStates();
+
+	int GetStatesCount() const
+	{
+		return States.Num();
+	}
+
 	// Called every frame
 	virtual void TickComponent(float DeltaTime, ELevelTick TickType,
 							   FActorComponentTickFunction *ThisTickFunction) override;
@@ -47,6 +58,9 @@ public:
 
 	MotionState GetCurrentMotionState() const { return CurrentMotionState; }
 
+	TMap<MotionState, ISR_State *> States = {{MotionState::NONE, nullptr},		{MotionState::WALL_RUN, nullptr},
+											 {MotionState::WALL_JUMP, nullptr}, {MotionState::SLIDE, nullptr},
+											 {MotionState::DASH, nullptr},		{MotionState::CLIMB, nullptr}};
 private:
 	void RegisterStates();
 
@@ -55,9 +69,6 @@ private:
 	UPROPERTY()
 	ASR_Character *Character = nullptr;
 
-	TMap<MotionState, ISR_State *> States = {{MotionState::NONE, nullptr},		{MotionState::WALL_RUN, nullptr},
-											 {MotionState::WALL_JUMP, nullptr}, {MotionState::SLIDE, nullptr},
-											 {MotionState::DASH, nullptr},		{MotionState::CLIMB, nullptr}};
 
 	FName CurrentStateName = "None";
 
