@@ -33,10 +33,8 @@ public:
 	virtual void LeaveState(int32 RootMotionId, bool bForced = false) override;
 
 	virtual void EnterState(void *Data) override;
-	virtual bool LookAheadQuery() override;
 	virtual void UpdateState() override;
 	virtual FName GetStateName() const override;
-	virtual int32 GetStatePriority() const override;
 	virtual bool IsStateActive() const override;
 
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "WallRun",

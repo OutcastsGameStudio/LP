@@ -66,10 +66,8 @@ public:
 	UFUNCTION(BlueprintCallable, Category = "Movement")
 	virtual void LeaveState(int32 RootMotionId, bool bForced = false) override;
 
-	virtual bool LookAheadQuery() override;
 	virtual void UpdateState() override;
 	virtual FName GetStateName() const override;
-	virtual int32 GetStatePriority() const override;
 	virtual bool IsStateActive() const override;
 
 private:
@@ -85,7 +83,7 @@ private:
 	UPROPERTY()
 	USR_ContextStateComponent *ContextStateComponent;
 
-	int32 CurrentRootMotionID = 0;
+	int32 CurrentRootMotionID = -1;
 	bool bIsStateActive = false;
 	float OriginalGroundFriction = 0.0f;
 	float CurrentCooldownTimeInAir = 0.0f;

@@ -7,12 +7,9 @@
 // Sets default values for this component's properties
 USR_MotionController::USR_MotionController()
 {
-	// Set this component to be initialized when the game starts, and to be ticked
-	// every frame.  You can turn these features off to improve performance if you
-	// don't need them.
-
-	// ...
-	PrimaryComponentTick.bCanEverTick = true;
+	// TickComponent ne fait rien d'autre que Super:: -> on désactive le tick.
+	// La complétion des root motions est pilotée par timer, pas par le tick.
+	PrimaryComponentTick.bCanEverTick = false;
 }
 
 // Called when the game starts
@@ -96,6 +93,16 @@ int32 USR_MotionController::ApplyRootMotion(const FRootMotionRequest &Request)
 
 			RootMotionTimers.Add(RootMotionID, TimerHandle);
 		}
+		else
+		{
+			// Mouvement instantané (Duration <= 0) : pas de durée à attendre, mais on
+			// doit quand même notifier la complétion sinon l'état ne sortirait jamais.
+			// On le fait au prochain tick (la source s'applique une frame). Le délégué
+			// UObject est invalidé automatiquement si le composant est détruit avant.
+			FTimerDelegate TimerDelegate = FTimerDelegate::CreateUObject(
+				this, &USR_MotionController::OnRootMotionFinished, RootMotionID, Request.MovementName);
+			GetWorld()->GetTimerManager().SetTimerForNextTick(TimerDelegate);
+		}
 	}
 
 	return RootMotionID;
@@ -124,8 +131,10 @@ bool USR_MotionController::CancelRootMotion(int32 RootMotionID)
 
 	if (ActiveMotion)
 	{
-		// Supprimer le root motion
-		// CharacterMovementComponent->RemoveRootMotionSourceByID(RootMotionID);
+		// Supprimer réellement la source de la CMC (sinon la force continue de
+		// s'appliquer jusqu'à expiration de sa propre Duration, et "cancel" ne
+		// cancel rien).
+		CharacterMovementComponent->RemoveRootMotionSourceByID(RootMotionID);
 
 		// Nettoyer le timer
 		FTimerHandle *TimerHandle = RootMotionTimers.Find(RootMotionID);
@@ -156,11 +165,14 @@ void USR_MotionController::CancelAllRootMotions()
 	}
 	RootMotionTimers.Empty();
 
-	// Broadcast pour tous les mouvements actifs
+	// Broadcast pour tous les mouvements actifs + suppression réelle des sources
 	for (const FActiveRootMotion &Motion : ActiveRootMotions)
 	{
 		OnRootMotionCompleted.Broadcast(Motion.ID, true);
-		// CharacterMovementComponent->RemoveRootMotionSourceByID(Motion.ID);
+		if (CharacterMovementComponent)
+		{
+			CharacterMovementComponent->RemoveRootMotionSourceByID(Motion.ID);
+		}
 	}
 
 	ActiveRootMotions.Empty();

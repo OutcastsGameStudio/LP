@@ -43,7 +43,9 @@ void USR_SlideComponent::BeginPlay()
 	OwnerCharacter->FOnSlideInputPressed.AddDynamic(this, &USR_SlideComponent::Slide);
 	OwnerCharacter->FOnSlideInputReleased.AddDynamic(this, &USR_SlideComponent::StopSlide);
 
-	MotionController->OnRootMotionCompleted.AddDynamic(this, &USR_SlideComponent::LeaveState);
+	// NB : Slide n'applique aucune root motion (déplacement géré dans son Tick). Pas
+	// d'abonnement à OnRootMotionCompleted pour éviter le cross-talk avec Dash/WallJump.
+	// La sortie est pilotée par StopSlide() et par la machine à états (TransitionGuard).
 }
 
 // Called every frame
@@ -246,8 +248,12 @@ float USR_SlideComponent::CalculateSlideSpeed(float DeltaTime)
 		return ProcessBasicSlide(DeltaTime);
 	}
 
-	float GravityForce = Gravity * sin(CurrentFloorAngle);
-	float resultGravityForce = GravityForce - Friction * Gravity * cos(CurrentFloorAngle);
+	// CurrentFloorAngle est en DEGRÉS (GetCurrentFloorAngle utilise RadiansToDegrees) ;
+	// sin/cos attendent des RADIANS -> conversion obligatoire sinon la physique de pente
+	// est fausse (ex. pente 30° donnait sin(30 rad) au lieu de sin(30°)).
+	const float FloorAngleRad = FMath::DegreesToRadians(CurrentFloorAngle);
+	float GravityForce = Gravity * FMath::Sin(FloorAngleRad);
+	float resultGravityForce = GravityForce - Friction * Gravity * FMath::Cos(FloorAngleRad);
 
 	/*
    * If the player is sliding down a slope, we want to increase the slide speed.
@@ -276,14 +282,15 @@ float USR_SlideComponent::ProcessBasicSlide(float DeltaTime)
 
 void USR_SlideComponent::Slide()
 {
-	ContextStateComponent->TransitionState(MotionState::SLIDE);
-
+	// On vérifie AVANT de transitionner pour éviter un Enter/Leave dans la même
+	// frame (flicker + OnSlideEnded émis sans OnSlideStarted, et leave forcé de
+	// l'état courant pour rien).
 	if (!CanInitiateSlide())
 	{
-		LeaveState(CurrentRootMotionID, true);
 		return;
 	}
 
+	ContextStateComponent->TransitionState(MotionState::SLIDE);
 	StartSlide();
 }
 
@@ -322,10 +329,6 @@ void USR_SlideComponent::LeaveState(int32 rootMotionId, bool bForced)
 	ContextStateComponent->TransitionState(MotionState::NONE, true);
 }
 
-bool USR_SlideComponent::LookAheadQuery() { return !bIsStateActive; }
-
 FName USR_SlideComponent::GetStateName() const { return FName("Slide"); }
-
-int32 USR_SlideComponent::GetStatePriority() const { return 0; }
 
 bool USR_SlideComponent::IsStateActive() const { return bIsStateActive; }

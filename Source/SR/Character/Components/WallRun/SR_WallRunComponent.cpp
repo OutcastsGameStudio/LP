@@ -167,7 +167,7 @@ void USR_WallRunComponent::OnHit(UPrimitiveComponent *HitComponent, AActor *Othe
 {
 	if (!bIsStateActive && bIsMovingForward && FMath::Abs(Hit.Normal.Z) < MaxZThreshold && CheckIfNotInCorner() &&
 		CharacterMovement->MovementMode == MOVE_Falling &&
-		OtherActor->ActorHasTag("WALL_RUN") &&
+		IsValid(OtherActor) && OtherActor->ActorHasTag("WALL_RUN") &&
 		FVector(CharacterMovement->Velocity.X, CharacterMovement->Velocity.Y, 0).Size() > MinWallRunSpeed)
 	{
 		auto CharacterForwardVector = OwnerCharacter->GetActorForwardVector();
@@ -228,18 +228,9 @@ void USR_WallRunComponent::LeaveState(int32 rootMotionId, bool bForced)
 	ContextStateComponent->TransitionState(MotionState::NONE, bForced);
 }
 
-bool USR_WallRunComponent::LookAheadQuery() { return bIsStateActive; }
-
 void USR_WallRunComponent::UpdateState() {}
 
 FName USR_WallRunComponent::GetStateName() const { return FName("WallRun"); }
-
-int32 USR_WallRunComponent::GetStatePriority() const
-{
-	return 1; //@TODO: see what priority we want to give to the wall run and what
-		// the async root movement do with this, should be used in
-		// asyncmovement request payload but OSEF for now
-}
 
 bool USR_WallRunComponent::IsStateActive() const { return bIsStateActive; }
 
@@ -278,7 +269,7 @@ bool USR_WallRunComponent::CheckIfNotInCorner()
 	// rightVector rotated to angle
 	FHitResult HitResult1;
 	FCollisionQueryParams QueryParams1;
-	QueryParams.AddIgnoredActor(OwnerCharacter); // Ignore the character itself
+	QueryParams1.AddIgnoredActor(OwnerCharacter); // Ignore the character itself
 	bool bHit1 = GetWorld()->LineTraceSingleByChannel(HitResult1, OwnerCharacter->GetActorLocation(),
 													  OwnerCharacter->GetActorLocation() + LeftVector * magnitude,
 													  ECC_Visibility, // Or use another channel like ECC_Pawn

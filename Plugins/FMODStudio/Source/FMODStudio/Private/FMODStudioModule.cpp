@@ -10,8 +10,6 @@
 #include "FMODEvent.h"
 #include "FMODListener.h"
 #include "FMODSnapshotReverb.h"
-#include <string>
-#include <cstring>
 
 #include "FMODAudioLinkModule.h"
 #if WITH_EDITOR
@@ -721,10 +719,7 @@ void FFMODStudioModule::CreateStudioSystem(EFMODSystemContext::Type Type)
 
     if (!Settings.StudioBankKey.IsEmpty())
     {
-    	// Convertir la clé en UTF8 et la stocker dans un std::string pour s'assurer qu'elle persiste
-    	std::string encryptionKeyStr = TCHAR_TO_UTF8(*Settings.StudioBankKey);
-    	advStudioSettings.encryptionkey = strdup(encryptionKeyStr.c_str());
-
+        advStudioSettings.encryptionkey = TCHAR_TO_UTF8(*Settings.StudioBankKey);
     }
 
     verifyfmod(StudioSystem[Type]->setAdvancedSettings(&advStudioSettings));

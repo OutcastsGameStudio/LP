@@ -51,10 +51,8 @@ public:
 	UFUNCTION(BlueprintCallable, Category = "Movement")
 	virtual void LeaveState(int32 RootMotionId, bool bForced = false) override;
 
-	virtual bool LookAheadQuery() override;
 	virtual void UpdateState() override;
 	virtual FName GetStateName() const override;
-	virtual int32 GetStatePriority() const override;
 	virtual bool IsStateActive() const override;
 
 	UPROPERTY(BlueprintAssignable, Category = "Movement|Events")
@@ -173,7 +171,7 @@ private:
 	float Gravity = 0.0f;
 	float Friction = 0.0f;
 
-	int32 CurrentRootMotionID = 0;
+	int32 CurrentRootMotionID = -1;
 
 	FVector SlideStartLocation;
 	FVector SlideDirection;

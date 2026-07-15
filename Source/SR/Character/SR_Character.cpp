@@ -118,21 +118,7 @@ ISR_State *ASR_Character::GetState(MotionState StateName) const
 
 FName ASR_Character::GetCurrentStateName()
 {
-	switch (CurrentState)
-	{
-	case MotionState::DASH:
-		return DashComponent->GetStateName();
-	case MotionState::WALL_RUN:
-		return WallRunComponent->GetStateName();
-	case MotionState::WALL_JUMP:
-		return WallJumpComponent->GetStateName();
-	case MotionState::CLIMB:
-		return ClimbComponent->GetStateName();
-	case MotionState::SLIDE:
-		return SlideComponent->GetStateName();
-	default:
-		return FName("None");
-	}
+	return ContextStateComponent ? ContextStateComponent->GetCurrentStateName() : FName("None");
 }
 
 //////////////////////////////////////////////////////////////////////////
@@ -232,7 +218,7 @@ void ASR_Character::Jump()
 		}
 		return;
 	}
-	if (CurrentState == MotionState::WALL_JUMP)
+	if (ContextStateComponent->GetCurrentMotionState() == MotionState::WALL_JUMP)
 	{
 		return;
 	}

@@ -24,7 +24,10 @@ void USR_ClimbComponent::BeginPlay()
 	OwnerCharacter->OnMoveForwardInputPressed.AddDynamic(this, &USR_ClimbComponent::OnMoveForwardInputPressed);
 	OwnerCharacter->OnMoveForwardInputReleased.AddDynamic(this, &USR_ClimbComponent::OnMoveForwardInputReleased);
 
-	MotionController->OnRootMotionCompleted.AddDynamic(this, &USR_ClimbComponent::LeaveState);
+	// NB : Climb n'applique aucune root motion (il se déplace via SafeMoveUpdatedComponent
+	// dans son Tick). On ne s'abonne donc PAS à OnRootMotionCompleted, sinon la fin d'un
+	// Dash/WallJump déclencherait Climb::LeaveState (cross-talk). La sortie du climb est
+	// pilotée par UpdateState() et par la machine à états (TransitionGuard).
 }
 
 // Called every frame
@@ -63,12 +66,6 @@ void USR_ClimbComponent::EnterState(void *data)
 {
 	bIsActive = true;
 	StartLocation = OwnerCharacter->GetActorLocation();
-}
-
-bool USR_ClimbComponent::LookAheadQuery()
-{
-	return bIsActive || CharacterMovement->IsMovingOnGround() ||
-		ContextStateComponent->GetCurrentMotionState() == MotionState::WALL_RUN;
 }
 
 void USR_ClimbComponent::UpdateState()
@@ -150,15 +147,16 @@ void USR_ClimbComponent::UpdateState()
 }
 FName USR_ClimbComponent::GetStateName() const { return FName("Climb"); }
 
-int32 USR_ClimbComponent::GetStatePriority() const { return 0; }
-
 bool USR_ClimbComponent::IsStateActive() const { return bIsActive; }
 
 void USR_ClimbComponent::CheckForLedgeGrab()
 {
 
+	// On saute la détection de rebord si : on grimpe déjà, on est au sol,
+	// ou on wallrun SANS avancer (pendant un wallrun, le ledge grab n'est
+	// autorisé que si le joueur pousse vers l'avant).
 	if (bIsActive || CharacterMovement->IsMovingOnGround() ||
-		ContextStateComponent->GetCurrentMotionState() == MotionState::WALL_RUN && !bIsMovingForward)
+		(ContextStateComponent->GetCurrentMotionState() == MotionState::WALL_RUN && !bIsMovingForward))
 	{
 		return;
 	}

@@ -196,25 +196,6 @@ void USR_DashComponent::LeaveState(int32 rootMotionId, bool bForced)
 	OnDashEnded.Broadcast();
 }
 
-// used to check if the state can be activated
-bool USR_DashComponent::LookAheadQuery()
-{
-	if (bIsStateActive)
-	{
-		return false;
-	}
-
-	bool bIsInAir = !CharacterMovement->IsMovingOnGround();
-
-	// Return true only if the appropriate cooldown allows dashing
-	return bIsInAir ? bCanDashInAir : bCanDashOnGround;
-}
-
 FName USR_DashComponent::GetStateName() const { return FName("Dash"); }
-
-int32 USR_DashComponent::GetStatePriority() const
-{
-	return 0; // max priority
-}
 
 bool USR_DashComponent::IsStateActive() const { return bIsStateActive; }

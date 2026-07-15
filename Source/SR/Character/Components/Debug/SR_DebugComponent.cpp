@@ -8,10 +8,8 @@
 // Sets default values for this component's properties
 USR_DebugComponent::USR_DebugComponent()
 {
-	// Set this component to be initialized when the game starts, and to be ticked
-	// every frame.  You can turn these features off to improve performance if you
-	// don't need them.
-	PrimaryComponentTick.bCanEverTick = true;
+	// TickComponent ne fait rien d'autre que Super:: -> on désactive le tick.
+	PrimaryComponentTick.bCanEverTick = false;
 	OwnerCharacter = Cast<ASR_Character>(GetOwner());
 }
 

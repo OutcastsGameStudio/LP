@@ -29,10 +29,24 @@ protected:
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Debug")
 	bool bShowDebug = false;
 
+	UPROPERTY(EditAnywhere, Category = "Interaction",
+			  meta = (ClampMin = "0.0",
+					  ToolTip = "Interval (s) between refreshes of the cached interactible actor list. The expensive "
+								"GetAllActorsWithTag scan runs at this rate instead of every frame."))
+	float ActorListRefreshInterval = 1.0f;
+
 private:
 	UPROPERTY()
 	AActor *DetectedActor;
 
+	// Cache de la liste des acteurs taggés "interactible", rafraîchie périodiquement
+	// au lieu d'un GetAllActorsWithTag par frame.
+	UPROPERTY()
+	TArray<AActor *> CachedInteractibles;
+
+	float TimeSinceActorListRefresh = 0.0f;
+
+	void RefreshInteractibleActors();
 	void FindInteractibleActorInView();
 	bool IsActorInViewAndRange(const AActor *Actor, const FVector &CameraLocation, const FVector &CameraForward,
 							   float &OutDistanceFromCenter);

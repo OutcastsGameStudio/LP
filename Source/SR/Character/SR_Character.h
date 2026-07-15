@@ -241,11 +241,7 @@ private:
 public:
 	ISR_State *GetState(MotionState StateName) const;
 
-	//@TODO: workaround for the retrieving of the current State
+	// Délègue à l'unique source de vérité : USR_ContextStateComponent.
 	UFUNCTION(BlueprintCallable, Category = "State")
 	FName GetCurrentStateName();
-	void SetCurrentState(MotionState NewStateName) { CurrentState = NewStateName; }
-
-private:
-	MotionState CurrentState = MotionState::NONE;
 };

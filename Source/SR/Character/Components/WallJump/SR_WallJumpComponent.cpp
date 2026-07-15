@@ -5,9 +5,8 @@
 // Sets default values for this component's properties
 USR_WallJumpComponent::USR_WallJumpComponent()
 {
-	PrimaryComponentTick.bCanEverTick = true;
-
-	// ...
+	// TickComponent ne fait rien d'autre que Super:: -> on désactive le tick.
+	PrimaryComponentTick.bCanEverTick = false;
 }
 
 // Called when the game starts
@@ -68,8 +67,6 @@ void USR_WallJumpComponent::LeaveState(int32 rootMotionId, bool bForced)
 	ContextStateComponent->TransitionState(MotionState::NONE, bForced);
 }
 
-bool USR_WallJumpComponent::LookAheadQuery() { return false; }
-
 void USR_WallJumpComponent::UpdateState()
 {
 	FVector JumpDirection = (WallRunDirection * WallRunDirectionRatio + WallNormal * WallRunNormalRatio +
@@ -91,8 +88,6 @@ void USR_WallJumpComponent::UpdateState()
 }
 
 FName USR_WallJumpComponent::GetStateName() const { return FName("WallJump"); }
-
-int32 USR_WallJumpComponent::GetStatePriority() const { return 0; }
 
 bool USR_WallJumpComponent::IsStateActive() const { return bIsActive; }
 

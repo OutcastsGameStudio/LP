@@ -8,16 +8,42 @@
 USR_InteractionComponent::USR_InteractionComponent()
 {
 	PrimaryComponentTick.bCanEverTick = true;
+	// La détection d'interactible n'a pas besoin de tourner à 120 Hz : on throttle
+	// le tick. La cible de surbrillance reste réactive à ~10 Hz.
+	PrimaryComponentTick.TickInterval = 0.1f;
 	DetectedActor = nullptr;
 }
 
-void USR_InteractionComponent::BeginPlay() { Super::BeginPlay(); }
+void USR_InteractionComponent::BeginPlay()
+{
+	Super::BeginPlay();
+	RefreshInteractibleActors();
+}
 
 void USR_InteractionComponent::TickComponent(float DeltaTime, ELevelTick TickType,
 											 FActorComponentTickFunction *ThisTickFunction)
 {
 	Super::TickComponent(DeltaTime, TickType, ThisTickFunction);
+
+	// Rafraîchit la liste cachée seulement toutes les ActorListRefreshInterval secondes
+	// (DeltaTime intègre déjà l'intervalle réel écoulé grâce à TickInterval).
+	TimeSinceActorListRefresh += DeltaTime;
+	if (TimeSinceActorListRefresh >= ActorListRefreshInterval)
+	{
+		RefreshInteractibleActors();
+		TimeSinceActorListRefresh = 0.0f;
+	}
+
 	FindInteractibleActorInView();
+}
+
+void USR_InteractionComponent::RefreshInteractibleActors()
+{
+	if (!IsValid(GetWorld()))
+	{
+		return;
+	}
+	UGameplayStatics::GetAllActorsWithTag(GetWorld(), FName("interactible"), CachedInteractibles);
 }
 
 bool USR_InteractionComponent::IsActorInViewAndRange(const AActor *Actor, const FVector &CameraLocation,
@@ -88,13 +114,10 @@ void USR_InteractionComponent::FindInteractibleActorInView()
 	FVector CameraLocation = FollowCamera->GetComponentLocation();
 	FVector CameraForward = FollowCamera->GetForwardVector();
 
-	TArray<AActor *> InteractibleActors;
-	UGameplayStatics::GetAllActorsWithTag(GetWorld(), FName("interactible"), InteractibleActors);
-
 	AActor *ClosestToCenterActor = nullptr;
 	float ClosestDistanceToCenter = CenterScreenTolerance;
 
-	for (AActor *Actor : InteractibleActors)
+	for (AActor *Actor : CachedInteractibles)
 	{
 		float DistanceFromCenter;
 		if (IsActorInViewAndRange(Actor, CameraLocation, CameraForward, DistanceFromCenter))

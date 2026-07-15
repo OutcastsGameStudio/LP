@@ -6,10 +6,9 @@
 // Sets default values for this component's properties
 USR_ContextStateComponent::USR_ContextStateComponent()
 {
-	// Set this component to be initialized when the game starts, and to be ticked
-	// every frame.  You can turn these features off to improve performance if you
-	// don't need them.
-	PrimaryComponentTick.bCanEverTick = true;
+	// TickComponent ne fait rien d'autre que Super:: -> on désactive le tick.
+	// Les transitions d'état sont event-driven (inputs / OnHit / OnRootMotionCompleted).
+	PrimaryComponentTick.bCanEverTick = false;
 
 	// ...
 }
@@ -38,7 +37,6 @@ void USR_ContextStateComponent::TransitionState(MotionState NewStateName, bool b
 	{
 		// not ideal here, ideally the NONE state should be its own class
 		CurrentState = States[MotionState::NONE];
-		Character->SetCurrentState(NewStateName);
 		return;
 	}
 	CurrentState = States[NewStateName];
@@ -47,7 +45,6 @@ void USR_ContextStateComponent::TransitionState(MotionState NewStateName, bool b
 		return;
 	}
 	CurrentState->EnterState(nullptr);
-	Character->SetCurrentState(NewStateName);
 }
 
 void USR_ContextStateComponent::TransitionState(MotionState NewStateName, void *data, bool bForced)
@@ -58,7 +55,6 @@ void USR_ContextStateComponent::TransitionState(MotionState NewStateName, void *
 	if (NewStateName == MotionState::NONE)
 	{
 		CurrentState = States[MotionState::NONE];
-		Character->SetCurrentState(NewStateName);
 		return;
 	}
 	CurrentState = States[NewStateName];
@@ -67,7 +63,6 @@ void USR_ContextStateComponent::TransitionState(MotionState NewStateName, void *
 		return;
 	}
 	CurrentState->EnterState(data);
-	Character->SetCurrentState(NewStateName);
 }
 
 //@TODO: do know why it not getting updated when trying to display the name of
@@ -94,7 +89,7 @@ void USR_ContextStateComponent::RegisterStates()
 	CurrentState = States[MotionState::NONE];
 }
 
-void USR_ContextStateComponent::TransitionGuard(MotionState newState, bool bForced = false)
+void USR_ContextStateComponent::TransitionGuard(MotionState newState, bool bForced)
 {
 	if (CurrentState == nullptr)
 	{

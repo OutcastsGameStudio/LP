@@ -22,9 +22,7 @@ class SR_API ISR_State
 public:
 	virtual void EnterState(void *data) = 0;
 	virtual void LeaveState(int32 rootMotionId, bool bForced = false) = 0;
-	virtual bool LookAheadQuery() = 0;
 	virtual void UpdateState() = 0;
 	virtual FName GetStateName() const = 0;
-	virtual int32 GetStatePriority() const = 0;
 	virtual bool IsStateActive() const = 0;
 };
